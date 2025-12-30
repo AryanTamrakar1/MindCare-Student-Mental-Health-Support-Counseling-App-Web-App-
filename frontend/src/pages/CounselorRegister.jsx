@@ -86,7 +86,7 @@ const CounselorRegister = () => {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Dr. John Doe"
+                    placeholder="Dr. John Doe"
                     className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                     required
                     onChange={(e) =>
@@ -117,7 +117,7 @@ const CounselorRegister = () => {
               </label>
               <input
                 type="text"
-                placeholder="+60 12-345 6789"
+                placeholder="+977 1234567890"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
                 onChange={(e) =>
@@ -132,7 +132,7 @@ const CounselorRegister = () => {
               </label>
               <input
                 type="text"
-                placeholder="e.g. LKM-12345"
+                placeholder="LKM-12345789"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
                 onChange={(e) =>
@@ -162,7 +162,7 @@ const CounselorRegister = () => {
               </label>
               <input
                 type="number"
-                placeholder="e.g. 5"
+                placeholder="1"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
                 onChange={(e) =>
@@ -177,7 +177,7 @@ const CounselorRegister = () => {
               </label>
               <input
                 type="text"
-                placeholder="e.g. Anxiety, Stress Management, CBT"
+                placeholder="e.g. Anxiety, Stress Management"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
                 onChange={(e) =>
@@ -188,7 +188,7 @@ const CounselorRegister = () => {
 
             <div className="md:col-span-2 space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
-                Upload Identification Photo (IC/License)
+                Upload Your Photo for Verification
               </label>
               <div className="relative group">
                 <input
@@ -227,7 +227,7 @@ const CounselorRegister = () => {
 
             <div className="md:col-span-2 space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
-                Statement of Purpose / Bio
+                Statement of Purpose
               </label>
               <textarea
                 rows="4"
@@ -263,7 +263,7 @@ const CounselorRegister = () => {
             <p className="text-xs text-emerald-800 font-medium leading-relaxed">
               <strong>Application Process:</strong> Your account will remain{" "}
               <strong>Pending</strong>. You will be able to log in once our
-              Admin team has verified your credentials.
+              Admin has verified your credentials.
             </p>
           </div>
 

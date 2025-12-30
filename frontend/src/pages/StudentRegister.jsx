@@ -81,10 +81,10 @@ const StudentRegister = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Student ID / Roll No</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Student ID </label>
               <input 
                 type="text" 
-                placeholder="2024-STU-001" 
+                placeholder="202350999" 
                 className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none" 
                 required 
                 onChange={(e) => setFormData({...formData, studentId: e.target.value})} 
@@ -95,7 +95,7 @@ const StudentRegister = () => {
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
               <input 
                 type="text" 
-                placeholder="+1 234 567 890" 
+                placeholder="+977 1234567890" 
                 className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none" 
                 onChange={(e) => setFormData({...formData, phone: e.target.value})} 
               />

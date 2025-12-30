@@ -42,7 +42,7 @@ const OTPVerification = () => {
 
         <h2 className="text-3xl font-black text-gray-900 mb-2">Check your Code</h2>
         <p className="text-gray-400 font-medium mb-8">
-          We've generated a code for <br/>
+         The code is generated for <br/>
           <span className="text-indigo-600 font-bold">{email}</span>
         </p>
         

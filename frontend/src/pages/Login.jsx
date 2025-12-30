@@ -143,7 +143,7 @@ const Login = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-900 text-lg">Counselor</h4>
-                    <p className="text-xs text-gray-400 font-medium">I am a professional verified provider.</p>
+                    <p className="text-xs text-gray-400 font-medium">I am a professional counselor.</p>
                   </div>
                 </button>
               </div>

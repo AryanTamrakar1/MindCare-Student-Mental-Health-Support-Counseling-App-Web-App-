@@ -64,7 +64,7 @@ const RoleSelection = () => {
             </div>
             <div>
               <h4 className="font-bold text-gray-900 text-xl">I am a Counselor</h4>
-              <p className="text-sm text-gray-400 leading-tight">I am a professional verified to provide help.</p>
+              <p className="text-sm text-gray-400 leading-tight">I am a professional counselor.</p>
             </div>
           </button>
         </div>

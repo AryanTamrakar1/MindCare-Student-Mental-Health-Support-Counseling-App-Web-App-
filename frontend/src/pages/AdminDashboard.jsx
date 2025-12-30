@@ -131,7 +131,7 @@ const AdminDashboard = () => {
 
                 <div>
                   <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2 ml-1">
-                    Verification Document (IC/License)
+                    Verification Document
                   </p>
                   <div className="bg-gray-50 p-2 rounded-2xl border border-gray-100 overflow-hidden">
                     {selectedUser.verificationPhoto ? (
@@ -217,7 +217,7 @@ const AdminDashboard = () => {
               Admin Control Center
             </h1>
             <p className="text-gray-500 mt-2">
-              Manage professional verification requests.
+              Manage counselor verification requests.
             </p>
           </div>
           {showApprovalPanel && (

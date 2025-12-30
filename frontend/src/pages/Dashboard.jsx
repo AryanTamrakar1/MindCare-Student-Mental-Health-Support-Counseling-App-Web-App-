@@ -62,7 +62,7 @@ const Dashboard = () => {
                   </div>
                   <h3 className="text-3xl font-bold text-orange-800 tracking-tight">Verification in Progress</h3>
                   <p className="text-orange-700 mt-4 max-w-lg mx-auto text-lg">
-                    Thank you for applying. An administrator is currently reviewing your professional credentials.
+                    Thank you for applying. An admin is currently reviewing your professional credentials.
                   </p>
                 </div>
               ) : (

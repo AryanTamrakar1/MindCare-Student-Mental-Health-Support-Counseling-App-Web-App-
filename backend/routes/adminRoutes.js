@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-// Import the logic from controllers
 const { manageUserStatus } = require('../controllers/authController');
-const { getPendingUsers } = require('../controllers/adminController');
+const { getPendingUsers, getAllUsers, deleteUser } = require('../controllers/adminController');
 
-// Get the list of pending counselors
 router.get('/pending', getPendingUsers);
-
-// Handle the Approve/Reject 
 router.put('/update-status', manageUserStatus);
+
+// Routes for User Management
+router.get('/all-users', getAllUsers); // This gets the list of all users
+router.delete('/delete-user/:id', deleteUser); // This deletes a user
 
 module.exports = router;

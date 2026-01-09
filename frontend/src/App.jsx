@@ -6,9 +6,9 @@ import CounselorRegister from './pages/CounselorRegister';
 import AdminDashboard from './pages/AdminDashboard';
 import Dashboard from './pages/Dashboard'; 
 import RoleSelection from './pages/RoleSelection'; 
-
-// --- 1. ADD THIS NEW IMPORT ---
+import UserManagement from "./pages/UserManagement";
 import OTPVerification from './pages/OTPVerification'; 
+import CounselorApprovals from "./pages/CounselorApprovals";
 
 function App() {
   return (
@@ -17,13 +17,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/role-selection" element={<RoleSelection />} />
-
-          {/* --- 2. ADD THIS NEW ROUTE --- */}
           <Route path="/verify-otp" element={<OTPVerification />} />
-
           <Route path="/register/student" element={<StudentRegister />} />
           <Route path="/register/counselor" element={<CounselorRegister />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/counselor-approvals" element={<CounselorApprovals />} />
+          <Route path="/user-management" element={<UserManagement />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </Router>

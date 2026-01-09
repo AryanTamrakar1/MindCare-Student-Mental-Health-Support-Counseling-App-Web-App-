@@ -1,14 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ user }) => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    alert("Logging out...");
-    navigate('/'); // Back to Login page
-  };
-
   return (
     <nav className="bg-indigo-700 text-white px-8 py-4 flex justify-between items-center shadow-lg">
       <div className="flex items-center gap-2">
@@ -20,15 +12,8 @@ const Navbar = ({ user }) => {
 
       <div className="flex items-center gap-6">
         <div className="text-sm text-indigo-100 hidden md:block">
-          Logged in as: <span className="font-semibold text-white">{user?.name}</span>
+          Logged in as: <span className="font-semibold text-white">{user?.name || "User"}</span>
         </div>
-        
-        <button 
-          onClick={handleLogout}
-          className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-1.5 rounded-lg font-bold text-sm transition-all"
-        >
-          LOGOUT
-        </button>
       </div>
     </nav>
   );

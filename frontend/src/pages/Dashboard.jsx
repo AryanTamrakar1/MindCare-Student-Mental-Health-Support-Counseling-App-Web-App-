@@ -7,7 +7,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const user = location.state?.user;
 
-  // Security Guard
   useEffect(() => {
     if (!user) {
       navigate('/');

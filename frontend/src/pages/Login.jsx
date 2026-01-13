@@ -9,7 +9,21 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  //Login 
+  // This function handles where to send the user after login
+  const handleRedirect = (user) => {
+    if (user.role === "Admin") {
+      navigate("/admin-dashboard", { state: { user } });
+    } else if (user.role === "Student") {
+      navigate("/student-dashboard", { state: { user } });
+    } else if (user.role === "Counselor") {
+      navigate("/counselor-dashboard", { state: { user } });
+    } else {
+      // If for some reason role is missing
+      navigate("/");
+    }
+  };
+
+  // Login 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -18,8 +32,8 @@ const Login = () => {
       localStorage.setItem("token", res.data.token); 
 
       alert("Login Successful!");
-      const path = userData.role === "Admin" ? "/admin-dashboard" : "/dashboard";
-      navigate(path, { state: { user: userData } });
+      handleRedirect(userData);
+      
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");
     }
@@ -88,8 +102,7 @@ const Login = () => {
                 if (userData.role === "Pending_Selection") {
                   navigate("/role-selection", { state: { user: userData } });
                 } else {
-                  const path = userData.role === "Admin" ? "/admin-dashboard" : "/dashboard";
-                  navigate(path, { state: { user: userData } });
+                  handleRedirect(userData);
                 }
               } catch (err) {
                 alert("Google Login Error");

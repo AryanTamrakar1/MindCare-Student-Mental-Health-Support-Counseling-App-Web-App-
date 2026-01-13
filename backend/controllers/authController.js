@@ -130,6 +130,7 @@ const loginUser = async (req, res) => {
       message: "Login successful!",
       token,
       user: {
+        _id: user._id, 
         name: user.name,
         role: user.role,
         status: user.status,
@@ -171,6 +172,7 @@ const googleLogin = async (req, res) => {
     res.json({
       token: jwtToken,
       user: {
+        _id: user._id,
         name: user.name,
         role: user.role,
         status: user.status,
@@ -198,6 +200,38 @@ const updateRole = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     res.json({ message: "Profile updated successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// --- Update Profile ---
+const updateProfile = async (req, res) => {
+  const { userId, name, currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (name) user.name = name;
+    if (currentPassword && newPassword) {
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+    }
+
+    await user.save();
+    res.json({
+      message: "Profile updated successfully!",
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -233,5 +267,6 @@ module.exports = {
   loginUser,
   googleLogin,
   updateRole,
+  updateProfile, 
   manageUserStatus,
 };

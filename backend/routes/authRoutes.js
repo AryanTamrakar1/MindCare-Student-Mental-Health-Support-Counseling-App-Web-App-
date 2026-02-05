@@ -5,9 +5,15 @@ const {
   loginUser, 
   googleLogin, 
   updateRole, 
+  
   verifyOTP, 
   resendOTP, 
-  updateProfile
+  updateProfile,
+
+  getCounselors,
+  searchCounselors,
+  editCounselorProfile,
+  protect
 } = require('../controllers/authController');
 
 const upload = require('./uploadMiddleware');
@@ -21,5 +27,9 @@ router.put('/update-profile', updateProfile);
 
 router.post('/verify-otp', verifyOTP);
 router.post('/resend-otp', resendOTP);
+
+router.get('/counselors', getCounselors);
+router.get('/search', searchCounselors);
+router.put('/edit-counselor-profile', protect, editCounselorProfile);
 
 module.exports = router;

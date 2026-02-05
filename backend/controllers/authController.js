@@ -260,6 +260,85 @@ const manageUserStatus = async (req, res) => {
   }
 };
 
+
+// --- Middleware to protect routes ---
+const protect = async (req, res, next) => {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select("-password");
+      next();
+    } catch (error) {
+      res.status(401).json({ message: "Not authorized, token failed" });
+    }
+  }
+
+  if (!token) {
+    res.status(401).json({ message: "Not authorized, no token" });
+  }
+};
+
+// --- Get the Counselors ---
+const getCounselors = async (req, res) => {
+  try {
+    const counselors = await User.find(
+      { role: "Counselor", status: "Approved" },
+      "name specialization bio qualifications experience"
+    );
+    res.json(counselors);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching counselors" });
+  }
+};
+
+// --- Search and Filter Counselors ---
+const searchCounselors = async (req, res) => {
+  try {
+    const { name, specialization } = req.query;
+    let query = { role: "Counselor", status: "Approved" };
+
+    // It filters by name if the student types a name in the search bar
+    if (name) {
+      query.name = { $regex: name, $options: "i" }; // "i" means it is not case-sensitive
+    }
+
+    // It filters by specialization if the student selects a problem type
+    if (specialization) {
+      query.specialization = { $regex: specialization, $options: "i" };
+    }
+
+    const counselors = await User.find(query, "name specialization bio qualifications experience");
+    res.json(counselors);
+  } catch (error) {
+    res.status(500).json({ message: "Error searching counselors" });
+  }
+};
+
+// --- Edit Counselor Profile ---
+const editCounselorProfile = async (req, res) => {
+  try {
+    const counselorId = req.user.id;
+    const { specialization, bio, qualifications, experience } = req.body;
+
+    // It finds the logged-in counselor and updates their professional info
+    const updatedCounselor = await User.findByIdAndUpdate(
+      counselorId,
+      { specialization, bio, qualifications, experience },
+      { new: true }
+    );
+
+    if (!updatedCounselor) {
+      return res.status(404).json({ message: "Counselor not found" });
+    }
+
+    res.json({ message: "Professional profile updated!", user: updatedCounselor });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating counselor profile" });
+  }
+};
+
 module.exports = {
   registerUser,
   verifyOTP,
@@ -269,4 +348,8 @@ module.exports = {
   updateRole,
   updateProfile, 
   manageUserStatus,
+  protect,
+  getCounselors,
+  searchCounselors,
+  editCounselorProfile
 };

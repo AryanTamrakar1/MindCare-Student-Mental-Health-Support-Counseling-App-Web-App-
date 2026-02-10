@@ -25,7 +25,14 @@ const StudentSidebar = ({ user }) => {
           >
             Home
           </li>
-          <li className="p-[12px_16px] mb-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-50 rounded-lg">
+          <li
+            onClick={() => menuNavigate("/counselors")} 
+            className={`p-[12px_16px] mb-2 rounded-lg font-semibold cursor-pointer transition ${
+              isActive("/counselors") 
+                ? "bg-[#eef2ff] text-[#4f46e5] font-bold"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
             Find Counselors
           </li>
           <li className="p-[12px_16px] mb-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-50 rounded-lg">

@@ -11,6 +11,10 @@ import CounselorApprovals from "./pages/CounselorApprovals";
 import StudentDashboard from "./pages/StudentDashboard";
 import CounselorDashboard from './pages/CounselorDashboard';
 import ProfileSettings from "./pages/ProfileSettings";
+import CounselorDirectory from "./pages/CounselorDirectory";
+import CounselorProfileView from "./pages/CounselorProfileView";
+
+
 
 function App() {
   return (
@@ -28,6 +32,8 @@ function App() {
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/counselor-dashboard" element={<CounselorDashboard />} />
           <Route path="/settings" element={<ProfileSettings />} />
+          <Route path="/counselors" element={<CounselorDirectory />} />
+          <Route path="/counselor/:id" element={<CounselorProfileView />} />
         </Routes>
       </Router>
     </GoogleOAuthProvider>

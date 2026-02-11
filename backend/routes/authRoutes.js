@@ -32,4 +32,8 @@ router.get('/counselors', getCounselors);
 router.get('/search', searchCounselors);
 router.put('/edit-counselor-profile', protect, editCounselorProfile);
 
+router.get('/me', protect, (req, res) => {
+  res.json(req.user);
+});
+
 module.exports = router;

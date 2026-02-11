@@ -283,10 +283,10 @@ const protect = async (req, res, next) => {
 // --- Get the Counselors ---
 const getCounselors = async (req, res) => {
   try {
-    const counselors = await User.find(
-      { role: "Counselor", status: "Approved" },
-      "name specialization bio qualifications experience"
-    );
+    const counselors = await User.find({ 
+        role: "Counselor", 
+        status: "Approved" 
+    });
     res.json(counselors);
   } catch (error) {
     res.status(500).json({ message: "Error fetching counselors" });
@@ -299,17 +299,14 @@ const searchCounselors = async (req, res) => {
     const { name, specialization } = req.query;
     let query = { role: "Counselor", status: "Approved" };
 
-    // It filters by name if the student types a name in the search bar
     if (name) {
-      query.name = { $regex: name, $options: "i" }; // "i" means it is not case-sensitive
+      query.name = { $regex: name, $options: "i" }; 
     }
 
-    // It filters by specialization if the student selects a problem type
     if (specialization) {
       query.specialization = { $regex: specialization, $options: "i" };
     }
-
-    const counselors = await User.find(query, "name specialization bio qualifications experience");
+    const counselors = await User.find(query);
     res.json(counselors);
   } catch (error) {
     res.status(500).json({ message: "Error searching counselors" });
@@ -320,12 +317,18 @@ const searchCounselors = async (req, res) => {
 const editCounselorProfile = async (req, res) => {
   try {
     const counselorId = req.user.id;
-    const { specialization, bio, qualifications, experience } = req.body;
+    const { profTitle, specialization, bio, qualifications, experience, availability } = req.body;
 
-    // It finds the logged-in counselor and updates their professional info
     const updatedCounselor = await User.findByIdAndUpdate(
       counselorId,
-      { specialization, bio, qualifications, experience },
+      { 
+        profTitle,
+        specialization, 
+        bio, 
+        qualifications, 
+        experience, 
+        availability 
+      },
       { new: true }
     );
 

@@ -1,6 +1,7 @@
 const Appointment = require("../models/Appointment");
-const User = require("../models/User"); 
+const User = require("../models/User");
 
+// It allows a student to request a session with a counselor
 exports.requestSession = async (req, res) => {
   try {
     const { counselorId, date, timeSlot, reason } = req.body;
@@ -12,14 +13,45 @@ exports.requestSession = async (req, res) => {
 
     const counselor = await User.findById(counselorId);
 
+    const dateObj = new Date(date);
+    const dayName = new Intl.DateTimeFormat("en-US", {
+      weekday: "long",
+      timeZone: "UTC",
+    }).format(dateObj);
+
     const isAvailable = counselor.availability.some(
-      (slot) => slot.date === date && slot.timeSlot === timeSlot,
+      (slot) => slot.day === dayName && slot.timeSlot === timeSlot,
     );
 
     if (!isAvailable) {
       return res.status(400).json({
         message:
           "Counselor is not available at this time. Please choose a different time.",
+      });
+    }
+
+    const studentExistingAppointment = await Appointment.findOne({
+      studentId,
+      date,
+      status: { $in: ["Pending", "Approved"] },
+    });
+
+    if (studentExistingAppointment) {
+      return res.status(400).json({
+        message:
+          "You already have a session requested or booked for this day. You can only have one session per day.",
+      });
+    }
+
+    const pendingCount = await Appointment.countDocuments({
+      studentId,
+      status: "Pending",
+    });
+
+    if (pendingCount >= 3) {
+      return res.status(400).json({
+        message:
+          "You have too many pending requests (Limit is 3). Please wait for a counselor to respond before booking more.",
       });
     }
 
@@ -33,11 +65,10 @@ exports.requestSession = async (req, res) => {
     if (existingAppointment) {
       return res.status(400).json({
         message:
-          "This slot is already requested or booked. Please try another time.",
+          "This slot is already requested or booked for this specific date.",
       });
     }
 
-    // It sends the request to the counselor
     const newAppointment = new Appointment({
       studentId,
       counselorId,
@@ -61,14 +92,14 @@ exports.requestSession = async (req, res) => {
 exports.checkAvailability = async (req, res) => {
   try {
     const { counselorId, date } = req.query;
-    
-    const bookedAppointments = await Appointment.find({ 
-      counselorId, 
-      date, 
-      status: { $in: ["Pending", "Approved"] } 
-    }).select('timeSlot'); 
-    const takenSlots = bookedAppointments.map(app => app.timeSlot);
-    
+
+    const bookedAppointments = await Appointment.find({
+      counselorId,
+      date,
+      status: { $in: ["Pending", "Approved"] },
+    }).select("timeSlot");
+    const takenSlots = bookedAppointments.map((app) => app.timeSlot);
+
     res.status(200).json(takenSlots);
   } catch (error) {
     res.status(500).json({ message: "Error checking availability" });
@@ -147,5 +178,32 @@ exports.getPendingRequests = async (req, res) => {
   } catch (error) {
     console.error("Fetch Pending Error:", error);
     res.status(500).json({ message: "Error fetching pending requests" });
+  }
+};
+
+// It checks if a counselor is available or booked for the current day
+exports.getLiveStatus = async (req, res) => {
+  try {
+    const { counselorId } = req.params;
+
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, "0");
+    const month = now.toLocaleString("en-GB", { month: "short" });
+    const year = now.getFullYear();
+    const currentDate = `${day} ${month} ${year}`;
+
+    const appointments = await Appointment.find({
+      counselorId,
+      date: currentDate,
+      status: "Approved",
+    });
+
+    if (appointments.length === 0) {
+      return res.status(200).json({ status: "Green", label: "Available" });
+    } else {
+      return res.status(200).json({ status: "Yellow", label: "Booked" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error checking live status" });
   }
 };

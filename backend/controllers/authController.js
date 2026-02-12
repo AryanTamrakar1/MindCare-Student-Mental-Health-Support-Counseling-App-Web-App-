@@ -39,8 +39,8 @@ const registerUser = async (req, res) => {
       sendEmail(
         user.email,
         "Verify Your Student Account",
-        `Hello ${user.name},\n\nYour verification code is: ${otp}`
-      ).catch(err => console.error("Registration Email Error:", err));
+        `Hello ${user.name},\n\nYour verification code is: ${otp}`,
+      ).catch((err) => console.error("Registration Email Error:", err));
     }
 
     res.status(201).json({
@@ -87,15 +87,15 @@ const resendOTP = async (req, res) => {
     const user = await User.findOneAndUpdate(
       { email },
       { otp: newOtp },
-      { new: true }
+      { new: true },
     );
     if (!user) return res.status(404).json({ message: "User not found" });
 
     sendEmail(
       user.email,
       "New Verification Code",
-      `Your new code is: ${newOtp}`
-    ).catch(err => console.error("Resend OTP Error:", err));
+      `Your new code is: ${newOtp}`,
+    ).catch((err) => console.error("Resend OTP Error:", err));
 
     res.json({ message: "New OTP sent to your email!" });
   } catch (error) {
@@ -124,13 +124,13 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
     res.json({
       message: "Login successful!",
       token,
       user: {
-        _id: user._id, 
+        _id: user._id,
         name: user.name,
         role: user.role,
         status: user.status,
@@ -167,7 +167,7 @@ const googleLogin = async (req, res) => {
     const jwtToken = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
     res.json({
       token: jwtToken,
@@ -216,7 +216,9 @@ const updateProfile = async (req, res) => {
     if (currentPassword && newPassword) {
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
-        return res.status(400).json({ message: "Current password is incorrect" });
+        return res
+          .status(400)
+          .json({ message: "Current password is incorrect" });
       }
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(newPassword, salt);
@@ -230,7 +232,7 @@ const updateProfile = async (req, res) => {
         email: user.email,
         role: user.role,
         status: user.status,
-      }
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -239,7 +241,7 @@ const updateProfile = async (req, res) => {
 
 // --- Admin Manage Status ---
 const manageUserStatus = async (req, res) => {
-  const { userId, status } = req.body; 
+  const { userId, status } = req.body;
   try {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -247,12 +249,16 @@ const manageUserStatus = async (req, res) => {
     user.status = status;
     await user.save();
 
-    const subject = status === "Approved" ? "Application Approved!" : "Application Rejected";
-    const emailBody = status === "Approved"
+    const subject =
+      status === "Approved" ? "Application Approved!" : "Application Rejected";
+    const emailBody =
+      status === "Approved"
         ? `Congratulations ${user.name}! Your account has been approved. You can now login.`
         : `Hello ${user.name}, we regret to inform you that your application was not approved.`;
 
-    sendEmail(user.email, subject, emailBody).catch(err => console.error("Admin Action Email Error:", err));
+    sendEmail(user.email, subject, emailBody).catch((err) =>
+      console.error("Admin Action Email Error:", err),
+    );
 
     res.json({ message: `Account has been ${status} and user notified.` });
   } catch (error) {
@@ -260,11 +266,13 @@ const manageUserStatus = async (req, res) => {
   }
 };
 
-
 // --- Middleware to protect routes ---
 const protect = async (req, res, next) => {
   let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
     try {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -283,9 +291,9 @@ const protect = async (req, res, next) => {
 // --- Get the Counselors ---
 const getCounselors = async (req, res) => {
   try {
-    const counselors = await User.find({ 
-        role: "Counselor", 
-        status: "Approved" 
+    const counselors = await User.find({
+      role: "Counselor",
+      status: "Approved",
     });
     res.json(counselors);
   } catch (error) {
@@ -300,7 +308,7 @@ const searchCounselors = async (req, res) => {
     let query = { role: "Counselor", status: "Approved" };
 
     if (name) {
-      query.name = { $regex: name, $options: "i" }; 
+      query.name = { $regex: name, $options: "i" };
     }
 
     if (specialization) {
@@ -317,26 +325,44 @@ const searchCounselors = async (req, res) => {
 const editCounselorProfile = async (req, res) => {
   try {
     const counselorId = req.user.id;
-    const { profTitle, specialization, bio, qualifications, experience, availability } = req.body;
+
+    if (req.user.role !== "Counselor") {
+      return res.status(403).json({
+        message:
+          "Access denied. Only counselors can update professional profiles.",
+      });
+    }
+
+    const {
+      profTitle,
+      specialization,
+      bio,
+      qualifications,
+      experience,
+      availability,
+    } = req.body;
 
     const updatedCounselor = await User.findByIdAndUpdate(
       counselorId,
-      { 
+      {
         profTitle,
-        specialization, 
-        bio, 
-        qualifications, 
-        experience, 
-        availability 
+        specialization,
+        bio,
+        qualifications,
+        experience,
+        availability,
       },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedCounselor) {
       return res.status(404).json({ message: "Counselor not found" });
     }
 
-    res.json({ message: "Professional profile updated!", user: updatedCounselor });
+    res.json({
+      message: "Professional profile updated!",
+      user: updatedCounselor,
+    });
   } catch (error) {
     res.status(500).json({ message: "Error updating counselor profile" });
   }
@@ -349,10 +375,10 @@ module.exports = {
   loginUser,
   googleLogin,
   updateRole,
-  updateProfile, 
+  updateProfile,
   manageUserStatus,
   protect,
   getCounselors,
   searchCounselors,
-  editCounselorProfile
+  editCounselorProfile,
 };

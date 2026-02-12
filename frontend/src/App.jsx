@@ -9,12 +9,12 @@ import UserManagement from "./pages/UserManagement";
 import OTPVerification from "./pages/OTPVerification";
 import CounselorApprovals from "./pages/CounselorApprovals";
 import StudentDashboard from "./pages/StudentDashboard";
-import CounselorDashboard from './pages/CounselorDashboard';
+import CounselorDashboard from "./pages/CounselorDashboard";
 import ProfileSettings from "./pages/ProfileSettings";
 import CounselorDirectory from "./pages/CounselorDirectory";
 import CounselorProfileView from "./pages/CounselorProfileView";
-
-
+import EditCounselorProfile from "./pages/EditCounselorProfile";
+import PendingRequests from "./pages/PendingRequests";
 
 function App() {
   return (
@@ -34,6 +34,8 @@ function App() {
           <Route path="/settings" element={<ProfileSettings />} />
           <Route path="/counselors" element={<CounselorDirectory />} />
           <Route path="/counselor/:id" element={<CounselorProfileView />} />
+          <Route path="/edit-profile" element={<EditCounselorProfile />} />
+          <Route path="/pending-requests" element={<PendingRequests />} />
         </Routes>
       </Router>
     </GoogleOAuthProvider>

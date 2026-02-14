@@ -5,9 +5,7 @@ import CounselorSidebar from "../components/CounselorSidebar";
 import Navbar from "../components/Navbar";
 
 const PendingRequests = () => {
-  const location = useLocation();
-
-  const [user, setUser] = useState(location.state?.user || null);
+  const [user, setUser] = useState(null);
 
   const [requests, setRequests] = useState([]);
 

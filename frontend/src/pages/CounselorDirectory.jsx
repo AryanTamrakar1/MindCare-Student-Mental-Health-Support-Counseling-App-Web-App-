@@ -9,7 +9,7 @@ const CounselorDirectory = () => {
 
   const navigate = useNavigate();
 
-  const [user, setUser] = useState(location.state?.user || null);
+  const [user, setUser] = useState(null);
 
   const [counselors, setCounselors] = useState([]);
 
@@ -392,9 +392,7 @@ const CounselorDirectory = () => {
                     </div>
 
                     <button
-                      onClick={() =>
-                        navigate(`/counselor/${cslr._id}`, { state: { user } })
-                      }
+                      onClick={() => navigate(`/counselor/${cslr._id}`)}
                       className="w-full py-4 bg-white border border-gray-200 rounded-[18px] font-black text-xs uppercase tracking-widest text-gray-500 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-200 shadow-sm"
                     >
                       View Profile

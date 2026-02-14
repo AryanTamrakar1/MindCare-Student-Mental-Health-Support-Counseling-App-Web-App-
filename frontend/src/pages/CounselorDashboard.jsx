@@ -1,20 +1,10 @@
-import React, { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import CounselorSidebar from "../components/CounselorSidebar";
 
 const CounselorDashboard = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const user = location.state?.user;
-
-  useEffect(() => {
-    if (!user || user.role !== "Counselor") {
-      navigate("/");
-    }
-  }, [user, navigate]);
-
-  if (!user || user.role !== "Counselor") return null;
+  const { user } = useContext(AuthContext);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -33,7 +23,6 @@ const CounselorDashboard = () => {
           </header>
 
           <div className="grid grid-cols-6 gap-6">
-            
             {/* Pending Requests */}
             <section className="col-span-2 bg-white p-8 rounded-[20px] border border-gray-200 flex flex-col h-[250px]">
               <h2 className="text-[12px] font-[800] text-gray-400 uppercase tracking-widest mb-4">
@@ -65,7 +54,7 @@ const CounselorDashboard = () => {
                   From 24 total sessions
                 </p>
               </div>
-              <div className="h-[44px] mt-4"></div> 
+              <div className="h-[44px] mt-4"></div>
             </section>
 
             {/* Next Confirmed Session */}

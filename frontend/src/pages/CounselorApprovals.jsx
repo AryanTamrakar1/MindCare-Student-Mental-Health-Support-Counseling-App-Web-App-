@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import API from "../api/axios";
 import Navbar from "../components/Navbar";
 import AdminSidebar from "../components/AdminSidebar";
@@ -7,19 +7,12 @@ import AdminSidebar from "../components/AdminSidebar";
 const CounselorApprovals = () => {
   const [pendingUsers, setPendingUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-
-  const location = useLocation();
-  const navigate = useNavigate();
-  const user = location.state?.user;
+  const { user } = useContext(AuthContext);
   const BACKEND_URL = "http://localhost:5050";
 
   useEffect(() => {
-    if (!user || user.role !== "Admin") {
-      navigate("/");
-    } else {
-      fetchPending();
-    }
-  }, [user, navigate]);
+    fetchPending();
+  }, []);
 
   const fetchPending = async () => {
     try {
@@ -40,8 +33,6 @@ const CounselorApprovals = () => {
       alert("Action failed");
     }
   };
-
-  if (!user || user.role !== "Admin") return null;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-inter">
@@ -81,15 +72,23 @@ const CounselorApprovals = () => {
                 <tbody className="divide-y divide-gray-50">
                   {pendingUsers.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="p-20 text-center text-gray-400 italic">
+                      <td
+                        colSpan="3"
+                        className="p-20 text-center text-gray-400 italic"
+                      >
                         No pending applications found.
                       </td>
                     </tr>
                   ) : (
                     pendingUsers.map((u) => (
-                      <tr key={u._id} className="hover:bg-gray-50/50 transition-colors">
+                      <tr
+                        key={u._id}
+                        className="hover:bg-gray-50/50 transition-colors"
+                      >
                         <td className="p-6">
-                          <div className="font-bold text-gray-900 text-lg">{u.name}</div>
+                          <div className="font-bold text-gray-900 text-lg">
+                            {u.name}
+                          </div>
                           <div className="text-gray-500 text-xs">{u.email}</div>
                         </td>
                         <td className="p-6">
@@ -127,36 +126,65 @@ const CounselorApprovals = () => {
                     {selectedUser.name.charAt(0)}
                   </div>
                   <div>
-                    <h2 className="text-3xl font-black text-gray-900">{selectedUser.name}</h2>
-                    <p className="text-gray-500 font-medium">{selectedUser.email}</p>
+                    <h2 className="text-3xl font-black text-gray-900">
+                      {selectedUser.name}
+                    </h2>
+                    <p className="text-gray-500 font-medium">
+                      {selectedUser.email}
+                    </p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedUser(null)} className="text-gray-400 hover:text-gray-600 transition text-2xl">✕</button>
+                <button
+                  onClick={() => setSelectedUser(null)}
+                  className="text-gray-400 hover:text-gray-600 transition text-2xl"
+                >
+                  ✕
+                </button>
               </div>
 
               {/* Counselor Details */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">Qualification</p>
-                  <p className="font-bold text-gray-800">{selectedUser.qualifications || "Not Provided"}</p>
+                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">
+                    Qualification
+                  </p>
+                  <p className="font-bold text-gray-800">
+                    {selectedUser.qualifications || "Not Provided"}
+                  </p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">License No.</p>
-                  <p className="font-bold text-gray-800">{selectedUser.licenseNo || "N/A"}</p>
+                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">
+                    License No.
+                  </p>
+                  <p className="font-bold text-gray-800">
+                    {selectedUser.licenseNo || "N/A"}
+                  </p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">Phone</p>
-                  <p className="font-bold text-gray-800">{selectedUser.phone || "N/A"}</p>
+                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">
+                    Phone
+                  </p>
+                  <p className="font-bold text-gray-800">
+                    {selectedUser.phone || "N/A"}
+                  </p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">Experience</p>
-                  <p className="font-bold text-gray-800">{selectedUser.experience ? `${selectedUser.experience} Years` : "N/A"}</p>
+                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">
+                    Experience
+                  </p>
+                  <p className="font-bold text-gray-800">
+                    {selectedUser.experience
+                      ? `${selectedUser.experience} Years`
+                      : "N/A"}
+                  </p>
                 </div>
               </div>
 
               {/* Specialization Tags */}
               <div className="mb-6">
-                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">Specialization</p>
+                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">
+                  Specialization
+                </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full text-xs font-bold border border-indigo-100">
                     {selectedUser.specialization || "General"}
@@ -166,17 +194,23 @@ const CounselorApprovals = () => {
 
               {/* Verification Photo */}
               <div className="mb-6">
-                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">Verification Document</p>
+                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">
+                  Verification Document
+                </p>
                 <div className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 min-h-[200px] flex items-center justify-center">
                   {selectedUser.verificationPhoto ? (
-                    <img 
-                      src={`${BACKEND_URL}/${selectedUser.verificationPhoto}`} 
-                      alt="Verification" 
+                    <img
+                      src={`${BACKEND_URL}/${selectedUser.verificationPhoto}`}
+                      alt="Verification"
                       className="w-full h-auto max-h-[400px] object-contain"
                       onError={(e) => {
                         // If the database saves only the filename, then must point to the subfolder
-                        if (!selectedUser.verificationPhoto.includes('verifications')) {
-                            e.target.src = `${BACKEND_URL}/uploads/verifications/${selectedUser.verificationPhoto}`;
+                        if (
+                          !selectedUser.verificationPhoto.includes(
+                            "verifications",
+                          )
+                        ) {
+                          e.target.src = `${BACKEND_URL}/uploads/verifications/${selectedUser.verificationPhoto}`;
                         }
                       }}
                     />
@@ -188,7 +222,9 @@ const CounselorApprovals = () => {
 
               {/* Statement of Purpose / Bio */}
               <div className="mb-10">
-                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">Statement of Purpose</p>
+                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">
+                  Statement of Purpose
+                </p>
                 <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
                   <p className="text-sm text-gray-600 leading-relaxed italic">
                     "{selectedUser.bio || "No statement provided."}"

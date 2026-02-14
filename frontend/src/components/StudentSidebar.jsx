@@ -1,4 +1,6 @@
 import React from "react";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const StudentSidebar = ({ user }) => {
@@ -10,6 +12,8 @@ const StudentSidebar = ({ user }) => {
   const menuNavigate = (path) => {
     navigate(path, { state: { user } });
   };
+
+  const { logout } = useContext(AuthContext);
 
   return (
     <aside className="w-[260px] bg-white border-r border-gray-200 flex flex-col justify-between p-[30px_20px] min-h-[calc(100vh-70px)]">
@@ -26,9 +30,9 @@ const StudentSidebar = ({ user }) => {
             Home
           </li>
           <li
-            onClick={() => menuNavigate("/counselors")} 
+            onClick={() => menuNavigate("/counselors")}
             className={`p-[12px_16px] mb-2 rounded-lg font-semibold cursor-pointer transition ${
-              isActive("/counselors") 
+              isActive("/counselors")
                 ? "bg-[#eef2ff] text-[#4f46e5] font-bold"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
@@ -61,7 +65,7 @@ const StudentSidebar = ({ user }) => {
       </div>
 
       <button
-        onClick={() => navigate("/")}
+        onClick={logout}
         className="w-full bg-[#ef4444] text-white p-3 rounded-lg font-bold hover:bg-red-600 transition"
       >
         LOGOUT

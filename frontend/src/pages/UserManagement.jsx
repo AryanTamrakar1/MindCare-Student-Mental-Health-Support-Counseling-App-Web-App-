@@ -1,22 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import API from "../api/axios";
 import Navbar from "../components/Navbar";
 import AdminSidebar from "../components/AdminSidebar";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const currentUser = location.state?.user;
+  const { user: currentUser } = useContext(AuthContext);
 
   useEffect(() => {
-    if (!currentUser || currentUser.role !== "Admin") {
-      navigate("/");
-    } else {
-      fetchAllUsers();
-    }
-  }, [currentUser, navigate]);
+    fetchAllUsers();
+  }, []);
 
   const fetchAllUsers = async () => {
     try {
@@ -38,8 +32,6 @@ const UserManagement = () => {
       }
     }
   };
-
-  if (!currentUser || currentUser.role !== "Admin") return null;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

@@ -5,9 +5,7 @@ import CounselorSidebar from "../components/CounselorSidebar";
 import Navbar from "../components/Navbar";
 
 const EditCounselorProfile = () => {
-  const location = useLocation();
-
-  const [user, setUser] = useState(location.state?.user || null);
+  const [user, setUser] = useState(null);
 
   const [loading, setLoading] = useState(true);
 

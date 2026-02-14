@@ -1,11 +1,11 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import API from "../api/axios";
 
 const RoleSelection = () => {
-  const location = useLocation();
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const user = location.state?.user;
 
   const handleChoice = async (role) => {
     if (role === "Student") {
@@ -15,13 +15,12 @@ const RoleSelection = () => {
           role: "Student",
         });
         alert("Welcome! You are now registered as a Student.");
-        navigate("/dashboard", { state: { user: res.data.user } });
+        navigate("/student-dashboard");
       } catch (err) {
         alert("Error updating role");
       }
     } else {
-      // Pass the user info to the counselor form
-      navigate("/register/counselor", { state: { user: user } });
+      navigate("/register/counselor");
     }
   };
 
@@ -36,7 +35,8 @@ const RoleSelection = () => {
           One Last Step!
         </h2>
         <p className="text-gray-500 mb-10 font-medium">
-          Hi <span className="text-indigo-600 font-bold">{user?.name}</span>, how would you like to use MindCare?
+          Hi <span className="text-indigo-600 font-bold">{user?.name}</span>,
+          how would you like to use MindCare?
         </p>
 
         <div className="grid grid-cols-1 gap-5">
@@ -49,8 +49,12 @@ const RoleSelection = () => {
               🎓
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-xl">I am a Student</h4>
-              <p className="text-sm text-gray-400 leading-tight">I want to seek professional counseling support.</p>
+              <h4 className="font-bold text-gray-900 text-xl">
+                I am a Student
+              </h4>
+              <p className="text-sm text-gray-400 leading-tight">
+                I want to seek professional counseling support.
+              </p>
             </div>
           </button>
 
@@ -63,14 +67,18 @@ const RoleSelection = () => {
               🩺
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-xl">I am a Counselor</h4>
-              <p className="text-sm text-gray-400 leading-tight">I am a professional counselor.</p>
+              <h4 className="font-bold text-gray-900 text-xl">
+                I am a Counselor
+              </h4>
+              <p className="text-sm text-gray-400 leading-tight">
+                I am a professional counselor.
+              </p>
             </div>
           </button>
         </div>
 
-        <button 
-          onClick={() => navigate('/')}
+        <button
+          onClick={() => navigate("/")}
           className="mt-8 text-sm font-bold text-gray-300 hover:text-gray-500 transition"
         >
           Cancel and Logout

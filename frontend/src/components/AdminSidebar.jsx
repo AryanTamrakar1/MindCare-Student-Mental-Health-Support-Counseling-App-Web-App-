@@ -1,4 +1,6 @@
 import React from "react";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const AdminSidebar = ({ user }) => {
@@ -10,6 +12,8 @@ const AdminSidebar = ({ user }) => {
   const menuNavigate = (path) => {
     navigate(path, { state: { user } });
   };
+
+  const { logout } = useContext(AuthContext);
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col justify-between p-6 min-h-[calc(100vh-70px)]">
@@ -71,7 +75,7 @@ const AdminSidebar = ({ user }) => {
       </div>
 
       <button
-        onClick={() => navigate("/")}
+        onClick={logout}
         className="w-full bg-[#ef4444] text-white p-3 rounded-lg font-bold hover:bg-red-600 transition"
       >
         LOGOUT

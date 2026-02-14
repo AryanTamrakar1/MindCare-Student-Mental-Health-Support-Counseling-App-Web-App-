@@ -11,7 +11,7 @@ const CounselorProfileView = () => {
 
   const location = useLocation();
 
-  const [user, setUser] = useState(location.state?.user || null);
+  const [user, setUser] = useState(null);
 
   const [counselor, setCounselor] = useState(null);
 

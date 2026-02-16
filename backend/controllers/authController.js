@@ -135,6 +135,7 @@ const loginUser = async (req, res) => {
         role: user.role,
         status: user.status,
         email: user.email,
+        verificationPhoto: user.verificationPhoto,
       },
     });
   } catch (error) {
@@ -161,6 +162,7 @@ const googleLogin = async (req, res) => {
         password: await bcrypt.hash(Math.random().toString(36), 10),
         role: "Pending_Selection",
         status: "Approved",
+        verificationPhoto: user.verificationPhoto,
       });
     }
 
@@ -233,6 +235,29 @@ const updateProfile = async (req, res) => {
         role: user.role,
         status: user.status,
       },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// --- Update Profile Photo ---
+const updateProfilePhoto = async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No photo uploaded" });
+    }
+    user.verificationPhoto = req.file.filename;
+    await user.save();
+
+    res.json({
+      message: "Profile photo updated successfully!",
+      verificationPhoto: user.verificationPhoto,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -376,6 +401,7 @@ module.exports = {
   googleLogin,
   updateRole,
   updateProfile,
+  updateProfilePhoto,
   manageUserStatus,
   protect,
   getCounselors,

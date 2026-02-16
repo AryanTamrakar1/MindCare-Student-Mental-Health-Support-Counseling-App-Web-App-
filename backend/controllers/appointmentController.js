@@ -13,6 +13,21 @@ exports.requestSession = async (req, res) => {
 
     const counselor = await User.findById(counselorId);
 
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (selectedDate < tomorrow) {
+      return res.status(400).json({
+        message:
+          "Sessions must be booked at least 1 day in advance. Please select tomorrow or a later date.",
+      });
+    }
+
     const dateObj = new Date(date);
     const dayName = new Intl.DateTimeFormat("en-US", {
       weekday: "long",
@@ -185,12 +200,14 @@ exports.getPendingRequests = async (req, res) => {
 exports.getLiveStatus = async (req, res) => {
   try {
     const { counselorId } = req.params;
-
     const now = new Date();
     const day = now.getDate().toString().padStart(2, "0");
     const month = now.toLocaleString("en-GB", { month: "short" });
     const year = now.getFullYear();
     const currentDate = `${day} ${month} ${year}`;
+
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
 
     const appointments = await Appointment.find({
       counselorId,
@@ -200,9 +217,31 @@ exports.getLiveStatus = async (req, res) => {
 
     if (appointments.length === 0) {
       return res.status(200).json({ status: "Green", label: "Available" });
-    } else {
-      return res.status(200).json({ status: "Yellow", label: "Booked" });
     }
+
+    for (let i = 0; i < appointments.length; i++) {
+      const timeSlot = appointments[i].timeSlot;
+      const startTime = timeSlot.split(" - ")[0];
+
+      const timeParts = startTime.split(" ");
+      const hourMin = timeParts[0].split(":");
+      let hour = parseInt(hourMin[0]);
+      const minutes = parseInt(hourMin[1]);
+      const ampm = timeParts[1];
+
+      if (ampm === "PM" && hour !== 12) hour = hour + 12;
+      if (ampm === "AM" && hour === 12) hour = 0;
+
+      const sessionStart = hour * 60 + minutes;
+      const sessionEnd = sessionStart + 60;
+      const currentTime = currentHour * 60 + currentMinutes;
+
+      if (currentTime >= sessionStart && currentTime < sessionEnd) {
+        return res.status(200).json({ status: "Red", label: "In Session" });
+      }
+    }
+
+    return res.status(200).json({ status: "Yellow", label: "Booked" });
   } catch (error) {
     res.status(500).json({ message: "Error checking live status" });
   }

@@ -9,6 +9,7 @@ const {
   verifyOTP, 
   resendOTP, 
   updateProfile,
+  updateProfilePhoto,
 
   getCounselors,
   searchCounselors,
@@ -24,6 +25,7 @@ router.post('/login', loginUser);
 router.post('/google-login', googleLogin);
 router.put('/update-role', updateRole);
 router.put('/update-profile', updateProfile);
+router.put('/update-profile-photo', upload.single('verificationPhoto'), updateProfilePhoto);  
 
 router.post('/verify-otp', verifyOTP);
 router.post('/resend-otp', resendOTP);

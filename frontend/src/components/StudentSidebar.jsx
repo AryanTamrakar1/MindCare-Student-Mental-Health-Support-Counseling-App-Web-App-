@@ -1,11 +1,21 @@
-import React from "react";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { 
+  Home, 
+  Search, 
+  ClipboardList, 
+  MessageSquare, 
+  Calendar, 
+  BookOpen, 
+  Settings, 
+  LogOut 
+} from "lucide-react";
 
 const StudentSidebar = ({ user }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useContext(AuthContext);
 
   const isActive = (path) => location.pathname === path;
 
@@ -13,63 +23,95 @@ const StudentSidebar = ({ user }) => {
     navigate(path, { state: { user } });
   };
 
-  const { logout } = useContext(AuthContext);
-
   return (
-    <aside className="w-[260px] bg-white border-r border-gray-200 flex flex-col justify-between p-[30px_20px] min-h-[calc(100vh-70px)]">
+    <aside className="w-[280px] min-w-[280px] max-w-[280px] bg-[#111827] text-white fixed h-screen flex flex-col justify-between p-[30px_20px] overflow-y-auto">
+      
       <div>
-        <ul className="list-none">
-          <li
+        
+        <div className="flex items-center justify-center gap-3 mb-10">
+          <div className="w-10 h-10 bg-[#4f46e5] rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-xl">M</span>
+          </div>
+          <div className="text-2xl font-bold">
+            <span className="text-white">Mind</span>
+            <span className="text-[#818cf8]">CARE</span>
+          </div>
+        </div>
+
+        <nav className="flex flex-col gap-1">
+          
+          <button
             onClick={() => menuNavigate("/student-dashboard")}
-            className={`p-[12px_16px] mb-2 rounded-lg font-bold cursor-pointer transition ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold ${
               isActive("/student-dashboard")
-                ? "bg-[#eef2ff] text-[#4f46e5]"
-                : "text-gray-600 hover:bg-gray-50"
+                ? "bg-[#1f2937] text-white"
+                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
             }`}
           >
-            Home
-          </li>
-          <li
+            <Home size={20} />
+            HOME
+          </button>
+
+          <button
             onClick={() => menuNavigate("/counselors")}
-            className={`p-[12px_16px] mb-2 rounded-lg font-semibold cursor-pointer transition ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold ${
               isActive("/counselors")
-                ? "bg-[#eef2ff] text-[#4f46e5] font-bold"
-                : "text-gray-600 hover:bg-gray-50"
+                ? "bg-[#1f2ff] text-white"
+                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
             }`}
           >
-            Find Counselors
-          </li>
-          <li className="p-[12px_16px] mb-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-50 rounded-lg">
-            Weekly Mood Quiz
-          </li>
-          <li className="p-[12px_16px] mb-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-50 rounded-lg">
-            Community Forum
-          </li>
-          <li className="p-[12px_16px] mb-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-50 rounded-lg">
-            My Sessions
-          </li>
-          <li className="p-[12px_16px] mb-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-50 rounded-lg">
-            Resource Library
-          </li>
-          <li
-            onClick={() => menuNavigate("/settings")}
-            className={`p-[12px_16px] mb-2 rounded-lg font-semibold cursor-pointer transition ${
-              isActive("/settings")
-                ? "bg-[#eef2ff] text-[#4f46e5] font-bold"
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            Settings
-          </li>
-        </ul>
+            <Search size={20} />
+            FIND COUNSELOR
+          </button>
+
+          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
+            <ClipboardList size={20} />
+            WEEKLY MOOD QUIZ
+          </button>
+
+          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
+            <MessageSquare size={20} />
+            COMMUNITY FORUM
+          </button>
+
+          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
+            <Calendar size={20} />
+            MY SESSION
+          </button>
+
+          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
+            <BookOpen size={20} />
+            RESOURCE LIBRARY
+          </button>
+
+        </nav>
       </div>
 
-      <button
-        onClick={logout}
-        className="w-full bg-[#ef4444] text-white p-3 rounded-lg font-bold hover:bg-red-600 transition"
-      >
-        LOGOUT
-      </button>
+      <div>
+        <div className="border-t border-[#374151] mb-3"></div>
+
+        <button
+          onClick={() => menuNavigate("/settings")}
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold w-full ${
+            isActive("/settings")
+              ? "bg-[#1f2937] text-white"
+              : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
+          }`}
+        >
+          <Settings size={20} />
+          SETTINGS
+        </button>
+
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#f87171] hover:bg-red-900 hover:bg-opacity-20 w-full mt-1"
+        >
+          <LogOut size={20} />
+          LOGOUT
+        </button>
+
+      </div>
+
     </aside>
   );
 };

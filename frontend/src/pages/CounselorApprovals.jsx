@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import API from "../api/axios";
-import Navbar from "../components/Navbar";
 import AdminSidebar from "../components/AdminSidebar";
+import Navbar from "../components/Navbar";
 
 const CounselorApprovals = () => {
   const [pendingUsers, setPendingUsers] = useState([]);
@@ -35,91 +35,88 @@ const CounselorApprovals = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-inter">
-      <Navbar user={user} />
+    <div className="min-h-screen bg-gray-50 flex font-inter">
+      <AdminSidebar user={user} />
 
-      <div className="flex flex-1">
-        <AdminSidebar user={user} />
-
-        <main className="flex-1 p-10 overflow-y-auto">
-          <header className="mb-10">
-            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+      <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
+        <div className="mb-8 border-b-2 border-slate-300 pb-6 flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-black text-gray-800">
               Counselor Approvals
-            </h1>
-            <p className="text-gray-500 mt-2">
+            </h2>
+            <p className="text-gray-500">
               Manage counselor verification requests.
             </p>
-          </header>
+          </div>
+          <Navbar />
+        </div>
 
-          <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-            <div className="p-8 border-b border-gray-50 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-800">
-                Pending Verification
-              </h2>
-              <span className="bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-full text-xs font-black uppercase">
-                {pendingUsers.length} Applications
-              </span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gray-50/50 text-gray-400 uppercase text-[10px] font-black tracking-[0.2em]">
-                    <th className="p-6">Counselor</th>
-                    <th className="p-6">Submission Status</th>
-                    <th className="p-6 text-center">Action</th>
+        <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
+          <div className="p-8 border-b border-gray-50 flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-800">
+              Pending Verification
+            </h2>
+            <span className="bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-full text-xs font-black uppercase">
+              {pendingUsers.length} Applications
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50/50 text-gray-400 uppercase text-[10px] font-black tracking-[0.2em]">
+                  <th className="p-6">Counselor</th>
+                  <th className="p-6">Submission Status</th>
+                  <th className="p-6 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {pendingUsers.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="3"
+                      className="p-20 text-center text-gray-400 italic"
+                    >
+                      No pending applications found.
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {pendingUsers.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan="3"
-                        className="p-20 text-center text-gray-400 italic"
-                      >
-                        No pending applications found.
+                ) : (
+                  pendingUsers.map((u) => (
+                    <tr
+                      key={u._id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="p-6">
+                        <div className="font-bold text-gray-900 text-lg">
+                          {u.name}
+                        </div>
+                        <div className="text-gray-500 text-xs">{u.email}</div>
+                      </td>
+                      <td className="p-6">
+                        <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold border border-amber-100">
+                          Waiting for Review
+                        </span>
+                      </td>
+                      <td className="p-6 text-center">
+                        <button
+                          onClick={() => setSelectedUser(u)}
+                          className="bg-indigo-50 text-indigo-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-indigo-100 transition"
+                        >
+                          View Application →
+                        </button>
                       </td>
                     </tr>
-                  ) : (
-                    pendingUsers.map((u) => (
-                      <tr
-                        key={u._id}
-                        className="hover:bg-gray-50/50 transition-colors"
-                      >
-                        <td className="p-6">
-                          <div className="font-bold text-gray-900 text-lg">
-                            {u.name}
-                          </div>
-                          <div className="text-gray-500 text-xs">{u.email}</div>
-                        </td>
-                        <td className="p-6">
-                          <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold border border-amber-100">
-                            Waiting for Review
-                          </span>
-                        </td>
-                        <td className="p-6 text-center">
-                          <button
-                            onClick={() => setSelectedUser(u)}
-                            className="bg-indigo-50 text-indigo-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-indigo-100 transition"
-                          >
-                            View Application →
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </main>
-      </div>
-
-      {/* VIEW APPLICATION MODAL */}
+        </div>
+      </main>
+    
       {selectedUser && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[2.5rem] max-w-2xl w-full my-8 shadow-2xl relative overflow-y-auto max-h-[90vh]">
             <div className="p-10">
-              {/* Header Info */}
               <div className="flex justify-between items-start mb-8">
                 <div className="flex items-center gap-5">
                   <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl font-black">
@@ -142,7 +139,6 @@ const CounselorApprovals = () => {
                 </button>
               </div>
 
-              {/* Counselor Details */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
                   <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">
@@ -180,7 +176,6 @@ const CounselorApprovals = () => {
                 </div>
               </div>
 
-              {/* Specialization Tags */}
               <div className="mb-6">
                 <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">
                   Specialization
@@ -192,7 +187,6 @@ const CounselorApprovals = () => {
                 </div>
               </div>
 
-              {/* Verification Photo */}
               <div className="mb-6">
                 <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">
                   Verification Document
@@ -204,7 +198,6 @@ const CounselorApprovals = () => {
                       alt="Verification"
                       className="w-full h-auto max-h-[400px] object-contain"
                       onError={(e) => {
-                        // If the database saves only the filename, then must point to the subfolder
                         if (
                           !selectedUser.verificationPhoto.includes(
                             "verifications",
@@ -220,7 +213,6 @@ const CounselorApprovals = () => {
                 </div>
               </div>
 
-              {/* Statement of Purpose / Bio */}
               <div className="mb-10">
                 <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">
                   Statement of Purpose
@@ -232,7 +224,6 @@ const CounselorApprovals = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex gap-4 pt-4 border-t border-gray-50">
                 <button
                   onClick={() => handleAction(selectedUser._id, "Approved")}

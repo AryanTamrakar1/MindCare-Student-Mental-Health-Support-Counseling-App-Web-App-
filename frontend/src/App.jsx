@@ -17,6 +17,8 @@ import CounselorDirectory from "./pages/CounselorDirectory";
 import CounselorProfileView from "./pages/CounselorProfileView";
 import EditCounselorProfile from "./pages/EditCounselorProfile";
 import PendingRequests from "./pages/PendingRequests";
+import StudentSessions from "./pages/StudentSessions";
+import CounselorSessions from "./pages/CounselorSessions";
 
 function App() {
   return (
@@ -107,6 +109,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PendingRequests />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-sessions"
+              element={
+                <ProtectedRoute>
+                  <StudentSessions />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/counselor-sessions"
+              element={
+                <ProtectedRoute>
+                  <CounselorSessions />
                 </ProtectedRoute>
               }
             />

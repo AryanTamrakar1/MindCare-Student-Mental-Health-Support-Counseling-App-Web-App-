@@ -1,15 +1,15 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import { 
-  Home, 
-  Clock, 
-  Calendar, 
-  UserCircle, 
-  MessageSquare, 
+import {
+  Home,
+  Clock,
+  Calendar,
+  UserCircle,
+  MessageSquare,
   Star,
-  Settings, 
-  LogOut 
+  Settings,
+  LogOut,
 } from "lucide-react";
 
 const CounselorSidebar = ({ user }) => {
@@ -25,7 +25,6 @@ const CounselorSidebar = ({ user }) => {
 
   return (
     <aside className="w-[280px] min-w-[280px] max-w-[280px] bg-[#111827] text-white fixed h-screen flex flex-col justify-between p-[30px_20px] overflow-y-auto">
-      
       <div>
         <div className="flex items-center justify-center gap-3 mb-10">
           <div className="w-10 h-10 bg-[#4f46e5] rounded-lg flex items-center justify-center">
@@ -38,7 +37,6 @@ const CounselorSidebar = ({ user }) => {
         </div>
 
         <nav className="flex flex-col gap-1">
-          
           <button
             onClick={() => menuNavigate("/counselor-dashboard")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold ${
@@ -63,7 +61,14 @@ const CounselorSidebar = ({ user }) => {
             PENDING REQUESTS
           </button>
 
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
+          <button
+            onClick={() => menuNavigate("/counselor-sessions")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold ${
+              isActive("/counselor-sessions")
+                ? "bg-[#1f2937] text-white"
+                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
+            }`}
+          >
             <Calendar size={20} />
             MY SESSIONS
           </button>
@@ -89,7 +94,6 @@ const CounselorSidebar = ({ user }) => {
             <Star size={20} />
             SESSION RATINGS
           </button>
-
         </nav>
       </div>
 
@@ -115,9 +119,7 @@ const CounselorSidebar = ({ user }) => {
           <LogOut size={20} />
           LOGOUT
         </button>
-
       </div>
-
     </aside>
   );
 };

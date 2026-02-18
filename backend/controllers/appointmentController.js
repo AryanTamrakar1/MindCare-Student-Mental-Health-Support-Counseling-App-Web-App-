@@ -103,7 +103,6 @@ exports.requestSession = async (req, res) => {
   }
 };
 
-// It checks the status of a counselor for a specific date
 exports.checkAvailability = async (req, res) => {
   try {
     const { counselorId, date } = req.query;
@@ -111,16 +110,15 @@ exports.checkAvailability = async (req, res) => {
     const bookedAppointments = await Appointment.find({
       counselorId,
       date,
-      status: { $in: ["Pending", "Approved"] },
+      status: { $in: ["Pending", "Approved", "Completed"] },
     }).select("timeSlot");
-    const takenSlots = bookedAppointments.map((app) => app.timeSlot);
 
+    const takenSlots = bookedAppointments.map((app) => app.timeSlot);
     res.status(200).json(takenSlots);
   } catch (error) {
     res.status(500).json({ message: "Error checking availability" });
   }
 };
-
 // It gets all sessions for a specific user
 exports.getUserSessions = async (req, res) => {
   try {
@@ -201,13 +199,20 @@ exports.getLiveStatus = async (req, res) => {
   try {
     const { counselorId } = req.params;
     const now = new Date();
-    const day = now.getDate().toString().padStart(2, "0");
-    const month = now.toLocaleString("en-GB", { month: "short" });
-    const year = now.getFullYear();
+
+    const nepalOffset = 5 * 60 + 45;
+    const nepalTime = new Date(now.getTime() + nepalOffset * 60000);
+
+    const day = nepalTime.getUTCDate().toString().padStart(2, "0");
+    const month = nepalTime.toLocaleString("en-GB", {
+      month: "short",
+      timeZone: "UTC",
+    });
+    const year = nepalTime.getUTCFullYear();
     const currentDate = `${day} ${month} ${year}`;
 
-    const currentHour = now.getHours();
-    const currentMinutes = now.getMinutes();
+    const currentHour = nepalTime.getUTCHours();
+    const currentMinutes = nepalTime.getUTCMinutes();
 
     const appointments = await Appointment.find({
       counselorId,
@@ -218,6 +223,8 @@ exports.getLiveStatus = async (req, res) => {
     if (appointments.length === 0) {
       return res.status(200).json({ status: "Green", label: "Available" });
     }
+
+    let hasUpcoming = false;
 
     for (let i = 0; i < appointments.length; i++) {
       const timeSlot = appointments[i].timeSlot;
@@ -239,9 +246,17 @@ exports.getLiveStatus = async (req, res) => {
       if (currentTime >= sessionStart && currentTime < sessionEnd) {
         return res.status(200).json({ status: "Red", label: "In Session" });
       }
+
+      if (sessionStart > currentTime) {
+        hasUpcoming = true;
+      }
     }
 
-    return res.status(200).json({ status: "Yellow", label: "Booked" });
+    if (hasUpcoming) {
+      return res.status(200).json({ status: "Yellow", label: "Booked" });
+    }
+
+    return res.status(200).json({ status: "Green", label: "Available" });
   } catch (error) {
     res.status(500).json({ message: "Error checking live status" });
   }

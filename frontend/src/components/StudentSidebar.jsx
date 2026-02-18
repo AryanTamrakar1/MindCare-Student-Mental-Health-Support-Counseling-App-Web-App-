@@ -1,15 +1,15 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import { 
-  Home, 
-  Search, 
-  ClipboardList, 
-  MessageSquare, 
-  Calendar, 
-  BookOpen, 
-  Settings, 
-  LogOut 
+import {
+  Home,
+  Search,
+  ClipboardList,
+  MessageSquare,
+  Calendar,
+  BookOpen,
+  Settings,
+  LogOut,
 } from "lucide-react";
 
 const StudentSidebar = ({ user }) => {
@@ -25,9 +25,7 @@ const StudentSidebar = ({ user }) => {
 
   return (
     <aside className="w-[280px] min-w-[280px] max-w-[280px] bg-[#111827] text-white fixed h-screen flex flex-col justify-between p-[30px_20px] overflow-y-auto">
-      
       <div>
-        
         <div className="flex items-center justify-center gap-3 mb-10">
           <div className="w-10 h-10 bg-[#4f46e5] rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-xl">M</span>
@@ -39,7 +37,6 @@ const StudentSidebar = ({ user }) => {
         </div>
 
         <nav className="flex flex-col gap-1">
-          
           <button
             onClick={() => menuNavigate("/student-dashboard")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold ${
@@ -74,7 +71,14 @@ const StudentSidebar = ({ user }) => {
             COMMUNITY FORUM
           </button>
 
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
+          <button
+            onClick={() => menuNavigate("/my-sessions")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold ${
+              isActive("/my-sessions")
+                ? "bg-[#1f2937] text-white"
+                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
+            }`}
+          >
             <Calendar size={20} />
             MY SESSION
           </button>
@@ -83,7 +87,6 @@ const StudentSidebar = ({ user }) => {
             <BookOpen size={20} />
             RESOURCE LIBRARY
           </button>
-
         </nav>
       </div>
 
@@ -109,9 +112,7 @@ const StudentSidebar = ({ user }) => {
           <LogOut size={20} />
           LOGOUT
         </button>
-
       </div>
-
     </aside>
   );
 };

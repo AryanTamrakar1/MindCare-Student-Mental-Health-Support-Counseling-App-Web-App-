@@ -1,20 +1,27 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors'); 
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes'); 
+const sessionRoutes = require('./routes/sessionRoutes');
+const path = require('path'); 
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+require('dotenv').config();
+connectDB();
 
-var app = express();
+const app = express();
 
-app.use(logger('dev'));
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-module.exports = app;
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/sessions', sessionRoutes);
+
+const PORT = process.env.PORT || 5050;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "../api/axios";
 import CounselorSidebar from "../components/CounselorSidebar";
-import Navbar from "../components/Navbar"; // ADD THIS
+import Navbar from "../components/Navbar";
 
 const PendingRequests = () => {
   const [user, setUser] = useState(null);
@@ -76,11 +76,21 @@ const PendingRequests = () => {
   const handleAction = async (appointmentId, status) => {
     try {
       const token = sessionStorage.getItem("token");
-      await axios.put(
-        `/appointments/update-status`,
-        { appointmentId, status },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+
+      if (status === "Approved") {
+        await axios.post(
+          `/sessions/approve`,
+          { appointmentId },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+      } else {
+        await axios.put(
+          `/appointments/update-status`,
+          { appointmentId, status },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+      }
+
       alert(`Session ${status} successfully!`);
       fetchRequests();
     } catch (error) {

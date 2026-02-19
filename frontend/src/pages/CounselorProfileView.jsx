@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import StudentSidebar from "../components/StudentSidebar";
 import Navbar from "../components/Navbar";
+import { Star, Users, GraduationCap } from "lucide-react";
 
 const CounselorProfileView = () => {
   const { id } = useParams();
@@ -16,6 +17,11 @@ const CounselorProfileView = () => {
   const [liveStatus, setLiveStatus] = useState({
     status: "Green",
     label: "Available",
+  });
+  const [counselorStats, setCounselorStats] = useState({
+    overall: 0,
+    studentsHelped: 0,
+    totalRatings: 0,
   });
   const [bookingData, setBookingData] = useState({
     reason: "",
@@ -70,8 +76,30 @@ const CounselorProfileView = () => {
 
       const response = await axios.get("/auth/counselors");
       const foundCounselor = response.data.find((c) => c._id === id);
-
       setCounselor(foundCounselor);
+
+      // Fetch rating and studentsHelped count in parallel
+      const [ratingData, countData] = await Promise.all([
+        axios
+          .get(`/ratings/counselor/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .then((res) => res.data)
+          .catch(() => ({ overall: 0, totalRatings: 0 })),
+        axios
+          .get(`/appointments/completed-count/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .then((res) => res.data)
+          .catch(() => ({ count: 0 })),
+      ]);
+
+      setCounselorStats({
+        overall: ratingData.overall || 0,
+        totalRatings: ratingData.totalRatings || 0,
+        studentsHelped: countData.count || 0,
+      });
+
       fetchLiveStatus(id);
       setLoading(false);
     } catch (error) {
@@ -318,36 +346,38 @@ const CounselorProfileView = () => {
             </div>
 
             <div className="grid grid-cols-3 border-b border-gray-100 bg-[#f8fafc]">
-              <div className="flex flex-col items-center justify-center py-8 border-r-2 border-slate-200">
+              <div className="flex flex-col items-center justify-center py-8 border-r-2 border-slate-200 gap-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">🎓</span>
+                  <GraduationCap size={22} className="text-indigo-400" />
                   <span className="text-xl font-black text-gray-800">
                     {counselor.experience || 0}+ Yrs
                   </span>
                 </div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   Experience
                 </p>
               </div>
-              <div className="flex flex-col items-center justify-center py-8 border-r-2 border-slate-200">
+              <div className="flex flex-col items-center justify-center py-8 border-r-2 border-slate-200 gap-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">🤝</span>
+                  <Users size={22} className="text-indigo-400" />
                   <span className="text-xl font-black text-gray-800">
-                    {counselor.studentsHelped || 0}
+                    {counselorStats.studentsHelped}
                   </span>
                 </div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   Students Helped
                 </p>
               </div>
-              <div className="flex flex-col items-center justify-center py-8">
+              <div className="flex flex-col items-center justify-center py-8 gap-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">⭐</span>
+                  <Star size={22} className="text-yellow-400 fill-yellow-400" />
                   <span className="text-xl font-black text-gray-800">
-                    {counselor.rating ? counselor.rating.toFixed(1) : "0.0"}
+                    {counselorStats.overall > 0
+                      ? counselorStats.overall.toFixed(1)
+                      : "0.0"}
                   </span>
                 </div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   Rating
                 </p>
               </div>

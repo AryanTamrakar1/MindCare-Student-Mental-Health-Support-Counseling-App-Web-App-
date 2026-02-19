@@ -90,7 +90,14 @@ const CounselorSidebar = ({ user }) => {
             COMMUNITY FORUM
           </button>
 
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
+          <button
+            onClick={() => menuNavigate("/counselor-ratings")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold ${
+              isActive("/counselor-ratings")
+                ? "bg-[#1f2937] text-white"
+                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
+            }`}
+          >
             <Star size={20} />
             SESSION RATINGS
           </button>

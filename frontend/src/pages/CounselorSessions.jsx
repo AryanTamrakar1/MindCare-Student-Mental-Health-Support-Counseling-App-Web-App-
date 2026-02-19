@@ -182,13 +182,16 @@ const CounselorSessions = () => {
               <h2 className="text-2xl font-black text-gray-800">
                 All Sessions
               </h2>
-              <p className="text-gray-500 mt-0.5">View all your upcoming and past sessions.</p>
+              <p className="text-gray-500 mt-0.5">
+                View all your upcoming and past sessions.
+              </p>
             </div>
             <div className="flex bg-white rounded-xl border border-gray-200 p-1 gap-1 shadow-sm">
               {[
                 { label: "Upcoming", count: upcomingCount },
                 { label: "Completed", count: completedCount },
-                { label: "Summary", count: null },
+                { label: "Summary", count: completedCount },
+                ,
                 { label: "See All", count: sessions.length },
               ].map(({ label, count }) => (
                 <button

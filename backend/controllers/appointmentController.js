@@ -13,7 +13,26 @@ exports.requestSession = async (req, res) => {
 
     const counselor = await User.findById(counselorId);
 
-    const selectedDate = new Date(date);
+    const monthMap = {
+      Jan: 0,
+      Feb: 1,
+      Mar: 2,
+      Apr: 3,
+      May: 4,
+      Jun: 5,
+      Jul: 6,
+      Aug: 7,
+      Sep: 8,
+      Oct: 9,
+      Nov: 10,
+      Dec: 11,
+    };
+    const parts = date.split(" ");
+    const parsedDate = new Date(
+      Date.UTC(parseInt(parts[2]), monthMap[parts[1]], parseInt(parts[0])),
+    );
+
+    const selectedDate = new Date(parsedDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
@@ -23,16 +42,14 @@ exports.requestSession = async (req, res) => {
 
     if (selectedDate < tomorrow) {
       return res.status(400).json({
-        message:
-          "Sessions must be booked at least 1 day in advance. Please select tomorrow or a later date.",
+        message: "Sessions must be booked at least 1 day in advance.",
       });
     }
 
-    const dateObj = new Date(date);
     const dayName = new Intl.DateTimeFormat("en-US", {
       weekday: "long",
       timeZone: "UTC",
-    }).format(dateObj);
+    }).format(parsedDate);
 
     const isAvailable = counselor.availability.some(
       (slot) => slot.day === dayName && slot.timeSlot === timeSlot,
@@ -259,5 +276,21 @@ exports.getLiveStatus = async (req, res) => {
     return res.status(200).json({ status: "Green", label: "Available" });
   } catch (error) {
     res.status(500).json({ message: "Error checking live status" });
+  }
+};
+
+exports.getCompletedCount = async (req, res) => {
+  try {
+    const { counselorId } = req.params;
+
+    // Count documents where counselor matches and status is "Completed"
+    const count = await Appointment.countDocuments({
+      counselorId: counselorId,
+      status: "Completed",
+    });
+
+    res.status(200).json({ count });
+  } catch (error) {
+    res.status(500).json({ message: "Error counting completed appointments" });
   }
 };

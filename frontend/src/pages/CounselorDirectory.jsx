@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import StudentSidebar from "../components/StudentSidebar";
 import Navbar from "../components/Navbar";
+import { Star, Users } from "lucide-react";
 
 const CounselorDirectory = () => {
   const location = useLocation();
@@ -14,6 +15,7 @@ const CounselorDirectory = () => {
   const [selectedSpecialties, setSelectedSpecialties] = useState(["All"]);
   const [availableTags, setAvailableTags] = useState([]);
   const [liveStatuses, setLiveStatuses] = useState({});
+  const [counselorStats, setCounselorStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const cardsPerPage = 2;
@@ -53,6 +55,7 @@ const CounselorDirectory = () => {
 
   const fetchCounselors = async () => {
     try {
+      const token = sessionStorage.getItem("token");
       const response = await axios.get("/auth/counselors");
       const data = response.data;
       setCounselors(data);
@@ -72,6 +75,39 @@ const CounselorDirectory = () => {
         fetchStatus(cslr._id);
       }
       setAvailableTags(tags);
+
+      const statsResults = await Promise.all(
+        data.map((cslr) =>
+          Promise.all([
+            axios
+              .get(`/ratings/counselor/${cslr._id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              })
+              .then((res) => res.data)
+              .catch(() => ({ overall: 0, totalRatings: 0 })),
+            axios
+              .get(`/appointments/completed-count/${cslr._id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              })
+              .then((res) => res.data)
+              .catch(() => ({ count: 0 })),
+          ]).then(([ratingData, countData]) => ({
+            id: cslr._id,
+            data: {
+              overall: ratingData.overall || 0,
+              totalRatings: ratingData.totalRatings || 0,
+              studentsHelped: countData.count || 0,
+            },
+          })),
+        ),
+      );
+
+      const statsMap = {};
+      statsResults.forEach(({ id, data }) => {
+        statsMap[id] = data;
+      });
+      setCounselorStats(statsMap);
+
       setLoading(false);
     } catch (error) {
       console.error("Error fetching counselors:", error);
@@ -279,6 +315,11 @@ const CounselorDirectory = () => {
                 status: "Green",
                 label: "Available",
               };
+              const stats = counselorStats[cslr._id] || {
+                overall: 0,
+                studentsHelped: 0,
+                totalRatings: 0,
+              };
               return (
                 <div
                   key={cslr._id}
@@ -339,22 +380,27 @@ const CounselorDirectory = () => {
                     </div>
 
                     <div className="grid grid-cols-2 border-y border-gray-100 py-5 mb-6">
-                      <div className="flex flex-col items-center justify-center border-r border-gray-100">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className="text-lg">⭐</span>
+                      <div className="flex flex-col items-center justify-center border-r border-gray-100 gap-1">
+                        <div className="flex items-center gap-1.5">
+                          <Star
+                            size={18}
+                            className="text-yellow-400 fill-yellow-400"
+                          />
                           <span className="text-xl font-black text-gray-800">
-                            {cslr.rating ? cslr.rating.toFixed(1) : "0.0"}
+                            {stats.overall > 0
+                              ? stats.overall.toFixed(1)
+                              : "0.0"}
                           </span>
                         </div>
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                           Rating
                         </span>
                       </div>
-                      <div className="flex flex-col items-center justify-center">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className="text-lg">🤝</span>
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <div className="flex items-center gap-1.5">
+                          <Users size={18} className="text-indigo-400" />
                           <span className="text-xl font-black text-gray-800">
-                            {cslr.studentsHelped || 0}
+                            {stats.studentsHelped}
                           </span>
                         </div>
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">

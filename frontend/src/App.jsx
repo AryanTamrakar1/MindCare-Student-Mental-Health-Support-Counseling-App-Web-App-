@@ -19,6 +19,7 @@ import EditCounselorProfile from "./pages/EditCounselorProfile";
 import PendingRequests from "./pages/PendingRequests";
 import StudentSessions from "./pages/StudentSessions";
 import CounselorSessions from "./pages/CounselorSessions";
+import CounselorRatings from "./pages/CounselorRatings";
 
 function App() {
   return (
@@ -125,6 +126,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CounselorSessions />
+                </ProtectedRoute>
+              }
+            />
+            {/* ── New Rating Route ── */}
+            <Route
+              path="/counselor-ratings"
+              element={
+                <ProtectedRoute>
+                  <CounselorRatings />
                 </ProtectedRoute>
               }
             />

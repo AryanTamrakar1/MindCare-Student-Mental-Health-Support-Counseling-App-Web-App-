@@ -28,4 +28,10 @@ router.get(
 // Route for checking live status of a counselor
 router.get("/live-status/:counselorId", appointmentController.getLiveStatus);
 
+// Route to get completed appointment count for a counselor
+router.get(
+  "/completed-count/:counselorId",
+  appointmentController.getCompletedCount,
+);
+
 module.exports = router;

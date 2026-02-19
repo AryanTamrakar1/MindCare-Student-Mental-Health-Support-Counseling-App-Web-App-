@@ -15,6 +15,7 @@ import DetailModal from "../components/studentSessions/DetailModal";
 import SummaryModal from "../components/studentSessions/SummaryModal";
 import SessionCard from "../components/studentSessions/SessionCard";
 import SummaryCard from "../components/studentSessions/SummaryCard";
+import RatingModal from "../components/studentSessions/RatingModal";
 import { MONTHS, MONTHS_SHORT } from "../utils/studentSessions/sessionhelper";
 
 const StudentSessions = () => {
@@ -25,6 +26,7 @@ const StudentSessions = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [summarySession, setSummarySession] = useState(null);
   const [dayData, setDayData] = useState(null);
+  const [ratingSession, setRatingSession] = useState(null);
 
   useEffect(() => {
     const init = async () => {
@@ -101,7 +103,6 @@ const StudentSessions = () => {
     <div className="min-h-screen bg-[#f3f4f6] flex">
       <StudentSidebar user={user} />
       <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
-
         <div className="mb-8 pb-6 border-b-2 border-slate-300 flex justify-between items-start">
           <div>
             <h2 className="text-2xl font-black text-gray-800">My Sessions</h2>
@@ -196,7 +197,7 @@ const StudentSessions = () => {
                 { label: "Pending", count: pendingCount },
                 { label: "Completed", count: completedCount },
                 { label: "Declined", count: declinedCount },
-                { label: "Summary", count: null },
+                { label: "Summary", count: completedCount },
                 { label: "See All", count: sessions.length },
               ].map(({ label, count }) => (
                 <button
@@ -206,7 +207,7 @@ const StudentSessions = () => {
                     ${activeTab === label ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
                 >
                   {label}
-                  {count !== null && count > 0 && (
+                  {count > 0 && (
                     <span
                       className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === label ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
                     >
@@ -225,7 +226,9 @@ const StudentSessions = () => {
                   <SummaryCard
                     key={s._id}
                     session={s}
+                    onOpen={setSelectedSession}
                     onViewSummary={setSummarySession}
+                    onRate={setRatingSession}
                   />
                 ))
               ) : (
@@ -237,7 +240,8 @@ const StudentSessions = () => {
                     No Summaries Yet
                   </p>
                   <p className="text-sm text-gray-400 max-w-xs">
-                    Summaries will appear here after your counselor writes them.
+                    The Session Summary will appear after your counselor writes
+                    them.
                   </p>
                 </div>
               )
@@ -248,6 +252,7 @@ const StudentSessions = () => {
                   session={s}
                   onOpen={setSelectedSession}
                   onViewSummary={setSummarySession}
+                  onRate={setRatingSession}
                 />
               ))
             ) : (
@@ -274,12 +279,20 @@ const StudentSessions = () => {
           session={selectedSession}
           onClose={() => setSelectedSession(null)}
           onJoin={handleJoin}
+          onRate={setRatingSession}
         />
       )}
       {summarySession && (
         <SummaryModal
           session={summarySession}
           onClose={() => setSummarySession(null)}
+        />
+      )}
+      {ratingSession && (
+        <RatingModal
+          session={ratingSession}
+          onClose={() => setRatingSession(null)}
+          onRated={() => setRatingSession(null)}
         />
       )}
     </div>

@@ -37,7 +37,6 @@ const SummaryModal = ({ session, onClose }) => {
         onClick={(e) => e.stopPropagation()}
         className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden"
       >
-
         <div className="px-8 pt-7 pb-6 flex items-start justify-between border-b border-gray-100">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center flex-shrink-0">
@@ -53,9 +52,10 @@ const SummaryModal = ({ session, onClose }) => {
               </p>
             </div>
           </div>
+ 
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-gray-200 hover:bg-red-100 hover:text-red-500 flex items-center justify-center transition-colors flex-shrink-0"
+            className="w-9 h-9 rounded-xl bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors flex-shrink-0"
           >
             <X size={16} className="text-gray-600" />
           </button>
@@ -72,7 +72,8 @@ const SummaryModal = ({ session, onClose }) => {
           ) : summary ? (
             <div className="bg-gray-50 rounded-2xl px-8 py-7 border border-gray-100">
               <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-4">
-                Counselor Notes
+                Session Summary Written by{" "}
+                {session.counselorId?.name || "the counselor"}
               </p>
               <p className="text-sm text-gray-700 font-medium leading-relaxed whitespace-pre-wrap">
                 {summary}

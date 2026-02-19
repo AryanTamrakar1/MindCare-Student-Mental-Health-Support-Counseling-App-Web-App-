@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -7,6 +7,7 @@ import {
   XCircle,
   X,
   AlertCircle,
+  Star,
 } from "lucide-react";
 import {
   isSessionTime,
@@ -14,12 +15,30 @@ import {
   parseReason,
   fmtLong,
 } from "../../utils/studentSessions/sessionhelper";
+import axios from "../../api/axios";
 
-const DetailModal = ({ session, onClose, onJoin }) => {
+const DetailModal = ({ session, onClose, onJoin, onRate }) => {
   if (!session) return null;
   const canJoin = isSessionTime(session.date, session.timeSlot);
   const topics = parseTopics(session.reason);
   const reasonText = parseReason(session.reason);
+  const [hasRated, setHasRated] = useState(false);
+
+  useEffect(() => {
+    if (session.status !== "Completed") return;
+    const checkRating = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const res = await axios.get(`/ratings/check/${session._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setHasRated(res.data.hasRated);
+      } catch {
+        setHasRated(false);
+      }
+    };
+    checkRating();
+  }, [session._id, session.status]);
 
   const statusConfig = {
     Approved: {
@@ -60,23 +79,23 @@ const DetailModal = ({ session, onClose, onJoin }) => {
         onClick={(e) => e.stopPropagation()}
         className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden"
       >
-        <div className="px-8 pt-8 pb-6 flex items-start justify-between">
+        <div className="px-8 pt-10 pb-7 flex items-start justify-between">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-3xl flex-shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl flex-shrink-0">
               {session.counselorId?.name?.charAt(0) || "C"}
             </div>
             <div>
-              <h2 className="text-2xl font-black text-gray-900 leading-tight">
+              <h2 className="text-lg font-black text-gray-900 leading-tight">
                 {session.counselorId?.name || "Counselor"}
               </h2>
               <div className="flex items-center gap-3 mt-1.5">
                 <span
-                  className={`flex items-center gap-1.5 text-xs font-black px-3 py-1 rounded-full border uppercase tracking-wider ${sc.light} ${sc.color}`}
+                  className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider ${sc.light} ${sc.color}`}
                 >
-                  <span className={`w-2 h-2 rounded-full ${sc.bg}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${sc.bg}`} />
                   {session.status}
                 </span>
-                <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                   Counseling Session
                 </span>
               </div>
@@ -84,54 +103,54 @@ const DetailModal = ({ session, onClose, onJoin }) => {
           </div>
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0"
+            className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0"
           >
-            <X size={18} className="text-gray-500" />
+            <X size={16} className="text-gray-500" />
           </button>
         </div>
 
         <div className="mx-8 border-t border-gray-100" />
 
-        <div className="px-8 py-6 grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-4 bg-gray-50 rounded-2xl px-5 py-5 border border-gray-100">
-            <div className="w-11 h-11 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Calendar size={20} className="text-indigo-600" />
+        <div className="px-8 py-7 grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-4 bg-gray-50 rounded-2xl px-5 py-6 border border-gray-100">
+            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Calendar size={18} className="text-indigo-600" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
                 Date
               </p>
-              <p className="text-base font-black text-gray-800 mt-0.5">
+              <p className="text-sm font-black text-gray-800 mt-0.5">
                 {fmtLong(session.date)}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4 bg-gray-50 rounded-2xl px-5 py-5 border border-gray-100">
-            <div className="w-11 h-11 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Clock size={20} className="text-indigo-600" />
+          <div className="flex items-center gap-4 bg-gray-50 rounded-2xl px-5 py-6 border border-gray-100">
+            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Clock size={18} className="text-indigo-600" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
                 Time
               </p>
-              <p className="text-base font-black text-gray-800 mt-0.5">
+              <p className="text-sm font-black text-gray-800 mt-0.5">
                 {session.timeSlot}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="px-8 pb-8 flex flex-col gap-6">
+        <div className="px-8 pb-10 flex flex-col gap-6">
           {topics.length > 0 && (
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                Focus Areas / Topics
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                Choosen Topics For this Session
               </p>
               <div className="flex flex-wrap gap-2">
                 {topics.map((t, i) => (
                   <span
                     key={i}
-                    className="bg-indigo-50 text-indigo-700 text-xs font-black px-4 py-2 rounded-xl border border-indigo-100 uppercase"
+                    className="bg-indigo-50 text-indigo-700 text-[10px] font-black px-3 py-1.5 rounded-lg border border-indigo-100 uppercase"
                   >
                     {t}
                   </span>
@@ -141,17 +160,17 @@ const DetailModal = ({ session, onClose, onJoin }) => {
           )}
           {reasonText && (
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                Reason for Appointment
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                Reason for the Appointment
               </p>
-              <p className="text-base text-gray-600 font-medium leading-relaxed bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100">
+              <p className="text-sm text-gray-600 font-medium leading-relaxed bg-gray-50 rounded-xl px-5 py-5 border border-gray-100">
                 {reasonText}
               </p>
             </div>
           )}
         </div>
 
-        <div className="px-8 py-5 bg-gray-50 border-t border-gray-100 flex items-center gap-4">
+        <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex items-center gap-4">
           <div className="flex-1 flex items-center gap-3">
             {session.status === "Approved" && (
               <button
@@ -160,36 +179,52 @@ const DetailModal = ({ session, onClose, onJoin }) => {
                   onClose();
                 }}
                 disabled={!canJoin}
-                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-black uppercase tracking-wider transition-all
+                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all
                   ${canJoin ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
               >
-                <Video size={18} />
+                <Video size={16} />
                 {canJoin ? "Join Meeting Now" : "Meeting Not Started"}
               </button>
             )}
 
             {session.status === "Pending" && (
-              <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-yellow-100 border border-yellow-200">
-                <AlertCircle size={18} className="text-yellow-600" />
-                <span className="text-yellow-800 font-black text-sm uppercase">
+              <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-yellow-100 border border-yellow-200">
+                <AlertCircle size={16} className="text-yellow-600" />
+                <span className="text-yellow-800 font-black text-xs uppercase">
                   Waiting for Counselor Approval
                 </span>
               </div>
             )}
 
             {session.status === "Completed" && (
-              <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-indigo-100 border border-indigo-200">
-                <CheckCircle size={18} className="text-indigo-600" />
-                <span className="text-indigo-800 font-black text-sm uppercase">
-                  Session Successfully Completed
-                </span>
-              </div>
+              <>
+                <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-indigo-100 border border-indigo-200">
+                  <CheckCircle size={16} className="text-indigo-600" />
+                  <span className="text-indigo-800 font-black text-xs uppercase">
+                    Session Successfully Completed
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    onClose();
+                    onRate && onRate(session);
+                  }}
+                  className="flex items-center justify-center gap-1.5 px-6 py-4 rounded-xl text-xs font-black uppercase tracking-wider bg-yellow-400 text-yellow-900 hover:bg-yellow-500 transition-all flex-shrink-0 shadow-sm"
+                >
+                  <Star
+                    size={14}
+                    className={hasRated ? "fill-yellow-500" : "fill-yellow-800"}
+                  />
+                  {hasRated ? "Rated ✓" : "Rate Session"}
+                </button>
+              </>
             )}
 
             {session.status === "Declined" && (
-              <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-100 border border-red-200">
-                <XCircle size={18} className="text-red-600" />
-                <span className="text-red-800 font-black text-sm uppercase">
+              <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-red-100 border border-red-200">
+                <XCircle size={16} className="text-red-600" />
+                <span className="text-red-800 font-black text-xs uppercase">
                   This Session was Declined
                 </span>
               </div>
@@ -198,7 +233,7 @@ const DetailModal = ({ session, onClose, onJoin }) => {
 
           <button
             onClick={onClose}
-            className="px-8 py-4 rounded-2xl text-sm font-black text-gray-600 bg-gray-200 hover:bg-gray-300 uppercase tracking-wider transition-all flex-shrink-0"
+            className="px-7 py-4 rounded-xl text-xs font-black text-gray-600 bg-gray-200 hover:bg-gray-300 uppercase tracking-wider transition-all flex-shrink-0"
           >
             Close
           </button>

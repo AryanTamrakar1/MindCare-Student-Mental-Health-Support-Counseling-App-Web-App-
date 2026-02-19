@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
 import CounselorSidebar from "../components/CounselorSidebar";
 import Navbar from "../components/Navbar";
+import { Star, Users, GraduationCap } from "lucide-react";
 
 const EditCounselorProfile = () => {
   const [user, setUser] = useState(null);
@@ -474,34 +475,37 @@ const EditCounselorProfile = () => {
               </div>
 
               <div className="grid grid-cols-3 border-b border-gray-100 bg-[#f8fafc]">
-                <div className="flex flex-col items-center justify-center py-8 border-r-2 border-slate-200">
+                <div className="flex flex-col items-center justify-center py-8 border-r-2 border-slate-200 gap-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">🎓</span>
+                    <GraduationCap size={22} className="text-indigo-400" />
                     <span className="text-xl font-black text-gray-800">
                       {previewData.experience || 0}+ Yrs
                     </span>
                   </div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                     Experience
                   </p>
                 </div>
-                <div className="flex flex-col items-center justify-center py-8 border-r-2 border-slate-200">
+                <div className="flex flex-col items-center justify-center py-8 border-r-2 border-slate-200 gap-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">🤝</span>
+                    <Users size={22} className="text-indigo-400" />
                     <span className="text-xl font-black text-gray-800">0</span>
                   </div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                     Students Helped
                   </p>
                 </div>
-                <div className="flex flex-col items-center justify-center py-8">
+                <div className="flex flex-col items-center justify-center py-8 gap-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">⭐</span>
+                    <Star
+                      size={22}
+                      className="text-yellow-400 fill-yellow-400"
+                    />
                     <span className="text-xl font-black text-gray-800">
                       0.0
                     </span>
                   </div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                     Rating
                   </p>
                 </div>

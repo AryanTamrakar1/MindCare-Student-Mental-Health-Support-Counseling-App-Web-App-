@@ -9,6 +9,7 @@ import {
 const SessionCard = ({ session, onOpen, onWriteSummary }) => {
   const [hasSummary, setHasSummary] = useState(false);
   const topics = parseTopics(session.reason);
+
   useEffect(() => {
     if (session.status !== "Completed") return;
     const check = async () => {
@@ -44,7 +45,6 @@ const SessionCard = ({ session, onOpen, onWriteSummary }) => {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all overflow-hidden mb-4">
       <div className="flex items-center">
-        {/* Student info */}
         <div className="flex items-center gap-3 px-5 py-4 w-64 flex-shrink-0 border-r border-gray-100">
           <div className="w-11 h-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg flex-shrink-0">
             {session.studentId?.name?.charAt(0) || "S"}
@@ -94,20 +94,22 @@ const SessionCard = ({ session, onOpen, onWriteSummary }) => {
           </p>
         </div>
 
-        <div className="flex items-center gap-4 px-5 py-4 flex-shrink-0">
-          <span
-            className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-full border uppercase tracking-wider ${sc.pill}`}
-          >
+        <div className="flex flex-col gap-3 px-5 py-4 w-[380px] flex-shrink-0">
+          <div className="flex justify-center">
             <span
-              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${sc.dot}`}
-            />
-            {session.status}
-          </span>
+              className={`flex items-center justify-center gap-1.5 text-[10px] font-black px-4 py-1.5 rounded-full border uppercase tracking-wider w-full ${sc.pill}`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${sc.dot}`}
+              />
+              {session.status}
+            </span>
+          </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => onOpen(session)}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all whitespace-nowrap"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all flex-1 whitespace-nowrap cursor-pointer"
             >
               View Detail <ArrowRight size={12} />
             </button>
@@ -115,7 +117,7 @@ const SessionCard = ({ session, onOpen, onWriteSummary }) => {
             {session.status === "Completed" && (
               <button
                 onClick={() => onWriteSummary(session)}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100 transition-all whitespace-nowrap"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider bg-teal-500 text-white hover:bg-teal-600 shadow-sm transition-all flex-1 whitespace-nowrap cursor-pointer"
               >
                 <PenLine size={12} />
                 {hasSummary ? "Edit Summary" : "Write Summary"}

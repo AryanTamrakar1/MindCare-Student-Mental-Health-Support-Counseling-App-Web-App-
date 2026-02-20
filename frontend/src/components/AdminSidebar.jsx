@@ -1,15 +1,15 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import { 
-  Home, 
-  Users, 
-  UserCheck, 
-  FileText, 
-  BarChart3, 
+import {
+  Home,
+  Users,
+  UserCheck,
+  FileText,
+  BarChart3,
   BookOpen,
-  Settings, 
-  LogOut 
+  Settings,
+  LogOut,
 } from "lucide-react";
 
 const AdminSidebar = ({ user }) => {
@@ -36,7 +36,6 @@ const AdminSidebar = ({ user }) => {
           </div>
         </div>
         <nav className="flex flex-col gap-1">
-          
           <button
             onClick={() => menuNavigate("/admin-dashboard")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold whitespace-nowrap ${
@@ -73,7 +72,14 @@ const AdminSidebar = ({ user }) => {
             COUNSELOR APPROVALS
           </button>
 
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white whitespace-nowrap">
+          <button
+            onClick={() => menuNavigate("/post-management")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold whitespace-nowrap ${
+              isActive("/post-management")
+                ? "bg-[#1f2937] text-white"
+                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
+            }`}
+          >
             <FileText size={20} className="flex-shrink-0" />
             POST MANAGEMENT
           </button>
@@ -87,7 +93,6 @@ const AdminSidebar = ({ user }) => {
             <BookOpen size={20} className="flex-shrink-0" />
             RESOURCE LIBRARY
           </button>
-
         </nav>
       </div>
 
@@ -113,9 +118,7 @@ const AdminSidebar = ({ user }) => {
           <LogOut size={20} className="flex-shrink-0" />
           LOGOUT
         </button>
-
       </div>
-
     </aside>
   );
 };

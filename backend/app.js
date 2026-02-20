@@ -7,6 +7,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes'); 
 const sessionRoutes = require('./routes/sessionRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
+const forumRoutes = require('./routes/forumRoutes');
 const path = require('path'); 
 
 require('dotenv').config();
@@ -22,9 +23,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/appointments', appointmentRoutes);
+
 app.use('/api/sessions', sessionRoutes);
 
 app.use('/api/ratings', ratingRoutes);
+
+app.use('/api/forum', forumRoutes);
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

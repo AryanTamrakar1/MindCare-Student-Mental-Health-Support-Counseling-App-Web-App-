@@ -20,6 +20,9 @@ import PendingRequests from "./pages/PendingRequests";
 import StudentSessions from "./pages/StudentSessions";
 import CounselorSessions from "./pages/CounselorSessions";
 import CounselorRatings from "./pages/CounselorRatings";
+import CommunityForum from "./pages/CommunityForum";
+import PostManagement from "./pages/PostManagement";
+import PostDetail from "./pages/PostDetail";
 
 function App() {
   return (
@@ -129,12 +132,35 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            {/* ── New Rating Route ── */}
             <Route
               path="/counselor-ratings"
               element={
                 <ProtectedRoute>
                   <CounselorRatings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/community-forum"
+              element={
+                <ProtectedRoute>
+                  <CommunityForum />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/post-management"
+              element={
+                <ProtectedRoute>
+                  <PostManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/post/:id"
+              element={
+                <ProtectedRoute>
+                  <PostDetail />
                 </ProtectedRoute>
               }
             />

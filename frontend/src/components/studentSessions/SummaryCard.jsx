@@ -25,22 +25,42 @@ const SummaryCard = ({ session, onOpen, onViewSummary, onRate }) => {
     checkRating();
   }, [session._id]);
 
+  let counselorInitial = "C";
+  if (
+    session.counselorId &&
+    session.counselorId.name &&
+    session.counselorId.name.length > 0
+  ) {
+    counselorInitial = session.counselorId.name.charAt(0);
+  }
+
+  let counselorName = "Counselor";
+  if (session.counselorId && session.counselorId.name) {
+    counselorName = session.counselorId.name;
+  }
+
+  const visibleTopics = [];
+  for (let i = 0; i < topics.length && i < 2; i++) {
+    visibleTopics.push(topics[i]);
+  }
+  const extraTopicsCount = topics.length > 2 ? topics.length - 2 : 0;
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all overflow-hidden mb-4">
       <div className="flex items-center">
         <div className="flex items-center gap-3 px-5 py-4 w-64 flex-shrink-0 border-r border-gray-100">
           <div className="w-11 h-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg flex-shrink-0">
-            {session.counselorId?.name?.charAt(0) || "C"}
+            {counselorInitial}
           </div>
           <div className="min-w-0">
             <p className="font-black text-gray-800 text-sm truncate">
-              {session.counselorId?.name || "Counselor"}
+              {counselorName}
             </p>
             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
               Counselor
             </p>
             <div className="flex flex-wrap gap-1 mt-1.5">
-              {topics.slice(0, 2).map((t, i) => (
+              {visibleTopics.map((t, i) => (
                 <span
                   key={i}
                   className="bg-indigo-50 text-indigo-600 text-[8px] font-black px-1.5 py-0.5 rounded border border-indigo-100 uppercase"
@@ -48,9 +68,9 @@ const SummaryCard = ({ session, onOpen, onViewSummary, onRate }) => {
                   {t}
                 </span>
               ))}
-              {topics.length > 2 && (
+              {extraTopicsCount > 0 && (
                 <span className="text-[8px] text-gray-400 font-bold">
-                  +{topics.length - 2}
+                  +{extraTopicsCount}
                 </span>
               )}
             </div>
@@ -101,7 +121,9 @@ const SummaryCard = ({ session, onOpen, onViewSummary, onRate }) => {
             </button>
 
             <button
-              onClick={() => onRate && onRate(session)}
+              onClick={() => {
+                if (onRate) onRate(session);
+              }}
               className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex-1 whitespace-nowrap bg-yellow-400 text-yellow-900 shadow-sm hover:bg-yellow-500 cursor-pointer"
             >
               <Star

@@ -3,7 +3,7 @@ import { X, ArrowRight } from "lucide-react";
 import { ordinal, MONTHS } from "../../utils/studentSessions/sessionhelper";
 
 const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
-  if (!daySessions?.length || !dayInfo) return null;
+  if (!daySessions || daySessions.length === 0 || !dayInfo) return null;
 
   return (
     <div className="mt-4 bg-white rounded-2xl border border-indigo-100 shadow-sm overflow-hidden">
@@ -22,10 +22,27 @@ const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
       </div>
       <div className="divide-y divide-gray-100">
         {daySessions.map((s) => {
-          const statusColor =
-            s.status === "Approved"
-              ? "text-emerald-600 bg-emerald-50 border-emerald-200"
-              : "text-indigo-600 bg-indigo-50 border-indigo-200";
+          let statusColor = "text-indigo-600 bg-indigo-50 border-indigo-200";
+          if (s.status === "Approved") {
+            statusColor = "text-emerald-600 bg-emerald-50 border-emerald-200";
+          } else if (s.status === "Missed") {
+            statusColor = "text-red-600 bg-red-50 border-red-200";
+          }
+
+          let counselorInitial = "C";
+          if (
+            s.counselorId &&
+            s.counselorId.name &&
+            s.counselorId.name.length > 0
+          ) {
+            counselorInitial = s.counselorId.name.charAt(0);
+          }
+
+          let counselorName = "Counselor";
+          if (s.counselorId && s.counselorId.name) {
+            counselorName = s.counselorId.name;
+          }
+
           return (
             <div
               key={s._id}
@@ -33,11 +50,11 @@ const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
               className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors group"
             >
               <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
-                {s.counselorId?.name?.charAt(0) || "C"}
+                {counselorInitial}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-black text-gray-800 text-sm">
-                  {s.counselorId?.name || "Counselor"}
+                  {counselorName}
                 </p>
                 <p className="text-[10px] text-gray-500 font-bold mt-0.5">
                   {s.timeSlot}
@@ -46,7 +63,7 @@ const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
               <span
                 className={`text-[9px] font-black px-2.5 py-1 rounded-full border uppercase ${statusColor}`}
               >
-                {s.status}
+                {s.status === "Missed" ? "Missed" : s.status}
               </span>
               <ArrowRight
                 size={14}

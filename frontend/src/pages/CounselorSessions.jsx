@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
-import CounselorSidebar from "../components/CounselorSidebar";
+import CounselorSidebar from "../components/Sidebars/CounselorSidebar";
 import Navbar from "../components/Navbar";
 import { Calendar, CheckCircle, Users } from "lucide-react";
 import SessionCalendar from "../components/counselorSessions/sessionCalendar";
@@ -8,7 +8,6 @@ import DayPanel from "../components/counselorSessions/DayPanel";
 import DetailModal from "../components/counselorSessions/DetailModal";
 import SummaryModal from "../components/counselorSessions/SummaryModal";
 import SessionCard from "../components/counselorSessions/SessionCard";
-import { fmtShort } from "../utils/counselorSession/sessionhelper";
 
 const CounselorSessions = () => {
   const [user, setUser] = useState(null);
@@ -24,14 +23,14 @@ const CounselorSessions = () => {
       try {
         const token = sessionStorage.getItem("token");
         if (!token) return;
-        const [ur, sr] = await Promise.all([
-          axios.get("/auth/me", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get("/appointments/my-sessions", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
+
+        const ur = await axios.get("/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const sr = await axios.get("/appointments/my-sessions", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
         setUser(ur.data);
         setSessions(sr.data);
       } catch (e) {
@@ -71,28 +70,51 @@ const CounselorSessions = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSessions(sr.data);
-      const ended = sr.data.find((s) => s._id === appointmentId);
-      if (ended) setTimeout(() => setSummarySession(ended), 300);
+
+      let ended = null;
+      for (let i = 0; i < sr.data.length; i++) {
+        if (sr.data[i]._id === appointmentId) {
+          ended = sr.data[i];
+          break;
+        }
+      }
+      if (ended) {
+        setTimeout(() => setSummarySession(ended), 300);
+      }
     } catch (e) {
       alert("Could not end session.");
     }
   };
 
-  const upcomingCount = sessions.filter((s) => s.status === "Approved").length;
-  const completedCount = sessions.filter(
-    (s) => s.status === "Completed",
-  ).length;
+  let upcomingCount = 0;
+  let completedCount = 0;
+  for (let i = 0; i < sessions.length; i++) {
+    if (sessions[i].status === "Approved") upcomingCount++;
+    if (sessions[i].status === "Completed") completedCount++;
+  }
 
-  const filtered =
-    activeTab === "Upcoming"
-      ? sessions.filter((s) => s.status === "Approved")
-      : activeTab === "Completed"
-        ? sessions.filter((s) => s.status === "Completed")
-        : activeTab === "Summary"
-          ? sessions.filter((s) => s.status === "Completed")
-          : sessions;
+  const filtered = [];
+  for (let i = 0; i < sessions.length; i++) {
+    const s = sessions[i];
+    if (activeTab === "Upcoming" && s.status === "Approved") {
+      filtered.push(s);
+    } else if (activeTab === "Completed" && s.status === "Completed") {
+      filtered.push(s);
+    } else if (activeTab === "Summary" && s.status === "Completed") {
+      filtered.push(s);
+    } else if (activeTab === "See All") {
+      filtered.push(s);
+    }
+  }
 
-  if (loading)
+  let emptyMessage = "No sessions yet.";
+  if (activeTab === "Upcoming") {
+    emptyMessage = "Students will book sessions with you from the directory.";
+  } else if (activeTab === "Summary") {
+    emptyMessage = "Summaries will appear here after sessions are completed.";
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex">
         <CounselorSidebar user={user} />
@@ -104,6 +126,7 @@ const CounselorSessions = () => {
         </main>
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -121,43 +144,47 @@ const CounselorSessions = () => {
         </div>
 
         <div className="grid grid-cols-3 gap-5 mb-6">
-          {[
-            {
-              count: upcomingCount,
-              label: "Upcoming",
-              icon: <Calendar size={20} className="text-emerald-600" />,
-              bg: "bg-emerald-50",
-            },
-            {
-              count: completedCount,
-              label: "Completed",
-              icon: <CheckCircle size={20} className="text-indigo-600" />,
-              bg: "bg-indigo-50",
-            },
-            {
-              count: sessions.length,
-              label: "Total Sessions",
-              icon: <Users size={20} className="text-purple-600" />,
-              bg: "bg-purple-50",
-            },
-          ].map(({ count, label, icon, bg }) => (
-            <div
-              key={label}
-              className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4"
-            >
-              <div
-                className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center flex-shrink-0`}
-              >
-                {icon}
-              </div>
-              <div>
-                <p className="text-3xl font-black text-gray-800">{count}</p>
-                <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                  {label}
-                </p>
-              </div>
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Calendar size={20} className="text-emerald-600" />
             </div>
-          ))}
+            <div>
+              <p className="text-3xl font-black text-gray-800">
+                {upcomingCount}
+              </p>
+              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                Upcoming
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <CheckCircle size={20} className="text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-3xl font-black text-gray-800">
+                {completedCount}
+              </p>
+              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                Completed
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Users size={20} className="text-purple-600" />
+            </div>
+            <div>
+              <p className="text-3xl font-black text-gray-800">
+                {sessions.length}
+              </p>
+              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                Total Sessions
+              </p>
+            </div>
+          </div>
         </div>
 
         <SessionCalendar
@@ -186,35 +213,63 @@ const CounselorSessions = () => {
                 View all your upcoming and past sessions.
               </p>
             </div>
+
             <div className="flex bg-white rounded-xl border border-gray-200 p-1 gap-1 shadow-sm">
-              {[
-                { label: "Upcoming", count: upcomingCount },
-                { label: "Completed", count: completedCount },
-                { label: "Summary", count: completedCount },
-                ,
-                { label: "See All", count: sessions.length },
-              ].map(({ label, count }) => (
-                <button
-                  key={label}
-                  onClick={() => setActiveTab(label)}
-                  className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5
-            ${
-              activeTab === label
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-            }`}
-                >
-                  {label}
-                  {count !== null && count > 0 && (
-                    <span
-                      className={`px-1.5 py-0.5 rounded-full text-[9px] font-black
-              ${activeTab === label ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
-                    >
-                      {count}
-                    </span>
-                  )}
-                </button>
-              ))}
+              <button
+                onClick={() => setActiveTab("Upcoming")}
+                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === "Upcoming" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
+              >
+                Upcoming
+                {upcomingCount > 0 && (
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === "Upcoming" ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
+                  >
+                    {upcomingCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveTab("Completed")}
+                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === "Completed" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
+              >
+                Completed
+                {completedCount > 0 && (
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === "Completed" ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
+                  >
+                    {completedCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveTab("Summary")}
+                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === "Summary" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
+              >
+                Summary
+                {completedCount > 0 && (
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === "Summary" ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
+                  >
+                    {completedCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveTab("See All")}
+                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === "See All" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
+              >
+                See All
+                {sessions.length > 0 && (
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === "See All" ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
+                  >
+                    {sessions.length}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
@@ -239,13 +294,7 @@ const CounselorSessions = () => {
                 <p className="font-black text-gray-600 mb-1">
                   No {activeTab} Sessions
                 </p>
-                <p className="text-sm text-gray-400 max-w-xs">
-                  {activeTab === "Upcoming"
-                    ? "Students will book sessions with you from the directory."
-                    : activeTab === "Summary"
-                      ? "Summaries will appear here after sessions are completed."
-                      : "No sessions yet."}
-                </p>
+                <p className="text-sm text-gray-400 max-w-xs">{emptyMessage}</p>
               </div>
             )}
           </div>

@@ -6,30 +6,36 @@ const CounselorRegister = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const googleUser = location.state?.user;
+  let googleUser = null;
+  if (location.state && location.state.user) {
+    googleUser = location.state.user;
+  }
 
-  const [formData, setFormData] = useState({
-    name: googleUser?.name || "",
-    email: googleUser?.email || "",
-    password: "",
-    role: "Counselor",
-    phone: "",
-    qualifications: "",
-    experience: "",
-    specialization: "",
-    licenseNo: "",
-    bio: "",
-  });
-
+  const [name, setName] = useState(googleUser ? googleUser.name : "");
+  const [email, setEmail] = useState(googleUser ? googleUser.email : "");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [qualifications, setQualifications] = useState("");
+  const [experience, setExperience] = useState("");
+  const [specialization, setSpecialization] = useState("");
+  const [licenseNo, setLicenseNo] = useState("");
+  const [bio, setBio] = useState("");
   const [photo, setPhoto] = useState(null);
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
     const data = new FormData();
-    Object.keys(formData).forEach((key) => {
-      data.append(key, formData[key]);
-    });
+    data.append("name", name);
+    data.append("email", email);
+    data.append("password", password);
+    data.append("role", "Counselor");
+    data.append("phone", phone);
+    data.append("qualifications", qualifications);
+    data.append("experience", experience);
+    data.append("specialization", specialization);
+    data.append("licenseNo", licenseNo);
+    data.append("bio", bio);
 
     if (photo) {
       data.append("verificationPhoto", photo);
@@ -45,7 +51,11 @@ const CounselorRegister = () => {
       }
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Error submitting application");
+      let message = "Error submitting application";
+      if (err.response && err.response.data && err.response.data.message) {
+        message = err.response.data.message;
+      }
+      alert(message);
     }
   };
 
@@ -89,9 +99,7 @@ const CounselorRegister = () => {
                     placeholder="Dr. John Doe"
                     className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                     required
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </div>
                 <div className="space-y-1">
@@ -103,9 +111,7 @@ const CounselorRegister = () => {
                     placeholder="john@example.com"
                     className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                     required
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
               </>
@@ -120,9 +126,7 @@ const CounselorRegister = () => {
                 placeholder="+977 1234567890"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
 
@@ -135,9 +139,7 @@ const CounselorRegister = () => {
                 placeholder="LKM-12345789"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, licenseNo: e.target.value })
-                }
+                onChange={(e) => setLicenseNo(e.target.value)}
               />
             </div>
 
@@ -150,9 +152,7 @@ const CounselorRegister = () => {
                 placeholder="e.g. PhD in Clinical Psychology"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, qualifications: e.target.value })
-                }
+                onChange={(e) => setQualifications(e.target.value)}
               />
             </div>
 
@@ -165,9 +165,7 @@ const CounselorRegister = () => {
                 placeholder="1"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, experience: e.target.value })
-                }
+                onChange={(e) => setExperience(e.target.value)}
               />
             </div>
 
@@ -180,9 +178,7 @@ const CounselorRegister = () => {
                 placeholder="e.g. Anxiety, Stress Management"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, specialization: e.target.value })
-                }
+                onChange={(e) => setSpecialization(e.target.value)}
               />
             </div>
 
@@ -198,7 +194,6 @@ const CounselorRegister = () => {
                   className="w-full p-8 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition cursor-pointer text-transparent file:hidden"
                   onChange={(e) => setPhoto(e.target.files[0])}
                 />
-
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-2">
                   {photo ? (
                     <div className="flex items-center gap-4 w-full h-full px-4">
@@ -234,9 +229,7 @@ const CounselorRegister = () => {
                 placeholder="Describe your motivation..."
                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition text-sm font-medium"
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, bio: e.target.value })
-                }
+                onChange={(e) => setBio(e.target.value)}
               ></textarea>
             </div>
           </div>
@@ -251,9 +244,7 @@ const CounselorRegister = () => {
                 placeholder="••••••••"
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 transition"
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           )}

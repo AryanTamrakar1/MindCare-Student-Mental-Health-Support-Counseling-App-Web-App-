@@ -18,7 +18,7 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
         const res = await axios.get(`/sessions/summary/${session._id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const s = res.data.summary || "";
+        const s = res.data.summary ? res.data.summary : "";
         setExisting(s);
         setText(s);
       } catch {
@@ -29,7 +29,7 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
       }
     };
     fetchExisting();
-  }, [session?._id]);
+  }, [session]);
 
   const handleSave = async () => {
     if (!text.trim()) return;
@@ -43,7 +43,9 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
       );
       setSaved(true);
       setExisting(text.trim());
-      onSaved && onSaved(session._id, text.trim());
+      if (onSaved) {
+        onSaved(session._id, text.trim());
+      }
       setTimeout(() => setSaved(false), 2500);
     } catch {
       alert("Could not save summary.");
@@ -53,6 +55,11 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
   };
 
   if (!session) return null;
+
+  let studentName = "Student";
+  if (session.studentId && session.studentId.name) {
+    studentName = session.studentId.name;
+  }
 
   return (
     <div
@@ -75,8 +82,7 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
                 {existing ? "Edit Summary" : "Write Summary"}
               </h2>
               <p className="text-sm text-gray-400 font-medium mt-0.5">
-                {session.studentId?.name || "Student"} ·{" "}
-                {fmtShort(session.date)} · {session.timeSlot}
+                {studentName} · {fmtShort(session.date)} · {session.timeSlot}
               </p>
             </div>
           </div>
@@ -92,16 +98,12 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
           {loading ? (
             <div className="flex items-center justify-center gap-3 py-16">
               <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-gray-400 font-medium">
-                Loading…
-              </span>
+              <span className="text-sm text-gray-400 font-medium">Loading…</span>
             </div>
           ) : (
             <>
               <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-4">
-                {existing
-                  ? "Summary of the session for the student"
-                  : "Write notes to help the student"}
+                {existing ? "Summary of the session for the student" : "Write notes to help the student"}
               </p>
               <textarea
                 value={text}
@@ -121,9 +123,7 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
           {saved ? (
             <div className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-50 border border-emerald-100">
               <CheckCircle size={15} className="text-emerald-600" />
-              <span className="text-emerald-700 font-black text-sm uppercase">
-                Summary Saved!
-              </span>
+              <span className="text-emerald-700 font-black text-sm uppercase">Summary Saved!</span>
             </div>
           ) : (
             <button

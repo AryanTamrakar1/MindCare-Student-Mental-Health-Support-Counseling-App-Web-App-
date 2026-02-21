@@ -59,13 +59,18 @@ const addReply = async (req, res) => {
       authorPhoto = counselor.verificationPhoto;
     }
 
+    let parentId = null;
+    if (parentReplyId) {
+      parentId = parentReplyId;
+    }
+
     post.replies.push({
       content,
       authorId: req.user._id,
       authorRole: req.user.role,
       authorName,
       authorPhoto,
-      parentReplyId: parentReplyId || null,
+      parentReplyId: parentId,
     });
 
     await post.save();
@@ -114,12 +119,22 @@ const iFeelThis = async (req, res) => {
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    const alreadyClicked = post.iFeelThis
-      .map((id) => id.toString())
-      .includes(userId);
+    let alreadyClicked = false;
+    for (let i = 0; i < post.iFeelThis.length; i++) {
+      if (post.iFeelThis[i].toString() === userId) {
+        alreadyClicked = true;
+        break;
+      }
+    }
 
     if (alreadyClicked) {
-      post.iFeelThis = post.iFeelThis.filter((id) => id.toString() !== userId);
+      const newList = [];
+      for (let i = 0; i < post.iFeelThis.length; i++) {
+        if (post.iFeelThis[i].toString() !== userId) {
+          newList.push(post.iFeelThis[i]);
+        }
+      }
+      post.iFeelThis = newList;
     } else {
       post.iFeelThis.push(req.user._id);
     }
@@ -143,10 +158,22 @@ const likeReply = async (req, res) => {
     const reply = post.replies.id(replyId);
     if (!reply) return res.status(404).json({ message: "Reply not found" });
 
-    const alreadyLiked = reply.likes.map((id) => id.toString()).includes(userId);
+    let alreadyLiked = false;
+    for (let i = 0; i < reply.likes.length; i++) {
+      if (reply.likes[i].toString() === userId) {
+        alreadyLiked = true;
+        break;
+      }
+    }
 
     if (alreadyLiked) {
-      reply.likes = reply.likes.filter((id) => id.toString() !== userId);
+      const newLikes = [];
+      for (let i = 0; i < reply.likes.length; i++) {
+        if (reply.likes[i].toString() !== userId) {
+          newLikes.push(reply.likes[i]);
+        }
+      }
+      reply.likes = newLikes;
     } else {
       reply.likes.push(req.user._id);
     }
@@ -182,15 +209,23 @@ const deletePost = async (req, res) => {
 const deleteReply = async (req, res) => {
   try {
     const { postId, replyId } = req.params;
-
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
+    const remainingReplies = [];
+    for (let i = 0; i < post.replies.length; i++) {
+      const reply = post.replies[i];
+      const isTheDeletedReply = reply._id.toString() === replyId;
+      let isChildOfDeletedReply = false;
+      if (reply.parentReplyId) {
+        isChildOfDeletedReply = reply.parentReplyId.toString() === replyId;
+      }
 
-    post.replies = post.replies.filter(
-      (reply) =>
-        reply._id.toString() !== replyId &&
-        reply.parentReplyId?.toString() !== replyId
-    );
+      if (!isTheDeletedReply && !isChildOfDeletedReply) {
+        remainingReplies.push(reply);
+      }
+    }
+
+    post.replies = remainingReplies;
 
     await post.save();
     res.json({ message: "Reply deleted!" });
@@ -204,7 +239,7 @@ module.exports = {
   getPostById,
   createPost,
   addReply,
-  editReply, 
+  editReply,
   iFeelThis,
   likeReply,
   deletePost,

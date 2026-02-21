@@ -1,5 +1,4 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors'); 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -8,6 +7,7 @@ const appointmentRoutes = require('./routes/appointmentRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
 const forumRoutes = require('./routes/forumRoutes');
+const { autoMarkMissedSessions } = require('./controllers/sessionController');
 const path = require('path'); 
 
 require('dotenv').config();

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
-import StudentSidebar from "../components/StudentSidebar";
+import StudentSidebar from "../components/Sidebars/StudentSidebar";
 import Navbar from "../components/Navbar";
-import { Star, Users } from "lucide-react";
+import SearchBar from "../components/counselorDirectory/SearchBar";
+import FilterSection from "../components/counselorDirectory/FilterSection";
+import CounselorCard from "../components/counselorDirectory/CounselorCard";
+import Pagination from "../components/counselorDirectory/Pagination";
 
 const CounselorDirectory = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [counselors, setCounselors] = useState([]);
@@ -18,172 +20,138 @@ const CounselorDirectory = () => {
   const [counselorStats, setCounselorStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [expandedCards, setExpandedCards] = useState({});
+
   const cardsPerPage = 2;
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
   useEffect(() => {
-    const initializePage = async () => {
-      try {
-        setLoading(true);
-        if (!user) {
-          const token = sessionStorage.getItem("token");
-          if (token) {
-            const userRes = await axios.get("/auth/me", {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            setUser(userRes.data);
-          }
-        }
-        await fetchCounselors();
-      } catch (err) {
-        console.error("Initialization error", err);
-        setLoading(false);
-      }
-    };
-    initializePage();
+    loadPage();
   }, []);
+
+  const loadPage = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const userRes = await axios.get("/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(userRes.data);
+      await loadCounselors();
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
+  const loadCounselors = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await axios.get("/auth/counselors");
+      const data = res.data;
+
+      setCounselors(data);
+      setDisplayCounselors(data);
+
+      const tags = ["All"];
+      data.forEach((c) => {
+        if (c.specialization) {
+          c.specialization.split(",").forEach((tag) => {
+            const clean = tag.trim();
+            if (clean && !tags.includes(clean)) {
+              tags.push(clean);
+            }
+          });
+        }
+        loadStatus(c._id);
+      });
+      setAvailableTags(tags);
+
+      const statsMap = {};
+      for (const c of data) {
+        let overall = 0;
+        let totalRatings = 0;
+        let studentsHelped = 0;
+
+        try {
+          const ratingRes = await axios.get(`/ratings/counselor/${c._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          overall = ratingRes.data.overall || 0;
+          totalRatings = ratingRes.data.totalRatings || 0;
+        } catch {}
+
+        try {
+          const countRes = await axios.get(
+            `/appointments/completed-count/${c._id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+          studentsHelped = countRes.data.count || 0;
+        } catch {}
+
+        statsMap[c._id] = { overall, totalRatings, studentsHelped };
+      }
+      setCounselorStats(statsMap);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
+  const loadStatus = async (counselorId) => {
+    try {
+      const res = await axios.get(`/appointments/live-status/${counselorId}`);
+      setLiveStatuses((prev) => ({ ...prev, [counselorId]: res.data }));
+    } catch {}
+  };
 
   useEffect(() => {
     if (counselors.length === 0) return;
     const interval = setInterval(() => {
-      for (let i = 0; i < counselors.length; i++) {
-        fetchStatus(counselors[i]._id);
-      }
+      counselors.forEach((c) => loadStatus(c._id));
     }, 60000);
     return () => clearInterval(interval);
   }, [counselors]);
 
-  const fetchCounselors = async () => {
-    try {
-      const token = sessionStorage.getItem("token");
-      const response = await axios.get("/auth/counselors");
-      const data = response.data;
-      setCounselors(data);
-      setDisplayCounselors(data);
-      let tags = ["All"];
-      for (let i = 0; i < data.length; i++) {
-        const cslr = data[i];
-        if (cslr.specialization) {
-          const splitSpecs = cslr.specialization.split(",");
-          for (let j = 0; j < splitSpecs.length; j++) {
-            const cleanTag = splitSpecs[j].trim();
-            if (!tags.includes(cleanTag) && cleanTag !== "") {
-              tags.push(cleanTag);
-            }
-          }
-        }
-        fetchStatus(cslr._id);
-      }
-      setAvailableTags(tags);
-
-      const statsResults = await Promise.all(
-        data.map((cslr) =>
-          Promise.all([
-            axios
-              .get(`/ratings/counselor/${cslr._id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              })
-              .then((res) => res.data)
-              .catch(() => ({ overall: 0, totalRatings: 0 })),
-            axios
-              .get(`/appointments/completed-count/${cslr._id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              })
-              .then((res) => res.data)
-              .catch(() => ({ count: 0 })),
-          ]).then(([ratingData, countData]) => ({
-            id: cslr._id,
-            data: {
-              overall: ratingData.overall || 0,
-              totalRatings: ratingData.totalRatings || 0,
-              studentsHelped: countData.count || 0,
-            },
-          })),
-        ),
-      );
-
-      const statsMap = {};
-      statsResults.forEach(({ id, data }) => {
-        statsMap[id] = data;
-      });
-      setCounselorStats(statsMap);
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching counselors:", error);
-      setLoading(false);
-    }
-  };
-
-  const fetchStatus = async (id) => {
-    try {
-      const res = await axios.get(`/appointments/live-status/${id}`);
-      setLiveStatuses((prev) => {
-        const newStatuses = { ...prev };
-        newStatuses[id] = res.data;
-        return newStatuses;
-      });
-    } catch (err) {
-      console.error("Status error", err);
-    }
-  };
-
   const handleToggleTag = (tag) => {
     if (tag === "All") {
       setSelectedSpecialties(["All"]);
-    } else {
-      let newSelection = [];
-      for (let i = 0; i < selectedSpecialties.length; i++) {
-        if (selectedSpecialties[i] !== "All") {
-          newSelection.push(selectedSpecialties[i]);
-        }
-      }
-      if (newSelection.includes(tag)) {
-        const index = newSelection.indexOf(tag);
-        newSelection.splice(index, 1);
-      } else {
-        newSelection.push(tag);
-      }
-      if (newSelection.length === 0) {
-        setSelectedSpecialties(["All"]);
-      } else {
-        setSelectedSpecialties(newSelection);
-      }
+      return;
     }
+    let newList = selectedSpecialties.filter((t) => t !== "All");
+    if (newList.includes(tag)) {
+      newList = newList.filter((t) => t !== tag);
+    } else {
+      newList = [...newList, tag];
+    }
+    setSelectedSpecialties(newList.length === 0 ? ["All"] : newList);
   };
 
   const handleApplyFilter = () => {
     setCurrentPage(1);
-    let filteredResults = [];
-    for (let i = 0; i < counselors.length; i++) {
-      const c = counselors[i];
-      let matchesSearch = true;
-      let matchesTag = true;
-      if (searchTerm !== "") {
-        const lowerSearch = searchTerm.toLowerCase();
-        const nameMatch = c.name.toLowerCase().includes(lowerSearch);
-        const specMatch =
-          c.specialization &&
-          c.specialization.toLowerCase().includes(lowerSearch);
-        if (!nameMatch && !specMatch) matchesSearch = false;
-      }
-      if (!selectedSpecialties.includes("All")) {
-        matchesTag = false;
-        const counselorSpecs = c.specialization
-          ? c.specialization.split(",")
-          : [];
-        for (let j = 0; j < selectedSpecialties.length; j++) {
-          for (let k = 0; k < counselorSpecs.length; k++) {
-            if (counselorSpecs[k].trim() === selectedSpecialties[j]) {
-              matchesTag = true;
-              break;
-            }
-          }
-        }
-      }
-      if (matchesSearch && matchesTag) filteredResults.push(c);
-    }
-    setDisplayCounselors(filteredResults);
+    const results = counselors.filter((c) => {
+      const matchesSearch =
+        !searchTerm ||
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.specialization &&
+          c.specialization.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const allSelected = selectedSpecialties.includes("All");
+      const matchesTag =
+        allSelected ||
+        selectedSpecialties.some(
+          (spec) =>
+            c.specialization &&
+            c.specialization
+              .split(",")
+              .map((s) => s.trim())
+              .includes(spec),
+        );
+
+      return matchesSearch && matchesTag;
+    });
+    setDisplayCounselors(results);
   };
 
   const handleClear = () => {
@@ -193,22 +161,16 @@ const CounselorDirectory = () => {
     setCurrentPage(1);
   };
 
-  const indexOfLastCard = currentPage * cardsPerPage;
-  const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCards = displayCounselors.slice(
-    indexOfFirstCard,
-    indexOfLastCard,
-  );
-  const totalPages = Math.ceil(displayCounselors.length / cardsPerPage);
-
-  const getStatusStyles = (id) => {
-    const info = liveStatuses[id] || { status: "Green", label: "Available" };
-    if (info.status === "Yellow")
-      return "bg-amber-50 text-amber-600 border-amber-100";
-    if (info.status === "Red")
-      return "bg-rose-50 text-rose-600 border-rose-100";
-    return "bg-emerald-50 text-emerald-600 border-emerald-100";
+  const toggleCardTags = (id) => {
+    setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const totalPages = Math.ceil(displayCounselors.length / cardsPerPage);
+  const startIndex = (currentPage - 1) * cardsPerPage;
+  const currentCards = displayCounselors.slice(
+    startIndex,
+    startIndex + cardsPerPage,
+  );
 
   if (loading) {
     return (
@@ -240,206 +202,35 @@ const CounselorDirectory = () => {
           <Navbar />
         </div>
 
-        <section className="mb-6">
-          <div className="flex bg-white p-2 rounded-[15px] border border-gray-200 shadow-sm overflow-hidden">
-            <input
-              type="text"
-              placeholder="Search by name or keyword..."
-              className="flex-1 p-3 outline-none text-sm text-gray-600 font-medium"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button
-              onClick={handleApplyFilter}
-              className="bg-[#4f46e5] text-white px-8 py-2 rounded-[10px] font-bold hover:bg-[#3730a3] transition duration-200"
-            >
-              Search
-            </button>
-          </div>
-        </section>
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          onSearch={handleApplyFilter}
+        />
 
-        <section className="bg-white p-6 rounded-[15px] border border-gray-200 mb-8">
-          <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
-            <div className="flex items-center gap-3">
-              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                Filter by Specialization:
-              </p>
-              {!selectedSpecialties.includes("All") && (
-                <span className="bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-1 rounded-md uppercase">
-                  {selectedSpecialties.length} Selected
-                </span>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <button
-                className="text-[12px] font-bold bg-[#4f46e5] text-white px-5 py-2 rounded-xl hover:bg-[#3730a3] transition shadow-md"
-                onClick={handleApplyFilter}
-              >
-                Apply Filter
-              </button>
-              <button
-                className="text-[12px] font-bold bg-gray-100 text-gray-500 px-5 py-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition"
-                onClick={handleClear}
-              >
-                Clear All
-              </button>
-            </div>
-          </div>
-          <div className="flex gap-2 flex-wrap max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-            {availableTags.map((spec) => {
-              const isSelected = selectedSpecialties.includes(spec);
-              return (
-                <button
-                  key={spec}
-                  onClick={() => handleToggleTag(spec)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 border ${isSelected ? "bg-indigo-600 text-white border-indigo-600 shadow-md" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-400"}`}
-                >
-                  {isSelected && <span>✓</span>}
-                  {spec}
-                </button>
-              );
-            })}
-          </div>
-        </section>
+        <FilterSection
+          availableTags={availableTags}
+          selectedSpecialties={selectedSpecialties}
+          onToggleTag={handleToggleTag}
+          onApplyFilter={handleApplyFilter}
+          onClear={handleClear}
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
           {currentCards.length > 0 ? (
-            currentCards.map((cslr) => {
-              const availableDays = [];
-              if (cslr.availability) {
-                for (let d = 0; d < cslr.availability.length; d++) {
-                  availableDays.push(cslr.availability[d].day);
+            currentCards.map((cslr) => (
+              <CounselorCard
+                key={cslr._id}
+                cslr={cslr}
+                stats={
+                  counselorStats[cslr._id] || { overall: 0, studentsHelped: 0 }
                 }
-              }
-              const statusInfo = liveStatuses[cslr._id] || {
-                status: "Green",
-                label: "Available",
-              };
-              const stats = counselorStats[cslr._id] || {
-                overall: 0,
-                studentsHelped: 0,
-                totalRatings: 0,
-              };
-              return (
-                <div
-                  key={cslr._id}
-                  className="bg-white rounded-[24px] p-7 border border-gray-100 shadow-sm transition-all duration-300 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex justify-between items-start mb-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-[20px] flex items-center justify-center flex-shrink-0 border border-indigo-100 overflow-hidden bg-indigo-50">
-                          {cslr.verificationPhoto ? (
-                            <img
-                              src={`http://127.0.0.1:5050/uploads/verifications/${cslr.verificationPhoto}`}
-                              alt={cslr.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.parentElement.innerHTML = `<span class="text-indigo-600 font-bold text-2xl">${cslr.name ? cslr.name.charAt(0) : "C"}</span>`;
-                              }}
-                            />
-                          ) : (
-                            <span className="text-indigo-600 font-bold text-2xl">
-                              {cslr.name ? cslr.name.charAt(0) : "C"}
-                            </span>
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-gray-900 text-lg leading-tight">
-                            {cslr.name}
-                          </h3>
-                          <p className="text-sm font-medium text-gray-400">
-                            {cslr.profTitle || "Clinical Counselor"}
-                          </p>
-                        </div>
-                      </div>
-                      <span
-                        className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider border transition-colors duration-500 ${getStatusStyles(cslr._id)}`}
-                      >
-                        ● {statusInfo.label}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-4 h-[75px] overflow-y-auto pr-1 custom-scrollbar">
-                      {cslr.specialization &&
-                      cslr.specialization.trim() !== "" ? (
-                        cslr.specialization.split(",").map((tag, index) => (
-                          <span
-                            key={index}
-                            className="bg-gray-50 text-gray-500 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-gray-100 uppercase tracking-tight h-fit"
-                          >
-                            {tag.trim()}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="bg-gray-50 text-gray-400 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-gray-100 h-fit">
-                          GENERAL
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 border-y border-gray-100 py-5 mb-6">
-                      <div className="flex flex-col items-center justify-center border-r border-gray-100 gap-1">
-                        <div className="flex items-center gap-1.5">
-                          <Star
-                            size={18}
-                            className="text-yellow-400 fill-yellow-400"
-                          />
-                          <span className="text-xl font-black text-gray-800">
-                            {stats.overall > 0
-                              ? stats.overall.toFixed(1)
-                              : "0.0"}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                          Rating
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-center justify-center gap-1">
-                        <div className="flex items-center gap-1.5">
-                          <Users size={18} className="text-indigo-400" />
-                          <span className="text-xl font-black text-gray-800">
-                            {stats.studentsHelped}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">
-                          Students Helped
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4 mb-8">
-                      <div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-                          Weekly Availability
-                        </p>
-                        <div className="flex justify-between gap-1">
-                          {daysOfWeek.map((day) => {
-                            const isActive = availableDays.includes(day);
-                            return (
-                              <div
-                                key={day}
-                                className={`flex-1 h-8 flex items-center justify-center rounded-lg text-[10px] font-black transition-all ${isActive ? "bg-indigo-600 text-white shadow-sm" : "bg-gray-50 text-gray-300 border border-gray-100"}`}
-                              >
-                                {day.charAt(0)}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => navigate(`/counselor/${cslr._id}`)}
-                    className="w-full py-4 bg-white border border-gray-200 rounded-[18px] font-black text-xs uppercase tracking-widest text-gray-500 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-200 shadow-sm"
-                  >
-                    View Profile
-                  </button>
-                </div>
-              );
-            })
+                liveStatuses={liveStatuses}
+                expandedCards={expandedCards}
+                onToggleCardTags={toggleCardTags}
+                onViewProfile={(id) => navigate(`/counselor/${id}`)}
+              />
+            ))
           ) : (
             <div className="col-span-full text-center py-24 bg-white rounded-[32px] border-2 border-dashed border-gray-200">
               <p className="text-gray-400 font-bold text-lg">
@@ -455,23 +246,11 @@ const CounselorDirectory = () => {
           )}
         </div>
 
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-12 pb-10">
-            {[...Array(totalPages)].map((_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`w-10 h-10 rounded-xl font-bold text-sm transition-all duration-200 border ${
-                  currentPage === index + 1
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
-                    : "bg-white text-gray-400 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-        )}
+        <Pagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
       </main>
     </div>
   );

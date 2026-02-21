@@ -30,20 +30,40 @@ const timeAgo = (date) => {
 
 const PostCard = ({ post, currentUser, onDelete }) => {
   const navigate = useNavigate();
+  let alreadyClicked = false;
+  if (currentUser && currentUser._id) {
+    for (let i = 0; i < post.iFeelThis.length; i++) {
+      if (post.iFeelThis[i].toString() === currentUser._id.toString()) {
+        alreadyClicked = true;
+        break;
+      }
+    }
+  }
+
   const [iFeelCount, setIFeelCount] = useState(post.iFeelThis.length);
-  const [iClicked, setIClicked] = useState(
-    post.iFeelThis
-      .map((id) => id.toString())
-      .includes(currentUser?._id?.toString())
-  );
+  const [iClicked, setIClicked] = useState(alreadyClicked);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const isMyPost =
-    post.authorId?.toString() === currentUser?._id?.toString();
+  let isMyPost = false;
+  if (post.authorId && currentUser && currentUser._id) {
+    if (post.authorId.toString() === currentUser._id.toString()) {
+      isMyPost = true;
+    }
+  }
 
-  const topLevelReplies = post.replies.filter((r) => !r.parentReplyId);
+  const topLevelReplies = [];
+  for (let i = 0; i < post.replies.length; i++) {
+    if (!post.replies[i].parentReplyId) {
+      topLevelReplies.push(post.replies[i]);
+    }
+  }
 
-  const canDelete = currentUser?.role === "Admin" || isMyPost;
+  let canDelete = false;
+  if (currentUser && currentUser.role === "Admin") {
+    canDelete = true;
+  } else if (isMyPost) {
+    canDelete = true;
+  }
 
   const handleIFeelThis = async (e) => {
     e.stopPropagation();
@@ -52,7 +72,7 @@ const PostCard = ({ post, currentUser, onDelete }) => {
       const res = await API.put(
         `/forum/${post._id}/ifeelthis`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setIFeelCount(res.data.iFeelThisCount);
       setIClicked(!iClicked);
@@ -77,13 +97,18 @@ const PostCard = ({ post, currentUser, onDelete }) => {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl">
-            <h3 className="text-gray-800 font-black text-lg mb-2">Delete Post?</h3>
+            <h3 className="text-gray-800 font-black text-lg mb-2">
+              Delete Post?
+            </h3>
             <p className="text-gray-500 text-sm mb-5">
               This will permanently delete the post and all its replies.
             </p>
             <div className="flex gap-3">
               <button
-                onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteConfirm(false);
+                }}
                 className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-50"
               >
                 Cancel
@@ -106,8 +131,12 @@ const PostCard = ({ post, currentUser, onDelete }) => {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+              <svg
+                className="w-5 h-5 text-gray-400"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
               </svg>
             </div>
             <div>
@@ -120,11 +149,14 @@ const PostCard = ({ post, currentUser, onDelete }) => {
                 )}
               </p>
               <p className="text-xs text-gray-400">
-                {moodEmoji[post.moodTag]} {post.moodTag} · {timeAgo(post.createdAt)}
+                {moodEmoji[post.moodTag]} {post.moodTag} ·{" "}
+                {timeAgo(post.createdAt)}
               </p>
             </div>
           </div>
-          <span className={`text-xs font-black px-3 py-1.5 rounded-full border ${categoryColor[post.category]}`}>
+          <span
+            className={`text-xs font-black px-3 py-1.5 rounded-full border ${categoryColor[post.category]}`}
+          >
             {post.category}
           </span>
         </div>
@@ -147,11 +179,12 @@ const PostCard = ({ post, currentUser, onDelete }) => {
         </p>
 
         <div className="flex items-center gap-5 pt-3 border-t border-gray-100">
-
           <button
             onClick={handleIFeelThis}
             className={`flex items-center gap-2 text-xs font-bold transition-all ${
-              iClicked ? "text-indigo-600" : "text-gray-400 hover:text-indigo-500"
+              iClicked
+                ? "text-indigo-600"
+                : "text-gray-400 hover:text-indigo-500"
             }`}
           >
             <Heart
@@ -162,7 +195,10 @@ const PostCard = ({ post, currentUser, onDelete }) => {
           </button>
 
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/post/${post._id}`); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/post/${post._id}`);
+            }}
             className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-indigo-500 transition"
           >
             <MessageCircle size={15} />

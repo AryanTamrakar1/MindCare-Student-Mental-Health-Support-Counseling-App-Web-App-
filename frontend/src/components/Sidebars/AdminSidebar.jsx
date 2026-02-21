@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
@@ -17,11 +17,23 @@ const AdminSidebar = ({ user }) => {
   const location = useLocation();
   const { logout } = useContext(AuthContext);
 
-  const isActive = (path) => location.pathname === path;
+  function isActive(path) {
+    if (location.pathname === path) {
+      return true;
+    }
+    return false;
+  }
 
-  const menuNavigate = (path) => {
+  function menuNavigate(path) {
     navigate(path, { state: { user } });
-  };
+  }
+
+  function getButtonClass(path) {
+    if (isActive(path)) {
+      return "flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold w-full whitespace-nowrap bg-[#1f2937] text-white";
+    }
+    return "flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold w-full whitespace-nowrap text-[#9ca3af] hover:bg-[#1f2937] hover:text-white";
+  }
 
   return (
     <aside className="w-[280px] min-w-[280px] max-w-[280px] bg-[#111827] text-white fixed h-screen flex flex-col justify-between p-[30px_20px] overflow-y-auto">
@@ -35,61 +47,54 @@ const AdminSidebar = ({ user }) => {
             <span className="text-[#818cf8]">CARE</span>
           </div>
         </div>
+
         <nav className="flex flex-col gap-1">
           <button
-            onClick={() => menuNavigate("/admin-dashboard")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold whitespace-nowrap ${
-              isActive("/admin-dashboard")
-                ? "bg-[#1f2937] text-white"
-                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
-            }`}
+            onClick={function () {
+              menuNavigate("/admin-dashboard");
+            }}
+            className={getButtonClass("/admin-dashboard")}
           >
             <Home size={20} className="flex-shrink-0" />
             HOME
           </button>
 
           <button
-            onClick={() => menuNavigate("/user-management")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold whitespace-nowrap ${
-              isActive("/user-management")
-                ? "bg-[#1f2937] text-white"
-                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
-            }`}
+            onClick={function () {
+              menuNavigate("/user-management");
+            }}
+            className={getButtonClass("/user-management")}
           >
             <Users size={20} className="flex-shrink-0" />
             USER MANAGEMENT
           </button>
 
           <button
-            onClick={() => menuNavigate("/counselor-approvals")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold whitespace-nowrap ${
-              isActive("/counselor-approvals")
-                ? "bg-[#1f2937] text-white"
-                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
-            }`}
+            onClick={function () {
+              menuNavigate("/counselor-approvals");
+            }}
+            className={getButtonClass("/counselor-approvals")}
           >
             <UserCheck size={20} className="flex-shrink-0" />
             COUNSELOR APPROVALS
           </button>
 
           <button
-            onClick={() => menuNavigate("/post-management")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold whitespace-nowrap ${
-              isActive("/post-management")
-                ? "bg-[#1f2937] text-white"
-                : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
-            }`}
+            onClick={function () {
+              menuNavigate("/post-management");
+            }}
+            className={getButtonClass("/post-management")}
           >
             <FileText size={20} className="flex-shrink-0" />
             POST MANAGEMENT
           </button>
 
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white whitespace-nowrap">
+          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold w-full whitespace-nowrap text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
             <BarChart3 size={20} className="flex-shrink-0" />
             PLATFORM ANALYTICS
           </button>
 
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#9ca3af] hover:bg-[#1f2937] hover:text-white whitespace-nowrap">
+          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold w-full whitespace-nowrap text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
             <BookOpen size={20} className="flex-shrink-0" />
             RESOURCE LIBRARY
           </button>
@@ -100,12 +105,10 @@ const AdminSidebar = ({ user }) => {
         <div className="border-t border-[#374151] mb-3"></div>
 
         <button
-          onClick={() => menuNavigate("/settings")}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold w-full whitespace-nowrap ${
-            isActive("/settings")
-              ? "bg-[#1f2937] text-white"
-              : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-white"
-          }`}
+          onClick={function () {
+            menuNavigate("/settings");
+          }}
+          className={getButtonClass("/settings")}
         >
           <Settings size={20} className="flex-shrink-0" />
           SETTINGS

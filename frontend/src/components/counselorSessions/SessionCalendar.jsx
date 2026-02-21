@@ -9,35 +9,53 @@ import {
 const SessionCalendar = ({ sessions, onDateClick }) => {
   const [view, setView] = useState(new Date());
   const [selectedKey, setSelectedKey] = useState(null);
+
   const y = view.getFullYear();
   const m = view.getMonth();
   const today = new Date();
-  const calSessions = sessions.filter(
-    (s) => s.status === "Approved" || s.status === "Completed",
-  );
+  const calSessions = [];
+  for (let i = 0; i < sessions.length; i++) {
+    if (
+      sessions[i].status === "Approved" ||
+      sessions[i].status === "Completed" ||
+      sessions[i].status === "Missed"
+    ) {
+      calSessions.push(sessions[i]);
+    }
+  }
 
   const smap = {};
-  calSessions.forEach((s) => {
+  for (let i = 0; i < calSessions.length; i++) {
+    const s = calSessions[i];
     const p = parseDbDate(s.date);
-    if (!p) return;
+    if (!p) continue;
     const k = `${p.y}-${p.m}-${p.d}`;
     if (!smap[k]) smap[k] = [];
     smap[k].push(s);
-  });
+  }
 
   const firstDay = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const totalCells = firstDay + daysInMonth;
-  const trailingBlanks = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+
+  let trailingBlanks = 0;
+  if (totalCells % 7 !== 0) {
+    trailingBlanks = 7 - (totalCells % 7);
+  }
 
   const handleDayClick = (day) => {
     const dow = new Date(y, m, day).getDay();
     if (dow === 0 || dow === 6) return;
     const k = `${y}-${m}-${day}`;
     if (!smap[k]) return;
-    const next = selectedKey === k ? null : k;
+    let next = k;
+    if (selectedKey === k) next = null;
     setSelectedKey(next);
-    onDateClick(next ? smap[k] : null, next ? { y, m, d: day } : null);
+    if (next) {
+      onDateClick(smap[k], { y, m, d: day });
+    } else {
+      onDateClick(null, null);
+    }
   };
 
   const prevMonth = () => {
@@ -45,22 +63,34 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
     onDateClick(null, null);
     setView(new Date(y, m - 1, 1));
   };
+
   const nextMonth = () => {
     setSelectedKey(null);
     onDateClick(null, null);
     setView(new Date(y, m + 1, 1));
   };
 
+  const leadingBlanks = [];
+  for (let i = 0; i < firstDay; i++) {
+    leadingBlanks.push(i);
+  }
+
+  const dayNumbers = [];
+  for (let i = 1; i <= daysInMonth; i++) {
+    dayNumbers.push(i);
+  }
+
+  const trailingBlanksArr = [];
+  for (let i = 0; i < trailingBlanks; i++) {
+    trailingBlanksArr.push(i);
+  }
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="bg-indigo-600 px-6 py-4 flex items-center justify-between">
         <div>
-          <p className="text-indigo-200 text-[10px] font-black uppercase tracking-widest">
-            Schedule
-          </p>
-          <h3 className="text-white text-xl font-black">
-            {MONTHS[m]} {y}
-          </h3>
+          <p className="text-indigo-200 text-[10px] font-black uppercase tracking-widest">Schedule</p>
+          <h3 className="text-white text-xl font-black">{MONTHS[m]} {y}</h3>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
@@ -72,18 +102,16 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
               <span className="w-2 h-2 rounded-full bg-indigo-300 inline-block" />
               Completed
             </span>
+            <span className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-200">
+              <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+              Missed
+            </span>
           </div>
           <div className="flex gap-1">
-            <button
-              onClick={prevMonth}
-              className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-            >
+            <button onClick={prevMonth} className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
               <ChevronLeft size={15} />
             </button>
-            <button
-              onClick={nextMonth}
-              className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-            >
+            <button onClick={nextMonth} className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
               <ChevronRight size={15} />
             </button>
           </div>
@@ -103,84 +131,88 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
       </div>
 
       <div className="grid grid-cols-7">
-        {Array(firstDay)
-          .fill(null)
-          .map((_, i) => (
-            <div
-              key={`b-${i}`}
-              className="h-[72px] border-r border-b border-gray-100"
-            />
-          ))}
+        {leadingBlanks.map((i) => (
+          <div key={`b-${i}`} className="h-[72px] border-r border-b border-gray-100" />
+        ))}
 
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+        {dayNumbers.map((day) => {
           const k = `${y}-${m}-${day}`;
-          const ds = smap[k] || [];
+          const ds = smap[k] ? smap[k] : [];
           const dow = new Date(y, m, day).getDay();
           const isWeekend = dow === 0 || dow === 6;
-          const isToday =
-            today.getDate() === day &&
-            today.getMonth() === m &&
-            today.getFullYear() === y;
+          const isToday = today.getDate() === day && today.getMonth() === m && today.getFullYear() === y;
           const isSel = selectedKey === k;
           const isLastInRow = (firstDay + day - 1) % 7 === 6;
 
-          const visibleSessions = ds.slice(0, 2);
-          const extraCount = ds.length - 2;
+          const visibleSessions = [];
+          for (let i = 0; i < ds.length && i < 2; i++) {
+            visibleSessions.push(ds[i]);
+          }
+          const extraCount = ds.length - 2 > 0 ? ds.length - 2 : 0;
+
+          let dayBg = "";
+          if (!isWeekend && isSel) dayBg = "bg-indigo-600";
+          else if (!isWeekend && isToday) dayBg = "bg-indigo-50";
+          else if (!isWeekend && ds.length > 0) dayBg = "hover:bg-gray-50";
+
+          let dayCursor = "cursor-default";
+          if (!isWeekend && ds.length > 0) dayCursor = "cursor-pointer";
+
+          let dayBgFull = isWeekend ? "bg-gray-50/60 cursor-default" : `${dayCursor} ${dayBg}`;
+
+          let numClass = "text-gray-700";
+          if (isWeekend) numClass = "text-gray-300";
+          else if (isSel) numClass = "bg-white text-indigo-600";
+          else if (isToday) numClass = "bg-indigo-600 text-white";
 
           return (
             <div
               key={day}
               onClick={() => handleDayClick(day)}
-              className={`h-[72px] border-b border-gray-100 p-2 flex flex-col transition-all
-                ${!isLastInRow ? "border-r" : ""}
-                ${isWeekend ? "bg-gray-50/60 cursor-default" : ds.length ? "cursor-pointer" : "cursor-default"}
-                ${!isWeekend && isSel ? "bg-indigo-600" : !isWeekend && isToday ? "bg-indigo-50" : !isWeekend && ds.length ? "hover:bg-gray-50" : ""}
-              `}
+              className={`h-[72px] border-b border-gray-100 p-2 flex flex-col transition-all ${!isLastInRow ? "border-r" : ""} ${dayBgFull}`}
             >
-              <span
-                className={`text-sm font-black w-7 h-7 flex items-center justify-center rounded-full self-start
-                ${
-                  isWeekend
-                    ? "text-gray-300"
-                    : isSel
-                      ? "bg-white text-indigo-600"
-                      : isToday
-                        ? "bg-indigo-600 text-white"
-                        : "text-gray-700"
-                }
-              `}
-              >
+              <span className={`text-sm font-black w-7 h-7 flex items-center justify-center rounded-full self-start ${numClass}`}>
                 {day}
               </span>
 
-              {!isWeekend &&
-                visibleSessions.map((s, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black truncate mt-0.5
-                  ${
-                    isSel
-                      ? "bg-white/20 text-white"
-                      : s.status === "Approved"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-indigo-50 text-indigo-700"
+              {!isWeekend && visibleSessions.map((s, i) => {
+                let sessionBg = "bg-white/20 text-white";
+                if (!isSel) {
+                  if (s.status === "Approved") {
+                    sessionBg = "bg-emerald-50 text-emerald-700";
+                  } else if (s.status === "Missed") {
+                    sessionBg = "bg-red-50 text-red-700";
+                  } else {
+                    sessionBg = "bg-indigo-50 text-indigo-700";
                   }
-                `}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0
-                    ${isSel ? "bg-white" : s.status === "Approved" ? "bg-emerald-500" : "bg-indigo-500"}
-                  `}
-                    />
-                    <span className="truncate">
-                      {s.studentId?.name?.split(" ")[0] || "Session"}
-                    </span>
+                }
+
+                let dotColor = "bg-white";
+                if (!isSel) {
+                  if (s.status === "Approved") {
+                    dotColor = "bg-emerald-500";
+                  } else if (s.status === "Missed") {
+                    dotColor = "bg-red-500";
+                  } else {
+                    dotColor = "bg-indigo-500";
+                  }
+                }
+
+                let firstName = "Session";
+                if (s.studentId && s.studentId.name) {
+                  firstName = s.studentId.name.split(" ")[0];
+                }
+
+                return (
+                  <div key={i} className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black truncate mt-0.5 ${sessionBg}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`} />
+                    <span className="truncate">{firstName}</span>
                   </div>
-                ))}
+                );
+              })}
+
               {!isWeekend && extraCount > 0 && (
-                <span
-                  className={`text-[7px] font-black pl-1 ${isSel ? "text-indigo-200" : "text-gray-400"}`}
-                >
+                <span className={`text-[7px] font-black pl-1 ${isSel ? "text-indigo-200" : "text-gray-400"}`}>
                   +{extraCount} more
                 </span>
               )}
@@ -188,14 +220,9 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
           );
         })}
 
-        {Array(trailingBlanks)
-          .fill(null)
-          .map((_, i) => (
-            <div
-              key={`t-${i}`}
-              className={`h-[72px] border-b border-gray-100 ${i < trailingBlanks - 1 ? "border-r" : ""}`}
-            />
-          ))}
+        {trailingBlanksArr.map((i) => (
+          <div key={`t-${i}`} className={`h-[72px] border-b border-gray-100 ${i < trailingBlanks - 1 ? "border-r" : ""}`} />
+        ))}
       </div>
     </div>
   );

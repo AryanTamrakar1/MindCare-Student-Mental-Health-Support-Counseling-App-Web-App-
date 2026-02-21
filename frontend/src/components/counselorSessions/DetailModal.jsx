@@ -16,27 +16,38 @@ import {
 
 const DetailModal = ({ session, onClose, onStart, onEnd }) => {
   if (!session) return null;
+
   const canStart = isSessionTime(session.date, session.timeSlot);
   const topics = parseTopics(session.reason);
   const reasonText = parseReason(session.reason);
 
-  const statusConfig = {
-    Approved: {
-      color: "text-emerald-700",
-      bg: "bg-emerald-500",
-      light: "bg-emerald-50 border-emerald-200",
-    },
-    Completed: {
-      color: "text-indigo-700",
-      bg: "bg-indigo-500",
-      light: "bg-indigo-50 border-indigo-200",
-    },
-  };
-  const sc = statusConfig[session.status] || {
-    color: "text-gray-600",
-    bg: "bg-gray-400",
-    light: "bg-gray-50 border-gray-200",
-  };
+  let scColor = "text-gray-600";
+  let scBg = "bg-gray-400";
+  let scLight = "bg-gray-50 border-gray-200";
+
+  if (session.status === "Approved") {
+    scColor = "text-emerald-700";
+    scBg = "bg-emerald-500";
+    scLight = "bg-emerald-50 border-emerald-200";
+  } else if (session.status === "Completed") {
+    scColor = "text-indigo-700";
+    scBg = "bg-indigo-500";
+    scLight = "bg-indigo-50 border-indigo-200";
+  }
+
+  let studentInitial = "S";
+  if (
+    session.studentId &&
+    session.studentId.name &&
+    session.studentId.name.length > 0
+  ) {
+    studentInitial = session.studentId.name.charAt(0);
+  }
+
+  let studentName = "Student";
+  if (session.studentId && session.studentId.name) {
+    studentName = session.studentId.name;
+  }
 
   return (
     <div
@@ -52,17 +63,17 @@ const DetailModal = ({ session, onClose, onStart, onEnd }) => {
         <div className="px-8 pt-10 pb-7 flex items-start justify-between">
           <div className="flex items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl flex-shrink-0">
-              {session.studentId?.name?.charAt(0) || "S"}
+              {studentInitial}
             </div>
             <div>
               <h2 className="text-lg font-black text-gray-900 leading-tight">
-                {session.studentId?.name || "Student"}
+                {studentName}
               </h2>
               <div className="flex items-center gap-3 mt-1.5">
                 <span
-                  className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider ${sc.light} ${sc.color}`}
+                  className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider ${scLight} ${scColor}`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${sc.bg}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${scBg}`} />
                   {session.status}
                 </span>
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
@@ -156,7 +167,6 @@ const DetailModal = ({ session, onClose, onStart, onEnd }) => {
                   <PlayCircle size={16} />
                   {canStart ? "Start Session Now" : "Session Not Available"}
                 </button>
-
                 {canStart && (
                   <button
                     onClick={() => {
@@ -171,7 +181,6 @@ const DetailModal = ({ session, onClose, onStart, onEnd }) => {
                 )}
               </>
             )}
-
             {session.status === "Completed" && (
               <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-indigo-100 border border-indigo-200">
                 <CheckCircle size={16} className="text-indigo-600" />
@@ -181,7 +190,6 @@ const DetailModal = ({ session, onClose, onStart, onEnd }) => {
               </div>
             )}
           </div>
-
           <button
             onClick={onClose}
             className="px-7 py-4 rounded-xl text-xs font-black text-gray-600 bg-gray-200 hover:bg-gray-300 uppercase tracking-wider transition-all flex-shrink-0"

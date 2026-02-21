@@ -2,9 +2,9 @@ import { useState, useEffect, useContext } from "react";
 import { Search, Plus, X } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import API from "../api/axios";
-import StudentSidebar from "../components/StudentSidebar";
-import CounselorSidebar from "../components/CounselorSidebar";
-import PostCard from "../components/Forum/PostCard";
+import StudentSidebar from "../components/Sidebars/StudentSidebar";
+import CounselorSidebar from "../components/Sidebars/CounselorSidebar";
+import PostCard from "../components/communityForum/PostCard";
 import Navbar from "../components/Navbar";
 
 const categories = [
@@ -25,7 +25,7 @@ const moodTags = [
   { label: "Hopeful", emoji: "🙂" },
 ];
 
-const POSTS_PER_PAGE = 5;
+const POSTS_PER_PAGE = 4;
 
 const CommunityForum = () => {
   const { user } = useContext(AuthContext);
@@ -35,7 +35,6 @@ const CommunityForum = () => {
   const [showMyPosts, setShowMyPosts] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-
   const [isExpanded, setIsExpanded] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
@@ -47,6 +46,7 @@ const CommunityForum = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory, showMyPosts, searchTerm]);
@@ -58,8 +58,8 @@ const CommunityForum = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPosts(res.data);
-    } catch (error) {
-      console.log("Error:", error);
+    } catch (err) {
+      console.log("Error:", err);
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ const CommunityForum = () => {
       setNewMoodTag("");
       setIsExpanded(false);
       setPostError("");
-    } catch (error) {
+    } catch {
       setPostError("Something went wrong. Try again.");
     } finally {
       setPosting(false);
@@ -104,8 +104,8 @@ const CommunityForum = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPosts(posts.filter((p) => p._id !== postId));
-    } catch (error) {
-      console.log("Error:", error);
+    } catch (err) {
+      console.log("Error:", err);
     }
   };
 
@@ -116,14 +116,13 @@ const CommunityForum = () => {
 
   const filteredPosts = posts.filter((p) => {
     const matchesCategory =
-      selectedCategory === "All" ? true : p.category === selectedCategory;
-    const matchesMyPost = showMyPosts
-      ? p.authorId?.toString() === user?._id?.toString()
-      : true;
-    const matchesSearch = searchTerm
-      ? p.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.title?.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
+      selectedCategory === "All" || p.category === selectedCategory;
+    const matchesMyPost =
+      !showMyPosts || p.authorId?.toString() === user?._id?.toString();
+    const matchesSearch =
+      !searchTerm ||
+      p.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.title?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesMyPost && matchesSearch;
   });
 
@@ -272,6 +271,7 @@ const CommunityForum = () => {
                   <Plus size={16} className="text-gray-400" />
                 )}
               </div>
+
               {isExpanded && (
                 <div className="px-4 pb-4 border-t border-gray-100 pt-4">
                   <div className="bg-indigo-50 rounded-xl px-4 py-2 mb-4">
@@ -280,6 +280,7 @@ const CommunityForum = () => {
                       your name.
                     </p>
                   </div>
+
                   <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                     Post Title
                   </p>
@@ -290,6 +291,7 @@ const CommunityForum = () => {
                     placeholder="Write a short title..."
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none mb-4 focus:border-indigo-400"
                   />
+
                   <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                     What is your post about?
                   </p>
@@ -300,12 +302,17 @@ const CommunityForum = () => {
                         <button
                           key={cat}
                           onClick={() => setNewCategory(cat)}
-                          className={`text-xs font-bold px-3 py-2 rounded-full border transition-all ${newCategory === cat ? "bg-indigo-600 text-white border-indigo-600" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-400"}`}
+                          className={`text-xs font-bold px-3 py-2 rounded-full border transition-all ${
+                            newCategory === cat
+                              ? "bg-indigo-600 text-white border-indigo-600"
+                              : "bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-400"
+                          }`}
                         >
                           {cat}
                         </button>
                       ))}
                   </div>
+
                   <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                     How are you feeling?
                   </p>
@@ -314,12 +321,17 @@ const CommunityForum = () => {
                       <button
                         key={mood.label}
                         onClick={() => setNewMoodTag(mood.label)}
-                        className={`text-xs font-bold px-3 py-2 rounded-full border transition-all ${newMoodTag === mood.label ? "bg-indigo-600 text-white border-indigo-600" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-400"}`}
+                        className={`text-xs font-bold px-3 py-2 rounded-full border transition-all ${
+                          newMoodTag === mood.label
+                            ? "bg-indigo-600 text-white border-indigo-600"
+                            : "bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-400"
+                        }`}
                       >
                         {mood.emoji} {mood.label}
                       </button>
                     ))}
                   </div>
+
                   <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                     Your Post
                   </p>
@@ -347,7 +359,7 @@ const CommunityForum = () => {
           </>
         )}
 
-        <div className="mt-4 mb-2 flex items-center justify-between">
+        <div className="mt-4 mb-2">
           <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest">
             {filteredPosts.length} Post{filteredPosts.length !== 1 ? "s" : ""}
             {searchTerm && ` for "${searchTerm}"`}
@@ -387,6 +399,7 @@ const CommunityForum = () => {
                 />
               ))}
             </div>
+
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8 pb-4">
                 <button
@@ -396,15 +409,21 @@ const CommunityForum = () => {
                 >
                   ← Prev
                 </button>
-                {[...Array(totalPages)].map((_, index) => (
-                  <button
-                    key={index + 1}
-                    onClick={() => setCurrentPage(index + 1)}
-                    className={`w-10 h-10 rounded-xl font-bold text-sm transition-all border ${currentPage === index + 1 ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-gray-400 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"}`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (num) => (
+                    <button
+                      key={num}
+                      onClick={() => setCurrentPage(num)}
+                      className={`w-10 h-10 rounded-xl font-bold text-sm transition-all border ${
+                        currentPage === num
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                          : "bg-white text-gray-400 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ),
+                )}
                 <button
                   onClick={() =>
                     setCurrentPage((p) => Math.min(p + 1, totalPages))

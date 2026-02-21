@@ -1,5 +1,4 @@
-// src/components/Navbar.jsx
-import React, { useState, useContext, useRef, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -7,34 +6,53 @@ const Navbar = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
-    };
+  if (!user) {
+    return null;
+  }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const getProfilePhotoUrl = () => {
-    if (user?.verificationPhoto) {
-      return `http://127.0.0.1:5050/uploads/verifications/${user.verificationPhoto}`;
+  function getProfilePhotoUrl() {
+    if (user.verificationPhoto) {
+      return (
+        "http://127.0.0.1:5050/uploads/verifications/" + user.verificationPhoto
+      );
     }
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      user?.name || "User"
-    )}&background=4f46e5&color=fff&size=100`;
-  };
+    let name = "User";
+    if (user.name) {
+      name = user.name;
+    }
+    return (
+      "https://ui-avatars.com/api/?name=" +
+      name +
+      "&background=4f46e5&color=fff&size=100"
+    );
+  }
 
-  const handleEditProfile = () => {
+  function handleEditProfile() {
     setShowDropdown(false);
     navigate("/settings");
-  };
+  }
 
-  if (!user) return null;
+  function openDropdown() {
+    setShowDropdown(true);
+  }
+
+  function closeDropdown() {
+    setShowDropdown(false);
+  }
+
+  function toggleDropdown() {
+    if (showDropdown) {
+      setShowDropdown(false);
+    } else {
+      setShowDropdown(true);
+    }
+  }
+
+  let arrowClass = "w-4 h-4 text-gray-500 transition-transform";
+  if (showDropdown) {
+    arrowClass = "w-4 h-4 text-gray-500 transition-transform rotate-180";
+  }
 
   return (
     <div className="flex items-center gap-4">
@@ -55,12 +73,11 @@ const Navbar = () => {
         <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
       </button>
 
-      <div className="relative" ref={dropdownRef}>
+      <div className="relative">
         <button
-          onClick={() => setShowDropdown(!showDropdown)}
+          onClick={toggleDropdown}
           className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2 transition"
         >
-
           <img
             src={getProfilePhotoUrl()}
             alt="Profile"
@@ -73,9 +90,7 @@ const Navbar = () => {
           </div>
 
           <svg
-            className={`w-4 h-4 text-gray-500 transition-transform ${
-              showDropdown ? "rotate-180" : ""
-            }`}
+            className={arrowClass}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -90,8 +105,11 @@ const Navbar = () => {
         </button>
 
         {showDropdown && (
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-50">
+          <div className="fixed inset-0 z-40" onClick={closeDropdown}></div>
+        )}
 
+        {showDropdown && (
+          <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-50">
             <div className="p-4 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <img

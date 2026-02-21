@@ -40,7 +40,15 @@ exports.submitRating = async (req, res) => {
       helpfulness,
       overallSatisfaction,
     ];
-    const allValid = scores.every((s) => s >= 1 && s <= 5);
+
+    let allValid = true;
+    for (let i = 0; i < scores.length; i++) {
+      if (scores[i] < 1 || scores[i] > 5) {
+        allValid = false;
+        break;
+      }
+    }
+
     if (!allValid) {
       return res.status(400).json({
         message: "All questions must be rated between 1 and 5.",
@@ -75,9 +83,13 @@ exports.checkRating = async (req, res) => {
     const studentId = req.user.id;
 
     const existing = await Rating.findOne({ appointmentId, studentId });
+    let hasRated = false;
+    if (existing) {
+      hasRated = true;
+    }
 
     res.status(200).json({
-      hasRated: !!existing,
+      hasRated: hasRated,
       rating: existing || null,
     });
   } catch (error) {
@@ -141,10 +153,11 @@ exports.getCounselorRatings = async (req, res) => {
         averages.overallSatisfaction) /
       5
     ).toFixed(2);
+    averages.overall = overall;
 
     res.status(200).json({
       totalRatings: count,
-      averages: { ...averages, overall },
+      averages: averages,
       ratings,
     });
   } catch (error) {
@@ -168,16 +181,12 @@ exports.getPublicCounselorRating = async (req, res) => {
     }
 
     const count = ratings.length;
-    const totalOverall = ratings.reduce((acc, r) => {
-      const avg =
-        (r.professionalism +
-          r.clarity +
-          r.empathy +
-          r.helpfulness +
-          r.overallSatisfaction) /
-        5;
-      return acc + avg;
-    }, 0);
+    let totalOverall = 0;
+    for (let i = 0; i < ratings.length; i++) {
+      const r = ratings[i];
+      const avg = (r.professionalism + r.clarity + r.empathy + r.helpfulness + r.overallSatisfaction) / 5;
+      totalOverall = totalOverall + avg;
+    }
 
     const overall = +(totalOverall / count).toFixed(2);
 

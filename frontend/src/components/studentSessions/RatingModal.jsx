@@ -40,9 +40,15 @@ const StarRating = ({ value, onChange, disabled }) => {
           key={star}
           type="button"
           disabled={disabled}
-          onClick={() => !disabled && onChange(star)}
-          onMouseEnter={() => !disabled && setHovered(star)}
-          onMouseLeave={() => !disabled && setHovered(0)}
+          onClick={() => {
+            if (!disabled) onChange(star);
+          }}
+          onMouseEnter={() => {
+            if (!disabled) setHovered(star);
+          }}
+          onMouseLeave={() => {
+            if (!disabled) setHovered(0);
+          }}
           className={`transition-all ${disabled ? "cursor-default" : "cursor-pointer hover:scale-110"}`}
         >
           <Star
@@ -70,7 +76,6 @@ const RatingModal = ({ session, onClose, onRated }) => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [alreadyRated, setAlreadyRated] = useState(false);
-  const [existingRating, setExistingRating] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -84,7 +89,6 @@ const RatingModal = ({ session, onClose, onRated }) => {
         });
         if (res.data.hasRated) {
           setAlreadyRated(true);
-          setExistingRating(res.data.rating);
           const r = res.data.rating;
           setRatings({
             professionalism: r.professionalism,
@@ -100,9 +104,14 @@ const RatingModal = ({ session, onClose, onRated }) => {
       }
     };
     checkExisting();
-  }, [session?._id]);
+  }, [session._id]);
 
-  const allAnswered = Object.values(ratings).every((v) => v >= 1);
+  let allAnswered = true;
+  if (ratings.professionalism < 1) allAnswered = false;
+  if (ratings.clarity < 1) allAnswered = false;
+  if (ratings.empathy < 1) allAnswered = false;
+  if (ratings.helpfulness < 1) allAnswered = false;
+  if (ratings.overallSatisfaction < 1) allAnswered = false;
 
   const handleSubmit = async () => {
     if (!allAnswered) {
@@ -117,22 +126,45 @@ const RatingModal = ({ session, onClose, onRated }) => {
         "/ratings/submit",
         {
           appointmentId: session._id,
-          ...ratings,
+          professionalism: ratings.professionalism,
+          clarity: ratings.clarity,
+          empathy: ratings.empathy,
+          helpfulness: ratings.helpfulness,
+          overallSatisfaction: ratings.overallSatisfaction,
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       setSubmitted(true);
-      onRated && onRated(session._id);
+      if (onRated) onRated(session._id);
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Could not submit rating. Try again.",
-      );
+      let message = "Could not submit rating. Try again.";
+      if (err.response && err.response.data && err.response.data.message) {
+        message = err.response.data.message;
+      }
+      setError(message);
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleStarChange = (key, val) => {
+    const updated = {
+      professionalism: ratings.professionalism,
+      clarity: ratings.clarity,
+      empathy: ratings.empathy,
+      helpfulness: ratings.helpfulness,
+      overallSatisfaction: ratings.overallSatisfaction,
+    };
+    updated[key] = val;
+    setRatings(updated);
+  };
+
   if (!session) return null;
+
+  let counselorName = "Counselor";
+  if (session.counselorId && session.counselorId.name) {
+    counselorName = session.counselorId.name;
+  }
 
   return (
     <div
@@ -155,7 +187,7 @@ const RatingModal = ({ session, onClose, onRated }) => {
                 {alreadyRated ? "Your Rating" : "Rate Your Session"}
               </h2>
               <p className="text-sm text-gray-400 font-medium mt-0.5">
-                {session.counselorId?.name || "Counselor"} · {session.date}
+                {counselorName} · {session.date}
               </p>
             </div>
           </div>
@@ -229,7 +261,6 @@ const RatingModal = ({ session, onClose, onRated }) => {
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                 Rate each area from 1 to 5 stars
               </p>
-
               {QUESTIONS.map((q) => (
                 <div
                   key={q.key}
@@ -245,9 +276,7 @@ const RatingModal = ({ session, onClose, onRated }) => {
                   </div>
                   <StarRating
                     value={ratings[q.key]}
-                    onChange={(val) =>
-                      setRatings((prev) => ({ ...prev, [q.key]: val }))
-                    }
+                    onChange={(val) => handleStarChange(q.key, val)}
                     disabled={false}
                   />
                 </div>
@@ -277,11 +306,7 @@ const RatingModal = ({ session, onClose, onRated }) => {
                   onClick={handleSubmit}
                   disabled={!allAnswered || submitting}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all
-                    ${
-                      allAnswered && !submitting
-                        ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md"
-                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
+                    ${allAnswered && !submitting ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
                 >
                   {submitting ? (
                     <>

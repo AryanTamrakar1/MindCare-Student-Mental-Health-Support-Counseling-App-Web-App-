@@ -19,6 +19,7 @@ import axios from "../../api/axios";
 
 const DetailModal = ({ session, onClose, onJoin, onRate }) => {
   if (!session) return null;
+
   const canJoin = isSessionTime(session.date, session.timeSlot);
   const topics = parseTopics(session.reason);
   const reasonText = parseReason(session.reason);
@@ -40,33 +41,41 @@ const DetailModal = ({ session, onClose, onJoin, onRate }) => {
     checkRating();
   }, [session._id, session.status]);
 
-  const statusConfig = {
-    Approved: {
-      color: "text-emerald-700",
-      bg: "bg-emerald-500",
-      light: "bg-emerald-50 border-emerald-200",
-    },
-    Completed: {
-      color: "text-indigo-700",
-      bg: "bg-indigo-500",
-      light: "bg-indigo-50 border-indigo-200",
-    },
-    Declined: {
-      color: "text-red-700",
-      bg: "bg-red-500",
-      light: "bg-red-50 border-red-200",
-    },
-    Pending: {
-      color: "text-yellow-700",
-      bg: "bg-yellow-400",
-      light: "bg-yellow-50 border-yellow-200",
-    },
-  };
-  const sc = statusConfig[session.status] || {
-    color: "text-gray-600",
-    bg: "bg-gray-400",
-    light: "bg-gray-50 border-gray-200",
-  };
+  let scColor = "text-gray-600";
+  let scBg = "bg-gray-400";
+  let scLight = "bg-gray-50 border-gray-200";
+
+  if (session.status === "Approved") {
+    scColor = "text-emerald-700";
+    scBg = "bg-emerald-500";
+    scLight = "bg-emerald-50 border-emerald-200";
+  } else if (session.status === "Completed") {
+    scColor = "text-indigo-700";
+    scBg = "bg-indigo-500";
+    scLight = "bg-indigo-50 border-indigo-200";
+  } else if (session.status === "Declined") {
+    scColor = "text-red-700";
+    scBg = "bg-red-500";
+    scLight = "bg-red-50 border-red-200";
+  } else if (session.status === "Pending") {
+    scColor = "text-yellow-700";
+    scBg = "bg-yellow-400";
+    scLight = "bg-yellow-50 border-yellow-200";
+  }
+
+  let counselorInitial = "C";
+  if (
+    session.counselorId &&
+    session.counselorId.name &&
+    session.counselorId.name.length > 0
+  ) {
+    counselorInitial = session.counselorId.name.charAt(0);
+  }
+
+  let counselorName = "Counselor";
+  if (session.counselorId && session.counselorId.name) {
+    counselorName = session.counselorId.name;
+  }
 
   return (
     <div
@@ -82,17 +91,17 @@ const DetailModal = ({ session, onClose, onJoin, onRate }) => {
         <div className="px-8 pt-10 pb-7 flex items-start justify-between">
           <div className="flex items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl flex-shrink-0">
-              {session.counselorId?.name?.charAt(0) || "C"}
+              {counselorInitial}
             </div>
             <div>
               <h2 className="text-lg font-black text-gray-900 leading-tight">
-                {session.counselorId?.name || "Counselor"}
+                {counselorName}
               </h2>
               <div className="flex items-center gap-3 mt-1.5">
                 <span
-                  className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider ${sc.light} ${sc.color}`}
+                  className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider ${scLight} ${scColor}`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${sc.bg}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${scBg}`} />
                   {session.status}
                 </span>
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
@@ -208,7 +217,7 @@ const DetailModal = ({ session, onClose, onJoin, onRate }) => {
                 <button
                   onClick={() => {
                     onClose();
-                    onRate && onRate(session);
+                    if (onRate) onRate(session);
                   }}
                   className="flex items-center justify-center gap-1.5 px-6 py-4 rounded-xl text-xs font-black uppercase tracking-wider bg-yellow-400 text-yellow-900 hover:bg-yellow-500 transition-all flex-shrink-0 shadow-sm"
                 >

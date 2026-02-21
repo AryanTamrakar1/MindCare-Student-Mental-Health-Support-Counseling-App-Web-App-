@@ -3,12 +3,11 @@ import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // Check if the user is logged in when app loads
-  useEffect(() => {
+  useEffect(function () {
     const token = sessionStorage.getItem("token");
     const savedUser = sessionStorage.getItem("user");
 
@@ -17,31 +16,41 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Login function
-  const login = (userData, token) => {
+  function login(userData, token) {
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
-  };
+  }
 
-  // Logout function
-  const logout = () => {
+  function logout() {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
     setUser(null);
     navigate("/");
-  };
+  }
 
-  // Update user function 
-  const updateUser = (updatedData) => {
-    const updatedUser = { ...user, ...updatedData };
+  function updateUser(updatedData) {
+    const updatedUser = {};
+
+    const existingKeys = Object.keys(user);
+    for (let i = 0; i < existingKeys.length; i++) {
+      const key = existingKeys[i];
+      updatedUser[key] = user[key];
+    }
+
+    const newKeys = Object.keys(updatedData);
+    for (let i = 0; i < newKeys.length; i++) {
+      const key = newKeys[i];
+      updatedUser[key] = updatedData[key];
+    }
+
     sessionStorage.setItem("user", JSON.stringify(updatedUser));
     setUser(updatedUser);
-  };
+  }
 
   return (
     <AuthContext.Provider value={{ user, setUser, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}

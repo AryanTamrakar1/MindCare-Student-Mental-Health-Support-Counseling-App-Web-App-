@@ -9,23 +9,32 @@ const SummaryModal = ({ session, onClose }) => {
 
   useEffect(() => {
     if (!session) return;
-    const fetch = async () => {
+    const fetchSummary = async () => {
       try {
         const token = sessionStorage.getItem("token");
         const res = await axios.get(`/sessions/summary/${session._id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setSummary(res.data.summary || null);
+        if (res.data.summary) {
+          setSummary(res.data.summary);
+        } else {
+          setSummary(null);
+        }
       } catch {
         setSummary(null);
       } finally {
         setLoading(false);
       }
     };
-    fetch();
-  }, [session?._id]);
+    fetchSummary();
+  }, [session]);
 
   if (!session) return null;
+
+  let counselorName = "Counselor";
+  if (session.counselorId && session.counselorId.name) {
+    counselorName = session.counselorId.name;
+  }
 
   return (
     <div
@@ -47,12 +56,10 @@ const SummaryModal = ({ session, onClose }) => {
                 Session Summary
               </h2>
               <p className="text-sm text-gray-400 font-medium mt-0.5">
-                {session.counselorId?.name || "Counselor"} ·{" "}
-                {fmtShort(session.date)} · {session.timeSlot}
+                {counselorName} · {fmtShort(session.date)} · {session.timeSlot}
               </p>
             </div>
           </div>
- 
           <button
             onClick={onClose}
             className="w-9 h-9 rounded-xl bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors flex-shrink-0"
@@ -72,8 +79,7 @@ const SummaryModal = ({ session, onClose }) => {
           ) : summary ? (
             <div className="bg-gray-50 rounded-2xl px-8 py-7 border border-gray-100">
               <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-4">
-                Session Summary Written by{" "}
-                {session.counselorId?.name || "the counselor"}
+                Session Summary Written by {counselorName}
               </p>
               <p className="text-sm text-gray-700 font-medium leading-relaxed whitespace-pre-wrap">
                 {summary}

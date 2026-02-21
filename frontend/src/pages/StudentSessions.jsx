@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
-import StudentSidebar from "../components/StudentSidebar";
+import StudentSidebar from "../components/Sidebars/StudentSidebar";
 import Navbar from "../components/Navbar";
 import {
   Calendar,
@@ -16,7 +16,6 @@ import SummaryModal from "../components/studentSessions/SummaryModal";
 import SessionCard from "../components/studentSessions/SessionCard";
 import SummaryCard from "../components/studentSessions/SummaryCard";
 import RatingModal from "../components/studentSessions/RatingModal";
-import { MONTHS, MONTHS_SHORT } from "../utils/studentSessions/sessionhelper";
 
 const StudentSessions = () => {
   const [user, setUser] = useState(null);
@@ -29,28 +28,29 @@ const StudentSessions = () => {
   const [ratingSession, setRatingSession] = useState(null);
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const token = sessionStorage.getItem("token");
-        if (!token) return;
-        const [ur, sr] = await Promise.all([
-          axios.get("/auth/me", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get("/appointments/my-sessions", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-        setUser(ur.data);
-        setSessions(sr.data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      if (!token) return;
+
+      const userRes = await axios.get("/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(userRes.data);
+
+      const sessionRes = await axios.get("/appointments/my-sessions", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSessions(sessionRes.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleJoin = async (appointmentId, zoomLink) => {
     try {
@@ -61,7 +61,7 @@ const StudentSessions = () => {
         { headers: { Authorization: `Bearer ${token}` } },
       );
       window.open(zoomLink, "_blank");
-    } catch (e) {
+    } catch {
       alert("Could not join session.");
     }
   };
@@ -73,20 +73,65 @@ const StudentSessions = () => {
   const declinedCount = sessions.filter((s) => s.status === "Declined").length;
   const pendingCount = sessions.filter((s) => s.status === "Pending").length;
 
-  const filtered =
-    activeTab === "Upcoming"
-      ? sessions.filter((s) => s.status === "Approved")
-      : activeTab === "Completed"
-        ? sessions.filter((s) => s.status === "Completed")
-        : activeTab === "Declined"
-          ? sessions.filter((s) => s.status === "Declined")
-          : activeTab === "Pending"
-            ? sessions.filter((s) => s.status === "Pending")
-            : activeTab === "Summary"
-              ? sessions.filter((s) => s.status === "Completed")
-              : sessions;
+  const getFilteredSessions = () => {
+    if (activeTab === "Upcoming")
+      return sessions.filter((s) => s.status === "Approved");
+    if (activeTab === "Completed")
+      return sessions.filter((s) => s.status === "Completed");
+    if (activeTab === "Declined")
+      return sessions.filter((s) => s.status === "Declined");
+    if (activeTab === "Pending")
+      return sessions.filter((s) => s.status === "Pending");
+    if (activeTab === "Summary")
+      return sessions.filter((s) => s.status === "Completed");
+    return sessions;
+  };
 
-  if (loading)
+  const filtered = getFilteredSessions();
+
+  const statCards = [
+    {
+      count: upcomingCount,
+      label: "Upcoming",
+      icon: <Calendar size={20} className="text-emerald-600" />,
+      bg: "bg-emerald-50",
+    },
+    {
+      count: pendingCount,
+      label: "Pending",
+      icon: <AlertCircle size={20} className="text-yellow-500" />,
+      bg: "bg-yellow-50",
+    },
+    {
+      count: completedCount,
+      label: "Completed",
+      icon: <CheckCircle size={20} className="text-indigo-600" />,
+      bg: "bg-indigo-50",
+    },
+    {
+      count: declinedCount,
+      label: "Declined",
+      icon: <XCircle size={20} className="text-red-500" />,
+      bg: "bg-red-50",
+    },
+    {
+      count: completedCount,
+      label: "Summary",
+      icon: <FileText size={20} className="text-purple-600" />,
+      bg: "bg-purple-50",
+    },
+  ];
+
+  const tabs = [
+    { label: "Upcoming", count: upcomingCount },
+    { label: "Pending", count: pendingCount },
+    { label: "Completed", count: completedCount },
+    { label: "Declined", count: declinedCount },
+    { label: "Summary", count: completedCount },
+    { label: "See All", count: sessions.length },
+  ];
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#f3f4f6] flex">
         <StudentSidebar user={user} />
@@ -98,6 +143,7 @@ const StudentSessions = () => {
         </main>
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] flex">
@@ -114,51 +160,22 @@ const StudentSessions = () => {
         </div>
 
         <div className="grid grid-cols-5 gap-5 mb-6">
-          {[
-            {
-              count: upcomingCount,
-              label: "Upcoming",
-              icon: <Calendar size={20} className="text-emerald-600" />,
-              bg: "bg-emerald-50",
-            },
-            {
-              count: pendingCount,
-              label: "Pending",
-              icon: <AlertCircle size={20} className="text-yellow-500" />,
-              bg: "bg-yellow-50",
-            },
-            {
-              count: completedCount,
-              label: "Completed",
-              icon: <CheckCircle size={20} className="text-indigo-600" />,
-              bg: "bg-indigo-50",
-            },
-            {
-              count: declinedCount,
-              label: "Declined",
-              icon: <XCircle size={20} className="text-red-500" />,
-              bg: "bg-red-50",
-            },
-            {
-              count: completedCount,
-              label: "Summary",
-              icon: <FileText size={20} className="text-purple-600" />,
-              bg: "bg-purple-50",
-            },
-          ].map(({ count, label, icon, bg }) => (
+          {statCards.map((card) => (
             <div
-              key={label}
+              key={card.label}
               className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4"
             >
               <div
-                className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center flex-shrink-0`}
+                className={`w-12 h-12 ${card.bg} rounded-xl flex items-center justify-center flex-shrink-0`}
               >
-                {icon}
+                {card.icon}
               </div>
               <div>
-                <p className="text-3xl font-black text-gray-800">{count}</p>
+                <p className="text-3xl font-black text-gray-800">
+                  {card.count}
+                </p>
                 <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                  {label}
+                  {card.label}
                 </p>
               </div>
             </div>
@@ -192,30 +209,29 @@ const StudentSessions = () => {
               </p>
             </div>
             <div className="flex bg-white rounded-xl border border-gray-200 p-1 gap-1 shadow-sm">
-              {[
-                { label: "Upcoming", count: upcomingCount },
-                { label: "Pending", count: pendingCount },
-                { label: "Completed", count: completedCount },
-                { label: "Declined", count: declinedCount },
-                { label: "Summary", count: completedCount },
-                { label: "See All", count: sessions.length },
-              ].map(({ label, count }) => (
-                <button
-                  key={label}
-                  onClick={() => setActiveTab(label)}
-                  className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5
-                    ${activeTab === label ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
-                >
-                  {label}
-                  {count > 0 && (
-                    <span
-                      className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === label ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
-                    >
-                      {count}
-                    </span>
-                  )}
-                </button>
-              ))}
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.label;
+                return (
+                  <button
+                    key={tab.label}
+                    onClick={() => setActiveTab(tab.label)}
+                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                      isActive
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                    }`}
+                  >
+                    {tab.label}
+                    {tab.count > 0 && (
+                      <span
+                        className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${isActive ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

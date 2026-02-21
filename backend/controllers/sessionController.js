@@ -149,17 +149,21 @@ exports.getSummary = async (req, res) => {
   try {
     const { appointmentId } = req.params;
     const userId = req.user.id;
-
-    const appointment = await Appointment.findOne({
-      _id: appointmentId,
-      $or: [{ counselorId: userId }, { studentId: userId }],
-    });
+    let appointment = await Appointment.findOne({ _id: appointmentId, counselorId: userId });
+    if (!appointment) {
+      appointment = await Appointment.findOne({ _id: appointmentId, studentId: userId });
+    }
 
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found." });
     }
 
-    res.status(200).json({ summary: appointment.summary || null });
+    let summary = null;
+    if (appointment.summary) {
+      summary = appointment.summary;
+    }
+
+    res.status(200).json({ summary: summary });
   } catch (error) {
     console.error("Get Summary Error:", error);
     res.status(500).json({ message: "Error fetching summary." });

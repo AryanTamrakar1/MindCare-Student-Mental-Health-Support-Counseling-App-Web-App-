@@ -3,32 +3,44 @@ import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 
 const StudentRegister = () => {
-  const [formData, setFormData] = useState({
-    name: '', email: '', password: '', role: 'Student',
-    studentId: '', phone: '', dob: '', gender: ''
-  });
-  
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [studentId, setStudentId] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [gender, setGender] = useState('');
   const [photo, setPhoto] = useState(null);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    
-    const data = new FormData();
-    Object.keys(formData).forEach(key => data.append(key, formData[key]));
-    
-    if (photo) {
-      data.append('verificationPhoto', photo);
-    } else {
+
+    if (!photo) {
       return alert("Please upload your ID photo for verification.");
     }
+
+    const data = new FormData();
+    data.append('name', name);
+    data.append('email', email);
+    data.append('password', password);
+    data.append('role', 'Student');
+    data.append('studentId', studentId);
+    data.append('phone', phone);
+    data.append('dob', dob);
+    data.append('gender', gender);
+    data.append('verificationPhoto', photo);
 
     try {
       await API.post('/auth/register', data);
       alert("Registration Successful! Please verify your OTP.");
-      navigate('/verify-otp', { state: { email: formData.email } });
+      navigate('/verify-otp', { state: { email: email } });
     } catch (err) {
-      alert(err.response?.data?.message || "Error registering student");
+      let message = "Error registering student";
+      if (err.response && err.response.data && err.response.data.message) {
+        message = err.response.data.message;
+      }
+      alert(message);
     }
   };
 
@@ -44,7 +56,7 @@ const StudentRegister = () => {
       </div>
 
       <div className="bg-white py-10 px-8 sm:px-12 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[2.5rem] max-w-2xl mx-auto w-full border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        
+
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,61 +72,61 @@ const StudentRegister = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-              <input 
-                type="text" 
-                placeholder="John Doe" 
-                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none" 
-                required 
-                onChange={(e) => setFormData({...formData, name: e.target.value})} 
+              <input
+                type="text"
+                placeholder="John Doe"
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                required
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">University Email</label>
-              <input 
-                type="email" 
-                placeholder="john@university.edu" 
-                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none" 
-                required 
-                onChange={(e) => setFormData({...formData, email: e.target.value})} 
+              <input
+                type="email"
+                placeholder="john@university.edu"
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                required
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Student ID </label>
-              <input 
-                type="text" 
-                placeholder="202350999" 
-                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none" 
-                required 
-                onChange={(e) => setFormData({...formData, studentId: e.target.value})} 
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Student ID</label>
+              <input
+                type="text"
+                placeholder="202350999"
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                required
+                onChange={(e) => setStudentId(e.target.value)}
               />
             </div>
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
-              <input 
-                type="text" 
-                placeholder="+977 1234567890" 
-                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none" 
-                onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+              <input
+                type="text"
+                placeholder="+977 1234567890"
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Date of Birth</label>
-              <input 
-                type="date" 
-                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none" 
-                onChange={(e) => setFormData({...formData, dob: e.target.value})} 
+              <input
+                type="date"
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                onChange={(e) => setDob(e.target.value)}
               />
             </div>
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Gender</label>
-              <select 
+              <select
                 className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none appearance-none"
-                onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                onChange={(e) => setGender(e.target.value)}
               >
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
@@ -127,12 +139,12 @@ const StudentRegister = () => {
           <div className="space-y-1">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Upload Student ID Photo</label>
             <div className="relative">
-              <input 
-                type="file" 
+              <input
+                type="file"
                 accept="image/*"
                 required
-                className="w-full p-8 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer text-transparent file:hidden" 
-                onChange={(e) => setPhoto(e.target.files[0])} 
+                className="w-full p-8 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer text-transparent file:hidden"
+                onChange={(e) => setPhoto(e.target.files[0])}
               />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-2">
                 {photo ? (
@@ -156,12 +168,12 @@ const StudentRegister = () => {
 
           <div className="space-y-1">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Set Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none" 
-              required 
-              onChange={(e) => setFormData({...formData, password: e.target.value})} 
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+              required
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
@@ -172,7 +184,7 @@ const StudentRegister = () => {
 
         <div className="mt-8 pt-6 border-t border-gray-50 text-center">
           <p className="text-sm text-gray-400 font-medium">
-            Already have an account? 
+            Already have an account?
             <button onClick={() => navigate('/')} className="text-indigo-600 font-bold ml-1 hover:underline underline-offset-4 transition">Sign In</button>
           </p>
         </div>

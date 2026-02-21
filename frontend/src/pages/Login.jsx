@@ -11,7 +11,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  // This function handles where to send the user after login
   const handleRedirect = (user) => {
     if (user.role === "Admin") {
       navigate("/admin-dashboard");
@@ -24,30 +23,29 @@ const Login = () => {
     }
   };
 
-  // Login
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const res = await API.post("/auth/login", { email, password });
       const userData = res.data.user;
-
       login(userData, res.data.token);
-
       alert("Login Successful!");
       handleRedirect(userData);
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      let message = "Login failed";
+      if (err.response && err.response.data && err.response.data.message) {
+        message = err.response.data.message;
+      }
+      alert(message);
     }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 relative overflow-hidden">
-      {/* Background Decoration */}
       <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-emerald-100/50 rounded-full blur-3xl"></div>
 
       <div className="relative bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        {/* Logo */}
         <div className="w-20 h-20 bg-gradient-to-tr from-indigo-600 to-indigo-500 rounded-[1.5rem] mx-auto mb-6 flex items-center justify-center shadow-xl shadow-indigo-200">
           <span className="text-white text-4xl font-black">M</span>
         </div>
@@ -59,7 +57,6 @@ const Login = () => {
           Sign in to continue your wellness journey
         </p>
 
-        {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
           <div className="text-left">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">
@@ -106,7 +103,6 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Google Login */}
         <div className="flex justify-center mb-8 scale-110">
           <GoogleLogin
             onSuccess={async (credentialResponse) => {
@@ -115,9 +111,7 @@ const Login = () => {
                   token: credentialResponse.credential,
                 });
                 const userData = res.data.user;
-
                 login(userData, res.data.token);
-
                 if (userData.role === "Pending_Selection") {
                   navigate("/role-selection", { state: { user: userData } });
                 } else {
@@ -142,7 +136,6 @@ const Login = () => {
         </p>
       </div>
 
-      {/* --- PROFESSIONAL ROLE MODAL --- */}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
@@ -160,7 +153,6 @@ const Login = () => {
               </p>
 
               <div className="space-y-4">
-                {/* Student Option */}
                 <button
                   onClick={() => navigate("/register/student")}
                   className="w-full group p-6 flex items-center gap-5 border-2 border-indigo-50 rounded-[2rem] hover:border-indigo-500 hover:bg-indigo-50/50 transition-all text-left"
@@ -176,7 +168,6 @@ const Login = () => {
                   </div>
                 </button>
 
-                {/* Counselor Option */}
                 <button
                   onClick={() => navigate("/register/counselor")}
                   className="w-full group p-6 flex items-center gap-5 border-2 border-emerald-50 rounded-[2rem] hover:border-emerald-500 hover:bg-emerald-50/50 transition-all text-left"

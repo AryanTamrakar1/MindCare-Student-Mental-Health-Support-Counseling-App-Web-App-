@@ -6,7 +6,7 @@ const sendEmail = require("../utils/sendEmail");
 
 // --- Register ---
 const registerUser = async (req, res) => {
-  const { name, email, password, role, ...otherFields } = req.body;
+  const { name, email, password, role } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
@@ -23,16 +23,21 @@ const registerUser = async (req, res) => {
     if (role === "Student") {
       otp = Math.floor(1000 + Math.random() * 9000).toString();
     }
-
+r
     const user = await User.create({
-      name,
-      email,
+      name: name,
+      email: email,
       password: hashedPassword,
-      role,
-      status,
-      otp,
-      verificationPhoto,
-      ...otherFields,
+      role: role,
+      status: status,
+      otp: otp,
+      verificationPhoto: verificationPhoto,
+      profTitle: req.body.profTitle,
+      specialization: req.body.specialization,
+      bio: req.body.bio,
+      qualifications: req.body.qualifications,
+      experience: req.body.experience,
+      availability: req.body.availability,
     });
 
     if (role === "Student") {
@@ -84,12 +89,10 @@ const resendOTP = async (req, res) => {
   const { email } = req.body;
   try {
     const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    const user = await User.findOneAndUpdate(
-      { email },
-      { otp: newOtp },
-      { new: true },
-    );
+    const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
+    user.otp = newOtp;
+    await user.save();
 
     sendEmail(
       user.email,
@@ -116,8 +119,8 @@ const loginUser = async (req, res) => {
     if (user.status !== "Approved") {
       const blockMsg =
         user.status === "Pending"
-          ? "Your account is Pending Admin approval or OTP verification."
-          : "Your application has been Rejected. Please contact support.";
+          ? "Your account is pending Admin approval. You will receive an email once approved."
+          : "Your application has been rejected. Please check your email for details or contact the admin.";
       return res.status(403).json({ message: blockMsg });
     }
 
@@ -156,13 +159,16 @@ const googleLogin = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
+      const randomPassword = Math.random().toString(36);
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
       user = await User.create({
         name,
         email,
-        password: await bcrypt.hash(Math.random().toString(36), 10),
+        password: hashedPassword,
         role: "Pending_Selection",
         status: "Approved",
-        verificationPhoto: user.verificationPhoto,
+        verificationPhoto: null,
       });
     }
 
@@ -188,18 +194,38 @@ const googleLogin = async (req, res) => {
 
 // --- Update Role ---
 const updateRole = async (req, res) => {
-  const { email, role, ...otherFields } = req.body;
+  const { email, role } = req.body;
   try {
     const status = role === "Counselor" ? "Pending" : "Approved";
-    const updateData = { role, status, ...otherFields };
+    const updateData = {
+      role: role,
+      status: status,
+      profTitle: req.body.profTitle,
+      specialization: req.body.specialization,
+      bio: req.body.bio,
+      qualifications: req.body.qualifications,
+      experience: req.body.experience,
+      availability: req.body.availability,
+    };
+
     if (req.file) {
       updateData.verificationPhoto = req.file.filename;
     }
 
-    const user = await User.findOneAndUpdate({ email }, updateData, {
-      new: true,
-    });
+    const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.role = updateData.role;
+    user.status = updateData.status;
+    if (updateData.profTitle) user.profTitle = updateData.profTitle;
+    if (updateData.specialization) user.specialization = updateData.specialization;
+    if (updateData.bio) user.bio = updateData.bio;
+    if (updateData.qualifications) user.qualifications = updateData.qualifications;
+    if (updateData.experience) user.experience = updateData.experience;
+    if (updateData.availability) user.availability = updateData.availability;
+    if (updateData.verificationPhoto) user.verificationPhoto = updateData.verificationPhoto;
+
+    await user.save();
 
     res.json({ message: "Profile updated successfully", user });
   } catch (error) {
@@ -276,10 +302,11 @@ const manageUserStatus = async (req, res) => {
 
     const subject =
       status === "Approved" ? "Application Approved!" : "Application Rejected";
+
     const emailBody =
       status === "Approved"
-        ? `Congratulations ${user.name}! Your account has been approved. You can now login.`
-        : `Hello ${user.name}, we regret to inform you that your application was not approved.`;
+        ? `Congratulations ${user.name}!\n\nYour counselor account has been approved. You can now log in and access your dashboard.\n\nWelcome to the team!`
+        : `Hello ${user.name},\n\nWe regret to inform you that your counselor application has not been approved at this time.\n\nIf you believe this was a mistake or would like to reapply, please contact our admin team.\n\nThank you for your understanding.`;
 
     sendEmail(user.email, subject, emailBody).catch((err) =>
       console.error("Admin Action Email Error:", err),
@@ -294,14 +321,16 @@ const manageUserStatus = async (req, res) => {
 // --- Middleware to protect routes ---
 const protect = async (req, res, next) => {
   let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader && authHeader.startsWith("Bearer")) {
     try {
-      token = req.headers.authorization.split(" ")[1];
+      token = authHeader.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id).select("-password");
+      const foundUser = await User.findById(decoded.id);
+      foundUser.password = undefined;
+      req.user = foundUser;
+
       next();
     } catch (error) {
       res.status(401).json({ message: "Not authorized, token failed" });
@@ -330,16 +359,31 @@ const getCounselors = async (req, res) => {
 const searchCounselors = async (req, res) => {
   try {
     const { name, specialization } = req.query;
-    let query = { role: "Counselor", status: "Approved" };
+    const allCounselors = await User.find({ role: "Counselor", status: "Approved" });
+
+    let counselors = allCounselors;
 
     if (name) {
-      query.name = { $regex: name, $options: "i" };
+      const nameLower = name.toLowerCase();
+      const filtered = [];
+      for (let i = 0; i < counselors.length; i++) {
+        if (counselors[i].name && counselors[i].name.toLowerCase().includes(nameLower)) {
+          filtered.push(counselors[i]);
+        }
+      }
+      counselors = filtered;
+    }
+    if (specialization) {
+      const specLower = specialization.toLowerCase();
+      const filtered = [];
+      for (let i = 0; i < counselors.length; i++) {
+        if (counselors[i].specialization && counselors[i].specialization.toLowerCase().includes(specLower)) {
+          filtered.push(counselors[i]);
+        }
+      }
+      counselors = filtered;
     }
 
-    if (specialization) {
-      query.specialization = { $regex: specialization, $options: "i" };
-    }
-    const counselors = await User.find(query);
     res.json(counselors);
   } catch (error) {
     res.status(500).json({ message: "Error searching counselors" });
@@ -367,22 +411,20 @@ const editCounselorProfile = async (req, res) => {
       availability,
     } = req.body;
 
-    const updatedCounselor = await User.findByIdAndUpdate(
-      counselorId,
-      {
-        profTitle,
-        specialization,
-        bio,
-        qualifications,
-        experience,
-        availability,
-      },
-      { new: true },
-    );
+    const updatedCounselor = await User.findById(counselorId);
 
     if (!updatedCounselor) {
       return res.status(404).json({ message: "Counselor not found" });
     }
+
+    updatedCounselor.profTitle = profTitle;
+    updatedCounselor.specialization = specialization;
+    updatedCounselor.bio = bio;
+    updatedCounselor.qualifications = qualifications;
+    updatedCounselor.experience = experience;
+    updatedCounselor.availability = availability;
+
+    await updatedCounselor.save();
 
     res.json({
       message: "Professional profile updated!",

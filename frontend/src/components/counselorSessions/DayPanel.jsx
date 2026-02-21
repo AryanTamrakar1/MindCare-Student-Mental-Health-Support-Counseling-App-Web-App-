@@ -7,7 +7,7 @@ import {
 } from "../../utils/counselorSession/sessionhelper";
 
 const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
-  if (!daySessions?.length || !dayInfo) return null;
+  if (!daySessions || daySessions.length === 0 || !dayInfo) return null;
 
   return (
     <div className="mt-4 bg-white rounded-2xl border border-indigo-100 shadow-sm overflow-hidden">
@@ -27,10 +27,28 @@ const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
       <div className="divide-y divide-gray-100">
         {daySessions.map((s) => {
           const topics = parseTopics(s.reason);
-          const statusColor =
-            s.status === "Approved"
-              ? "text-emerald-600 bg-emerald-50 border-emerald-200"
-              : "text-indigo-600 bg-indigo-50 border-indigo-200";
+
+          let statusColor = "text-indigo-600 bg-indigo-50 border-indigo-200";
+          if (s.status === "Approved") {
+            statusColor = "text-emerald-600 bg-emerald-50 border-emerald-200";
+          } else if (s.status === "Missed") {
+            statusColor = "text-red-600 bg-red-50 border-red-200";
+          }
+
+          let studentInitial = "S";
+          if (s.studentId && s.studentId.name && s.studentId.name.length > 0) {
+            studentInitial = s.studentId.name.charAt(0);
+          }
+
+          let studentName = "Student";
+          if (s.studentId && s.studentId.name) {
+            studentName = s.studentId.name;
+          }
+
+          const visibleTopics = [];
+          for (let i = 0; i < topics.length && i < 2; i++) {
+            visibleTopics.push(topics[i]);
+          }
 
           return (
             <div
@@ -39,18 +57,18 @@ const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
               className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors group"
             >
               <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
-                {s.studentId?.name?.charAt(0) || "S"}
+                {studentInitial}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-black text-gray-800 text-sm">
-                  {s.studentId?.name || "Student"}
+                  {studentName}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
                     <Clock size={9} />
                     {s.timeSlot}
                   </span>
-                  {topics.slice(0, 2).map((t, i) => (
+                  {visibleTopics.map((t, i) => (
                     <span
                       key={i}
                       className="text-[8px] font-black bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase"
@@ -63,7 +81,7 @@ const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
               <span
                 className={`text-[9px] font-black px-2.5 py-1 rounded-full border uppercase flex-shrink-0 ${statusColor}`}
               >
-                {s.status}
+                {s.status === "Missed" ? "Missed" : s.status}
               </span>
               <ArrowRight
                 size={14}

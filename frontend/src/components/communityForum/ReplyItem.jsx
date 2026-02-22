@@ -56,9 +56,7 @@ const ReplyItem = ({
       const res = await API.put(
         `/forum/${postId}/reply/${reply._id}/like`,
         {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setLikeCount(res.data.likesCount);
       setLiked(!liked);
@@ -106,6 +104,11 @@ const ReplyItem = ({
     }
   };
 
+  const handleAutoGrow = (e) => {
+    e.target.style.height = "auto";
+    e.target.style.height = e.target.scrollHeight + "px";
+  };
+
   return (
     <div>
       <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
@@ -140,9 +143,12 @@ const ReplyItem = ({
           <div className="mb-3">
             <textarea
               value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              className="w-full border border-indigo-300 rounded-xl px-3 py-2 text-sm text-gray-700 outline-none resize-none"
-              rows={3}
+              onChange={(e) => {
+                setEditText(e.target.value);
+                handleAutoGrow(e);
+              }}
+              className="w-full border border-indigo-300 rounded-xl px-3 py-2 text-sm text-gray-700 outline-none resize-none overflow-hidden text-justify"
+              style={{ minHeight: "72px", height: "72px" }}
             />
             <div className="flex gap-2 mt-2">
               <button
@@ -165,7 +171,7 @@ const ReplyItem = ({
             </div>
           </div>
         ) : (
-          <p className="text-sm text-gray-700 leading-relaxed mb-3 whitespace-pre-wrap">
+          <p className="text-sm text-gray-700 leading-relaxed mb-3 whitespace-pre-wrap text-justify">
             {reply.content}
           </p>
         )}
@@ -211,18 +217,21 @@ const ReplyItem = ({
         </div>
 
         {showReplyInput && (
-          <div className="flex gap-2 mt-3">
-            <input
-              type="text"
+          <div className="flex gap-2 mt-3 items-end">
+            <textarea
               value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
+              onChange={(e) => {
+                setReplyText(e.target.value);
+                handleAutoGrow(e);
+              }}
               placeholder="Write a reply..."
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-400 text-gray-700"
+              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-400 text-gray-700 resize-none overflow-hidden text-justify"
+              style={{ minHeight: "34px", height: "34px" }}
             />
             <button
               onClick={handleReplySubmit}
               disabled={submitting}
-              className="bg-indigo-600 text-white px-3 py-2 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50"
+              className="bg-indigo-600 text-white px-3 py-2 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50 flex-shrink-0"
             >
               <Send size={13} />
             </button>
@@ -261,33 +270,37 @@ const ReplyItem = ({
       )}
 
       {reply.children?.length > 0 && (
-        <div className="mt-1 ml-4">
+        <div className="mt-2 ml-4 flex flex-col gap-2">
           {reply.children.map((child) => (
-            <div key={child._id} className="flex items-start">
-              <div
-                className="flex-shrink-0"
-                style={{ width: 24, marginTop: 20 }}
-              >
-                <svg width="24" height="20" viewBox="0 0 24 20" fill="none">
+            <div key={child._id} className="flex items-start gap-1">
+              <div className="flex-shrink-0 mt-3">
+                <svg
+                  width="20"
+                  height="16"
+                  viewBox="0 0 20 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
                   <path
-                    d="M 0 0 Q 0 12 14 12"
+                    d="M 3 0 L 3 9 Q 3 13 7 13 L 14 13"
                     stroke="#9ca3af"
-                    strokeWidth="1.5"
+                    strokeWidth="1.8"
                     fill="none"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <path
-                    d="M 11 8 L 15 12 L 11 16"
+                    d="M 11 10 L 15 13 L 11 16"
                     stroke="#9ca3af"
-                    strokeWidth="1.5"
+                    strokeWidth="1.8"
                     fill="none"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
               </div>
-              <div className="flex-1 pb-3">
+
+              <div className="flex-1">
                 <ReplyItem
                   reply={child}
                   postId={postId}

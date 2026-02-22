@@ -159,7 +159,7 @@ const RequestCard = ({ req, onAction }) => {
             <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-3 tracking-widest">
               Reason for Session (Detailed)
             </h4>
-            <p className="text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">
+            <p className="text-slate-700 font-medium leading-relaxed whitespace-pre-wrap text-justify">
               {reasonText}
             </p>
           </div>

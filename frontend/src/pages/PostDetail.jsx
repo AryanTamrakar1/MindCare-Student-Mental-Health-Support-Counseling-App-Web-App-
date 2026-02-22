@@ -9,8 +9,6 @@ import AdminSidebar from "../components/Sidebars/AdminSidebar";
 import Navbar from "../components/Navbar";
 import ReplyItem from "../components/communityForum/ReplyItem";
 
-
-
 const categoryColor = {
   "Academic & Exam Pressure": "bg-blue-100 text-blue-700 border-blue-200",
   "Skill Gap & Job Anxiety": "bg-indigo-100 text-indigo-700 border-indigo-200",
@@ -41,7 +39,6 @@ const buildTree = (replies) => {
   replies.forEach((r) => {
     map[r._id] = { ...r, children: [] };
   });
-
   const roots = [];
   replies.forEach((r) => {
     if (r.parentReplyId && map[r.parentReplyId]) {
@@ -130,6 +127,11 @@ const PostDetail = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleReplyGrow = (e) => {
+    e.target.style.height = "auto";
+    e.target.style.height = e.target.scrollHeight + "px";
   };
 
   const handleDeleteReply = async (replyId) => {
@@ -247,7 +249,7 @@ const PostDetail = () => {
           <h1 className="text-gray-900 font-black text-xl mb-3">
             {post.title}
           </h1>
-          <p className="text-gray-600 text-sm leading-relaxed mb-5 whitespace-pre-wrap">
+          <p className="text-gray-600 text-sm leading-relaxed mb-5 whitespace-pre-wrap text-justify">
             {post.content}
           </p>
 
@@ -289,7 +291,7 @@ const PostDetail = () => {
           {showReplyArea && (
             <div className="mt-5 pt-5 border-t border-gray-100">
               {user?.role !== "Admin" && (
-                <div className="flex gap-3 mb-5 pb-5 border-b border-gray-100">
+                <div className="flex gap-3 mb-5 pb-5 border-b border-gray-100 items-end">
                   {user?.role === "Counselor" && user?.verificationPhoto ? (
                     <img
                       src={`http://127.0.0.1:5050/uploads/verifications/${user.verificationPhoto}`}
@@ -313,21 +315,24 @@ const PostDetail = () => {
                       </svg>
                     </div>
                   )}
-                  <input
-                    type="text"
+                  <textarea
                     value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
+                    onChange={(e) => {
+                      setReplyText(e.target.value);
+                      handleReplyGrow(e);
+                    }}
                     placeholder={
                       user?.role === "Counselor"
                         ? "Reply as a verified counselor..."
                         : "Write a supportive reply anonymously..."
                     }
-                    className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 text-gray-700"
+                    className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-400 text-gray-700 resize-none overflow-hidden text-justify"
+                    style={{ minHeight: "42px", height: "42px" }}
                   />
                   <button
                     onClick={handleTopLevelReply}
                     disabled={submitting}
-                    className="bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50"
+                    className="bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50 flex-shrink-0"
                   >
                     <Send size={16} />
                   </button>

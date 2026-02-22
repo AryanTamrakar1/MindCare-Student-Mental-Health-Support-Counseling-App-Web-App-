@@ -289,7 +289,7 @@ const CommunityForum = () => {
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     placeholder="Write a short title..."
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none mb-4 focus:border-indigo-400"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none mb-4 focus:border-indigo-400 text-justify"
                   />
 
                   <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
@@ -340,8 +340,7 @@ const CommunityForum = () => {
                     onChange={handleTextareaInput}
                     placeholder="What's on your mind? This is a safe space..."
                     rows={3}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none resize-none mb-3 focus:border-indigo-400 overflow-hidden"
-                    style={{ textAlign: "justify" }}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none resize-none mb-3 focus:border-indigo-400 overflow-hidden text-justify"
                   />
                   {postError && (
                     <p className="text-red-500 text-xs mb-3">{postError}</p>

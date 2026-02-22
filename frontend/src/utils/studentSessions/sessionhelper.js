@@ -91,6 +91,7 @@ export function parseReason(reason) {
   return reason;
 }
 
+// This is for session testing 
 export function isSessionTime(date, timeSlot) {
   if (!date || !timeSlot) return false;
 

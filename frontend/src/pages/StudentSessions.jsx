@@ -8,6 +8,7 @@ import {
   XCircle,
   FileText,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import SessionCalendar from "../components/studentSessions/SessionCalendar";
 import DayPanel from "../components/studentSessions/DayPanel";
@@ -67,23 +68,18 @@ const StudentSessions = () => {
   };
 
   const upcomingCount = sessions.filter((s) => s.status === "Approved").length;
-  const completedCount = sessions.filter(
-    (s) => s.status === "Completed",
-  ).length;
-  const declinedCount = sessions.filter((s) => s.status === "Declined").length;
   const pendingCount = sessions.filter((s) => s.status === "Pending").length;
+  const completedCount = sessions.filter((s) => s.status === "Completed").length;
+  const declinedCount = sessions.filter((s) => s.status === "Declined").length;
+  const missedCount = sessions.filter((s) => s.status === "Missed").length;
 
   const getFilteredSessions = () => {
-    if (activeTab === "Upcoming")
-      return sessions.filter((s) => s.status === "Approved");
-    if (activeTab === "Completed")
-      return sessions.filter((s) => s.status === "Completed");
-    if (activeTab === "Declined")
-      return sessions.filter((s) => s.status === "Declined");
-    if (activeTab === "Pending")
-      return sessions.filter((s) => s.status === "Pending");
-    if (activeTab === "Summary")
-      return sessions.filter((s) => s.status === "Completed");
+    if (activeTab === "Upcoming") return sessions.filter((s) => s.status === "Approved");
+    if (activeTab === "Pending") return sessions.filter((s) => s.status === "Pending");
+    if (activeTab === "Completed") return sessions.filter((s) => s.status === "Completed");
+    if (activeTab === "Declined") return sessions.filter((s) => s.status === "Declined");
+    if (activeTab === "Missed") return sessions.filter((s) => s.status === "Missed");
+    if (activeTab === "Summary") return sessions.filter((s) => s.status === "Completed");
     return sessions;
   };
 
@@ -115,6 +111,12 @@ const StudentSessions = () => {
       bg: "bg-red-50",
     },
     {
+      count: missedCount,
+      label: "Missed",
+      icon: <Clock size={20} className="text-orange-500" />,
+      bg: "bg-orange-50",
+    },
+    {
       count: completedCount,
       label: "Summary",
       icon: <FileText size={20} className="text-purple-600" />,
@@ -127,6 +129,7 @@ const StudentSessions = () => {
     { label: "Pending", count: pendingCount },
     { label: "Completed", count: completedCount },
     { label: "Declined", count: declinedCount },
+    { label: "Missed", count: missedCount },
     { label: "Summary", count: completedCount },
     { label: "See All", count: sessions.length },
   ];
@@ -159,21 +162,17 @@ const StudentSessions = () => {
           <Navbar />
         </div>
 
-        <div className="grid grid-cols-5 gap-5 mb-6">
+        <div className="grid grid-cols-6 gap-5 mb-6">
           {statCards.map((card) => (
             <div
               key={card.label}
               className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4"
             >
-              <div
-                className={`w-12 h-12 ${card.bg} rounded-xl flex items-center justify-center flex-shrink-0`}
-              >
+              <div className={`w-12 h-12 ${card.bg} rounded-xl flex items-center justify-center flex-shrink-0`}>
                 {card.icon}
               </div>
               <div>
-                <p className="text-3xl font-black text-gray-800">
-                  {card.count}
-                </p>
+                <p className="text-3xl font-black text-gray-800">{card.count}</p>
                 <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
                   {card.label}
                 </p>
@@ -201,9 +200,7 @@ const StudentSessions = () => {
         <div className="mt-10">
           <div className="border-t-2 border-slate-300 pt-6 pb-6 border-b-2 flex justify-between items-start mb-5">
             <div>
-              <h2 className="text-2xl font-black text-gray-800">
-                All Sessions
-              </h2>
+              <h2 className="text-2xl font-black text-gray-800">All Sessions</h2>
               <p className="text-gray-500 mt-0.5">
                 View all your upcoming and past sessions.
               </p>
@@ -224,7 +221,9 @@ const StudentSessions = () => {
                     {tab.label}
                     {tab.count > 0 && (
                       <span
-                        className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${isActive ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
+                        className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${
+                          isActive ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"
+                        }`}
                       >
                         {tab.count}
                       </span>
@@ -252,12 +251,9 @@ const StudentSessions = () => {
                   <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-3">
                     <FileText size={22} className="text-indigo-300" />
                   </div>
-                  <p className="font-black text-gray-600 mb-1">
-                    No Summaries Yet
-                  </p>
+                  <p className="font-black text-gray-600 mb-1">No Summaries Yet</p>
                   <p className="text-sm text-gray-400 max-w-xs">
-                    The Session Summary will appear after your counselor writes
-                    them.
+                    The Session Summary will appear after your counselor writes them.
                   </p>
                 </div>
               )
@@ -282,6 +278,8 @@ const StudentSessions = () => {
                 <p className="text-sm text-gray-400 max-w-xs">
                   {activeTab === "Upcoming"
                     ? "Visit the counselor directory to book a session!"
+                    : activeTab === "Missed"
+                    ? "No missed sessions. Keep it up!"
                     : `No ${activeTab.toLowerCase()} sessions yet.`}
                 </p>
               </div>

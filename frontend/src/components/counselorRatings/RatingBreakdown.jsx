@@ -110,24 +110,7 @@ const RatingBreakdown = ({ averages, weakestLabel, weakVal }) => {
         </div>
       </div>
 
-      {weakVal < 4.5 && (
-        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl px-6 py-5 flex items-start gap-4">
-          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <TrendingUp size={18} className="text-indigo-600" />
-          </div>
-          <div>
-            <p className="text-sm font-black text-indigo-800 mb-1">
-              Area to Improve: {weakestLabel}
-            </p>
-            <p className="text-xs text-indigo-600 font-medium">
-              Your lowest rated area is{" "}
-              <span className="font-black">{weakestLabel}</span> at{" "}
-              {weakVal.toFixed(2)}/5. Focus on this area in upcoming sessions to
-              improve your overall rating.
-            </p>
-          </div>
-        </div>
-      )}
+      
     </>
   );
 };

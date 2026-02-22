@@ -81,7 +81,7 @@ const SummaryModal = ({ session, onClose }) => {
               <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-4">
                 Session Summary Written by {counselorName}
               </p>
-              <p className="text-sm text-gray-700 font-medium leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-gray-700 font-medium leading-relaxed whitespace-pre-wrap text-justify">
                 {summary}
               </p>
             </div>

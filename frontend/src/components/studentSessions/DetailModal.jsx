@@ -172,7 +172,7 @@ const DetailModal = ({ session, onClose, onJoin, onRate }) => {
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">
                 Reason for the Appointment
               </p>
-              <p className="text-sm text-gray-600 font-medium leading-relaxed bg-gray-50 rounded-xl px-5 py-5 border border-gray-100">
+              <p className="text-sm text-gray-600 font-medium leading-relaxed bg-gray-50 rounded-xl px-5 py-5 border border-gray-100 whitespace-pre-wrap text-justify">
                 {reasonText}
               </p>
             </div>

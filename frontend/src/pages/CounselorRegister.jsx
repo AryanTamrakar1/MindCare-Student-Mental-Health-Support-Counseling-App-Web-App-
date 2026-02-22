@@ -227,7 +227,7 @@ const CounselorRegister = () => {
               <textarea
                 rows="4"
                 placeholder="Describe your motivation..."
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition text-sm font-medium"
+                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition text-sm font-medium text-justify"
                 required
                 onChange={(e) => setBio(e.target.value)}
               ></textarea>

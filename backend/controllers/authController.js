@@ -23,7 +23,7 @@ const registerUser = async (req, res) => {
     if (role === "Student") {
       otp = Math.floor(1000 + Math.random() * 9000).toString();
     }
-r
+
     const user = await User.create({
       name: name,
       email: email,

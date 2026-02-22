@@ -106,7 +106,7 @@ const ApplicantModal = ({ selectedUser, onClose, onAction }) => {
               Statement of Purpose
             </p>
             <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
-              <p className="text-sm text-gray-600 leading-relaxed italic">
+              <p className="text-sm text-gray-600 leading-relaxed italic whitespace-pre-wrap text-justify">
                 "{selectedUser.bio || "No statement provided."}"
               </p>
             </div>

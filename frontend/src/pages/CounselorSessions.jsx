@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
 import CounselorSidebar from "../components/Sidebars/CounselorSidebar";
 import Navbar from "../components/Navbar";
-import { Calendar, CheckCircle, Users } from "lucide-react";
+import { Calendar, CheckCircle, Users, Clock } from "lucide-react";
 import SessionCalendar from "../components/counselorSessions/sessionCalendar";
 import DayPanel from "../components/counselorSessions/DayPanel";
 import DetailModal from "../components/counselorSessions/DetailModal";
@@ -57,8 +57,7 @@ const CounselorSessions = () => {
   };
 
   const handleEnd = async (appointmentId) => {
-    if (!window.confirm("End this session? It will be marked as Completed."))
-      return;
+    if (!window.confirm("End this session? It will be marked as Completed.")) return;
     try {
       const token = sessionStorage.getItem("token");
       await axios.post(
@@ -86,33 +85,32 @@ const CounselorSessions = () => {
     }
   };
 
-  let upcomingCount = 0;
-  let completedCount = 0;
-  for (let i = 0; i < sessions.length; i++) {
-    if (sessions[i].status === "Approved") upcomingCount++;
-    if (sessions[i].status === "Completed") completedCount++;
-  }
+  const upcomingCount = sessions.filter((s) => s.status === "Approved").length;
+  const completedCount = sessions.filter((s) => s.status === "Completed").length;
+  const missedCount = sessions.filter((s) => s.status === "Missed").length;
 
-  const filtered = [];
-  for (let i = 0; i < sessions.length; i++) {
-    const s = sessions[i];
-    if (activeTab === "Upcoming" && s.status === "Approved") {
-      filtered.push(s);
-    } else if (activeTab === "Completed" && s.status === "Completed") {
-      filtered.push(s);
-    } else if (activeTab === "Summary" && s.status === "Completed") {
-      filtered.push(s);
-    } else if (activeTab === "See All") {
-      filtered.push(s);
-    }
-  }
+  const getFiltered = () => {
+    if (activeTab === "Upcoming") return sessions.filter((s) => s.status === "Approved");
+    if (activeTab === "Completed") return sessions.filter((s) => s.status === "Completed");
+    if (activeTab === "Missed") return sessions.filter((s) => s.status === "Missed");
+    if (activeTab === "Summary") return sessions.filter((s) => s.status === "Completed");
+    return sessions;
+  };
+
+  const filtered = getFiltered();
 
   let emptyMessage = "No sessions yet.";
-  if (activeTab === "Upcoming") {
-    emptyMessage = "Students will book sessions with you from the directory.";
-  } else if (activeTab === "Summary") {
-    emptyMessage = "Summaries will appear here after sessions are completed.";
-  }
+  if (activeTab === "Upcoming") emptyMessage = "Students will book sessions with you from the directory.";
+  if (activeTab === "Missed") emptyMessage = "No missed sessions. Great work!";
+  if (activeTab === "Summary") emptyMessage = "Summaries will appear here after sessions are completed.";
+
+  const tabs = [
+    { label: "Upcoming", count: upcomingCount },
+    { label: "Completed", count: completedCount },
+    { label: "Missed", count: missedCount },
+    { label: "Summary", count: completedCount },
+    { label: "See All", count: sessions.length },
+  ];
 
   if (loading) {
     return (
@@ -143,15 +141,13 @@ const CounselorSessions = () => {
           <Navbar />
         </div>
 
-        <div className="grid grid-cols-3 gap-5 mb-6">
+        <div className="grid grid-cols-4 gap-5 mb-6">
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
             <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
               <Calendar size={20} className="text-emerald-600" />
             </div>
             <div>
-              <p className="text-3xl font-black text-gray-800">
-                {upcomingCount}
-              </p>
+              <p className="text-3xl font-black text-gray-800">{upcomingCount}</p>
               <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
                 Upcoming
               </p>
@@ -163,11 +159,21 @@ const CounselorSessions = () => {
               <CheckCircle size={20} className="text-indigo-600" />
             </div>
             <div>
-              <p className="text-3xl font-black text-gray-800">
-                {completedCount}
-              </p>
+              <p className="text-3xl font-black text-gray-800">{completedCount}</p>
               <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
                 Completed
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Clock size={20} className="text-orange-500" />
+            </div>
+            <div>
+              <p className="text-3xl font-black text-gray-800">{missedCount}</p>
+              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                Missed
               </p>
             </div>
           </div>
@@ -177,9 +183,7 @@ const CounselorSessions = () => {
               <Users size={20} className="text-purple-600" />
             </div>
             <div>
-              <p className="text-3xl font-black text-gray-800">
-                {sessions.length}
-              </p>
+              <p className="text-3xl font-black text-gray-800">{sessions.length}</p>
               <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
                 Total Sessions
               </p>
@@ -206,70 +210,38 @@ const CounselorSessions = () => {
         <div className="mt-10">
           <div className="border-t-2 border-slate-300 pt-6 pb-6 border-b-2 flex justify-between items-start mb-5">
             <div>
-              <h2 className="text-2xl font-black text-gray-800">
-                All Sessions
-              </h2>
+              <h2 className="text-2xl font-black text-gray-800">All Sessions</h2>
               <p className="text-gray-500 mt-0.5">
                 View all your upcoming and past sessions.
               </p>
             </div>
 
             <div className="flex bg-white rounded-xl border border-gray-200 p-1 gap-1 shadow-sm">
-              <button
-                onClick={() => setActiveTab("Upcoming")}
-                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === "Upcoming" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
-              >
-                Upcoming
-                {upcomingCount > 0 && (
-                  <span
-                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === "Upcoming" ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.label;
+                return (
+                  <button
+                    key={tab.label}
+                    onClick={() => setActiveTab(tab.label)}
+                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                      isActive
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                    }`}
                   >
-                    {upcomingCount}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab("Completed")}
-                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === "Completed" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
-              >
-                Completed
-                {completedCount > 0 && (
-                  <span
-                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === "Completed" ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
-                  >
-                    {completedCount}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab("Summary")}
-                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === "Summary" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
-              >
-                Summary
-                {completedCount > 0 && (
-                  <span
-                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === "Summary" ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
-                  >
-                    {completedCount}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab("See All")}
-                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === "See All" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"}`}
-              >
-                See All
-                {sessions.length > 0 && (
-                  <span
-                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeTab === "See All" ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
-                  >
-                    {sessions.length}
-                  </span>
-                )}
-              </button>
+                    {tab.label}
+                    {tab.count > 0 && (
+                      <span
+                        className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${
+                          isActive ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

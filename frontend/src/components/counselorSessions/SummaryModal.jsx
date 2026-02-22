@@ -103,14 +103,16 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
           ) : (
             <>
               <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-4">
-                {existing ? "Summary of the session for the student" : "Write notes to help the student"}
+                {existing
+                  ? "Summary of the session for the student"
+                  : "Write notes to help the student"}
               </p>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 rows={14}
                 placeholder="Write your session notes here..."
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-5 text-sm text-gray-700 font-medium leading-relaxed resize-y min-h-[260px] focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 transition-all placeholder:text-gray-300"
+                className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-5 text-sm text-gray-700 font-medium leading-relaxed resize-y min-h-[260px] focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 transition-all placeholder:text-gray-300 text-justify"
               />
               <p className="text-[10px] text-gray-400 font-medium mt-2 text-right">
                 {text.length} characters
@@ -123,14 +125,20 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
           {saved ? (
             <div className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-50 border border-emerald-100">
               <CheckCircle size={15} className="text-emerald-600" />
-              <span className="text-emerald-700 font-black text-sm uppercase">Summary Saved!</span>
+              <span className="text-emerald-700 font-black text-sm uppercase">
+                Summary Saved!
+              </span>
             </div>
           ) : (
             <button
               onClick={handleSave}
               disabled={!text.trim() || saving}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all
-                ${text.trim() && !saving ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
+                ${
+                  text.trim() && !saving
+                    ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
             >
               {saving ? (
                 <>

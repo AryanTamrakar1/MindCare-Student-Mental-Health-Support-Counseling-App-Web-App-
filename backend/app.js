@@ -7,7 +7,7 @@ const appointmentRoutes = require('./routes/appointmentRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
 const forumRoutes = require('./routes/forumRoutes');
-const { autoMarkMissedSessions } = require('./controllers/sessionController');
+const quizRoutes = require('./routes/quizRoutes');
 const path = require('path'); 
 
 require('dotenv').config();
@@ -29,6 +29,8 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/ratings', ratingRoutes);
 
 app.use('/api/forum', forumRoutes);
+
+app.use('/api/quiz', quizRoutes);
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

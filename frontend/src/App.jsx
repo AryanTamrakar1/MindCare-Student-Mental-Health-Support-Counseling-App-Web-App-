@@ -23,6 +23,7 @@ import CounselorRatings from "./pages/CounselorRatings";
 import CommunityForum from "./pages/CommunityForum";
 import PostManagement from "./pages/PostManagement";
 import PostDetail from "./pages/PostDetail";
+import MoodQuiz from "./pages/MoodQuiz";
 
 function App() {
   return (
@@ -161,6 +162,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PostDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mood-quiz"
+              element={
+                <ProtectedRoute>
+                  <MoodQuiz />
                 </ProtectedRoute>
               }
             />

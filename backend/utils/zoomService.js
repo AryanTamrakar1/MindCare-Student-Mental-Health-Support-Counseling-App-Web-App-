@@ -52,7 +52,7 @@ const createZoomMeeting = async (
     },
   );
 
-  // Return the meeting details we need
+  // Return the meeting details needed for the appointment
   return {
     meetingId: response.data.id.toString(),
     joinLink: response.data.join_url, // Student uses this

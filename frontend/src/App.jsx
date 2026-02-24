@@ -24,6 +24,8 @@ import CommunityForum from "./pages/CommunityForum";
 import PostManagement from "./pages/PostManagement";
 import PostDetail from "./pages/PostDetail";
 import MoodQuiz from "./pages/MoodQuiz";
+import ResourceLibrary from "./pages/ResourceLibrary";
+import AdminResourceLibrary from "./pages/AdminResourceLibrary";
 
 function App() {
   return (
@@ -170,6 +172,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MoodQuiz />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/resource-library"
+              element={
+                <ProtectedRoute>
+                  <ResourceLibrary />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-resource-library"
+              element={
+                <ProtectedRoute>
+                  <AdminResourceLibrary />
                 </ProtectedRoute>
               }
             />

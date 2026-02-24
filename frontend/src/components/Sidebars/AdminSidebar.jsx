@@ -94,7 +94,12 @@ const AdminSidebar = ({ user }) => {
             PLATFORM ANALYTICS
           </button>
 
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold w-full whitespace-nowrap text-[#9ca3af] hover:bg-[#1f2937] hover:text-white">
+          <button
+            onClick={function () {
+              menuNavigate("/admin-resource-library");
+            }}
+            className={getButtonClass("/admin-resource-library")}
+          >
             <BookOpen size={20} className="flex-shrink-0" />
             RESOURCE LIBRARY
           </button>

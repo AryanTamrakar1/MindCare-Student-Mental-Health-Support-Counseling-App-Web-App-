@@ -9,10 +9,13 @@ const ratingRoutes = require('./routes/ratingRoutes');
 const forumRoutes = require('./routes/forumRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const resourceRoutes = require('./routes/resourceRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const { startNotificationScheduler } = require('./utils/notificationScheduler');
 const path = require('path'); 
 
 require('dotenv').config();
 connectDB();
+startNotificationScheduler();
 
 const app = express();
 
@@ -34,6 +37,8 @@ app.use('/api/forum', forumRoutes);
 app.use('/api/quiz', quizRoutes);
 
 app.use('/api/resources', resourceRoutes);
+
+app.use('/api/notifications', notificationRoutes);
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

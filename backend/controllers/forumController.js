@@ -1,5 +1,6 @@
 const Post = require("../models/Post");
 const User = require("../models/User");
+const { createNotification } = require("./notificationController");
 
 // --- Get All Posts ---
 const getAllPosts = async (req, res) => {
@@ -50,6 +51,7 @@ const addReply = async (req, res) => {
 
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
+
     let authorName = null;
     let authorPhoto = null;
 
@@ -74,6 +76,41 @@ const addReply = async (req, res) => {
     });
 
     await post.save();
+
+    const replierId = req.user._id.toString();
+    const postAuthorId = post.authorId.toString();
+
+    if (parentReplyId) {
+      let parentReplyAuthorId = null;
+
+      for (let i = 0; i < post.replies.length; i++) {
+        if (post.replies[i]._id.toString() === parentReplyId) {
+          parentReplyAuthorId = post.replies[i].authorId.toString();
+          break;
+        }
+      }
+
+      if (parentReplyAuthorId && parentReplyAuthorId !== replierId) {
+        await createNotification(
+          parentReplyAuthorId,
+          "Someone replied to your reply",
+          "Someone replied to your reply in the community forum.",
+          "new_post_reply",
+          "/community-forum",
+        );
+      }
+    } else {
+      if (postAuthorId !== replierId) {
+        await createNotification(
+          postAuthorId,
+          "Someone replied to your post",
+          "Someone replied to your post in the community forum.",
+          "new_post_reply",
+          "/community-forum",
+        );
+      }
+    }
+
     res.json({ message: "Reply added!", post });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
@@ -95,7 +132,9 @@ const editReply = async (req, res) => {
     const tenMinutes = 10 * 60 * 1000;
     const timeSinceCreated = Date.now() - new Date(reply.createdAt).getTime();
     if (timeSinceCreated > tenMinutes) {
-      return res.status(403).json({ message: "Edit window has expired (10 minutes)" });
+      return res
+        .status(403)
+        .json({ message: "Edit window has expired (10 minutes)" });
     }
 
     if (reply.authorId.toString() !== req.user._id.toString()) {
@@ -211,6 +250,7 @@ const deleteReply = async (req, res) => {
     const { postId, replyId } = req.params;
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
+
     const remainingReplies = [];
     for (let i = 0; i < post.replies.length; i++) {
       const reply = post.replies[i];
@@ -226,7 +266,6 @@ const deleteReply = async (req, res) => {
     }
 
     post.replies = remainingReplies;
-
     await post.save();
     res.json({ message: "Reply deleted!" });
   } catch (error) {

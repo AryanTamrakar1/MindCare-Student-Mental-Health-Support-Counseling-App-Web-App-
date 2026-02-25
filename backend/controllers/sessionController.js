@@ -1,5 +1,6 @@
 const Appointment = require("../models/Appointment");
 const { createZoomMeeting } = require("../utils/zoomService");
+const { createNotification } = require("./notificationController");
 
 // It approves a session request and creates a Zoom meeting
 exports.approveAndCreateZoom = async (req, res) => {
@@ -29,6 +30,18 @@ exports.approveAndCreateZoom = async (req, res) => {
     appointment.zoomMeetingId = zoomData.meetingId;
     appointment.startLink = zoomData.startLink;
     await appointment.save();
+
+    await createNotification(
+      appointment.studentId._id,
+      "Session Confirmed — Zoom Link Ready!",
+      "Your session on " +
+        appointment.date +
+        " at " +
+        appointment.timeSlot +
+        " is confirmed. Your Zoom link is ready.",
+      "booking_approved",
+      "/my-sessions",
+    );
 
     res.status(200).json({
       message: `Request Approved! The Session is on ${appointment.date}!`,
@@ -149,9 +162,15 @@ exports.getSummary = async (req, res) => {
   try {
     const { appointmentId } = req.params;
     const userId = req.user.id;
-    let appointment = await Appointment.findOne({ _id: appointmentId, counselorId: userId });
+    let appointment = await Appointment.findOne({
+      _id: appointmentId,
+      counselorId: userId,
+    });
     if (!appointment) {
-      appointment = await Appointment.findOne({ _id: appointmentId, studentId: userId });
+      appointment = await Appointment.findOne({
+        _id: appointmentId,
+        studentId: userId,
+      });
     }
 
     if (!appointment) {

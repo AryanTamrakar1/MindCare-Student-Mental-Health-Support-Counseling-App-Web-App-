@@ -1,11 +1,22 @@
 const Appointment = require("../models/Appointment");
 const User = require("../models/User");
+const { createNotification } = require("./notificationController");
 
 // It handles all appointment-related operations, including requesting sessions, checking availability, and auto-marking missed sessions
 function parseDateString(dateStr) {
   const monthMap = {
-    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+    Jan: 0,
+    Feb: 1,
+    Mar: 2,
+    Apr: 3,
+    May: 4,
+    Jun: 5,
+    Jul: 6,
+    Aug: 7,
+    Sep: 8,
+    Oct: 9,
+    Nov: 10,
+    Dec: 11,
   };
   const parts = dateStr.split(" ");
   if (parts.length < 3) return null;
@@ -16,7 +27,6 @@ function parseDateString(dateStr) {
   return new Date(Date.UTC(year, month, day));
 }
 
-// It checks if a counselor is available for a given date and timeslot, and also ensures students don't double-book or exceed pending request limits. 
 function parseTimeSlotStart(timeSlot) {
   if (!timeSlot) return null;
   const startStr = timeSlot.split(" - ")[0].trim();
@@ -31,19 +41,21 @@ function parseTimeSlotStart(timeSlot) {
   return hour * 60 + minute;
 }
 
-// It automatically marks sessions as "Missed" if the session time has passed without being marked as Completed.
 async function autoMarkMissedSessions() {
   const nowUTC = new Date();
   const nepalOffsetMs = (5 * 60 + 45) * 60000;
   const nowNepal = new Date(nowUTC.getTime() + nepalOffsetMs);
 
-  const todayMidnightNepal = new Date(Date.UTC(
-    nowNepal.getUTCFullYear(),
-    nowNepal.getUTCMonth(),
-    nowNepal.getUTCDate(),
-  ));
+  const todayMidnightNepal = new Date(
+    Date.UTC(
+      nowNepal.getUTCFullYear(),
+      nowNepal.getUTCMonth(),
+      nowNepal.getUTCDate(),
+    ),
+  );
 
-  const currentNepalMinutes = nowNepal.getUTCHours() * 60 + nowNepal.getUTCMinutes();
+  const currentNepalMinutes =
+    nowNepal.getUTCHours() * 60 + nowNepal.getUTCMinutes();
   const approvedSessions = await Appointment.find({ status: "Approved" });
 
   for (let i = 0; i < approvedSessions.length; i++) {
@@ -57,7 +69,8 @@ async function autoMarkMissedSessions() {
 
     const isDateInPast = sessionDate < todayMidnightNepal;
     const isDateToday = sessionDate.getTime() === todayMidnightNepal.getTime();
-    const isTodayAndEnded = isDateToday && currentNepalMinutes > sessionEndWithGrace;
+    const isTodayAndEnded =
+      isDateToday && currentNepalMinutes > sessionEndWithGrace;
 
     if (isDateInPast || isTodayAndEnded) {
       session.status = "Missed";
@@ -79,8 +92,18 @@ exports.requestSession = async (req, res) => {
     const counselor = await User.findById(counselorId);
 
     const monthMap = {
-      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+      Jan: 0,
+      Feb: 1,
+      Mar: 2,
+      Apr: 3,
+      May: 4,
+      Jun: 5,
+      Jul: 6,
+      Aug: 7,
+      Sep: 8,
+      Oct: 9,
+      Nov: 10,
+      Dec: 11,
     };
     const parts = date.split(" ");
     const parsedDate = new Date(
@@ -101,7 +124,15 @@ exports.requestSession = async (req, res) => {
       });
     }
 
-    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayNames = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
     const dayName = dayNames[parsedDate.getUTCDay()];
 
     let isAvailable = false;
@@ -117,11 +148,15 @@ exports.requestSession = async (req, res) => {
 
     if (!isAvailable) {
       return res.status(400).json({
-        message: "Counselor is not available at this time. Please choose a different time.",
+        message:
+          "Counselor is not available at this time. Please choose a different time.",
       });
     }
 
-    const studentAppointmentsOnDate = await Appointment.find({ studentId, date });
+    const studentAppointmentsOnDate = await Appointment.find({
+      studentId,
+      date,
+    });
     let studentExistingAppointment = null;
     for (let i = 0; i < studentAppointmentsOnDate.length; i++) {
       if (
@@ -135,7 +170,8 @@ exports.requestSession = async (req, res) => {
 
     if (studentExistingAppointment) {
       return res.status(400).json({
-        message: "You already have a session requested or booked for this day. You can only have one session per day.",
+        message:
+          "You already have a session requested or booked for this day. You can only have one session per day.",
       });
     }
 
@@ -146,11 +182,16 @@ exports.requestSession = async (req, res) => {
 
     if (pendingCount >= 3) {
       return res.status(400).json({
-        message: "You have too many pending requests (Limit is 3). Please wait for a counselor to respond before booking more.",
+        message:
+          "You have too many pending requests (Limit is 3). Please wait for a counselor to respond before booking more.",
       });
     }
 
-    const counselorAppointmentsOnSlot = await Appointment.find({ counselorId, date, timeSlot });
+    const counselorAppointmentsOnSlot = await Appointment.find({
+      counselorId,
+      date,
+      timeSlot,
+    });
     let existingAppointment = null;
     for (let i = 0; i < counselorAppointmentsOnSlot.length; i++) {
       if (
@@ -164,7 +205,8 @@ exports.requestSession = async (req, res) => {
 
     if (existingAppointment) {
       return res.status(400).json({
-        message: "This slot is already requested or booked for this specific date.",
+        message:
+          "This slot is already requested or booked for this specific date.",
       });
     }
 
@@ -178,7 +220,18 @@ exports.requestSession = async (req, res) => {
     });
 
     await newAppointment.save();
-    res.status(201).json({ message: "Request Sent! Counselor will respond soon." });
+
+    await createNotification(
+      counselorId,
+      "New Session Request",
+      "A student has requested a session on " + date + " at " + timeSlot,
+      "booking_request",
+      "/pending-requests",
+    );
+
+    res
+      .status(201)
+      .json({ message: "Request Sent! Counselor will respond soon." });
   } catch (error) {
     console.error("Booking Error:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -249,11 +302,41 @@ exports.updateStatus = async (req, res) => {
     });
 
     if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found or unauthorized." });
+      return res
+        .status(404)
+        .json({ message: "Appointment not found or unauthorized." });
     }
 
     appointment.status = status;
     await appointment.save();
+
+    if (status === "Approved") {
+      await createNotification(
+        appointment.studentId,
+        "Session Approved!",
+        "Your session on " +
+          appointment.date +
+          " at " +
+          appointment.timeSlot +
+          " has been approved.",
+        "booking_approved",
+        "/my-sessions",
+      );
+    }
+
+    if (status === "Rejected") {
+      await createNotification(
+        appointment.studentId,
+        "Session Request Declined",
+        "Your session request on " +
+          appointment.date +
+          " at " +
+          appointment.timeSlot +
+          " was not accepted.",
+        "booking_rejected",
+        "/counselors",
+      );
+    }
 
     let message =
       status === "Approved"
@@ -295,7 +378,20 @@ exports.getLiveStatus = async (req, res) => {
     const dayNum = nepalTime.getUTCDate();
     const day = dayNum < 10 ? "0" + dayNum : "" + dayNum;
 
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     const month = monthNames[nepalTime.getUTCMonth()];
 
     const year = nepalTime.getUTCFullYear();

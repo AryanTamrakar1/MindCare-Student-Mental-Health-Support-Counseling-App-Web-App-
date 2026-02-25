@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const sendEmail = require("../utils/sendEmail");
+const { createNotification } = require("./notificationController");
 
 // --- Register ---
 const registerUser = async (req, res) => {
@@ -46,6 +47,20 @@ const registerUser = async (req, res) => {
         "Verify Your Student Account",
         `Hello ${user.name},\n\nYour verification code is: ${otp}`,
       ).catch((err) => console.error("Registration Email Error:", err));
+    }
+
+    if (role === "Counselor") {
+      const admins = await User.find({ role: "Admin" });
+      for (let i = 0; i < admins.length; i++) {
+        await createNotification(
+          admins[i]._id,
+          "New Counselor Application",
+          user.name +
+            " has applied to be a counselor. Please review their application.",
+          "general",
+          "/counselor-approvals",
+        );
+      }
     }
 
     res.status(201).json({
@@ -218,12 +233,15 @@ const updateRole = async (req, res) => {
     user.role = updateData.role;
     user.status = updateData.status;
     if (updateData.profTitle) user.profTitle = updateData.profTitle;
-    if (updateData.specialization) user.specialization = updateData.specialization;
+    if (updateData.specialization)
+      user.specialization = updateData.specialization;
     if (updateData.bio) user.bio = updateData.bio;
-    if (updateData.qualifications) user.qualifications = updateData.qualifications;
+    if (updateData.qualifications)
+      user.qualifications = updateData.qualifications;
     if (updateData.experience) user.experience = updateData.experience;
     if (updateData.availability) user.availability = updateData.availability;
-    if (updateData.verificationPhoto) user.verificationPhoto = updateData.verificationPhoto;
+    if (updateData.verificationPhoto)
+      user.verificationPhoto = updateData.verificationPhoto;
 
     await user.save();
 
@@ -359,7 +377,10 @@ const getCounselors = async (req, res) => {
 const searchCounselors = async (req, res) => {
   try {
     const { name, specialization } = req.query;
-    const allCounselors = await User.find({ role: "Counselor", status: "Approved" });
+    const allCounselors = await User.find({
+      role: "Counselor",
+      status: "Approved",
+    });
 
     let counselors = allCounselors;
 
@@ -367,7 +388,10 @@ const searchCounselors = async (req, res) => {
       const nameLower = name.toLowerCase();
       const filtered = [];
       for (let i = 0; i < counselors.length; i++) {
-        if (counselors[i].name && counselors[i].name.toLowerCase().includes(nameLower)) {
+        if (
+          counselors[i].name &&
+          counselors[i].name.toLowerCase().includes(nameLower)
+        ) {
           filtered.push(counselors[i]);
         }
       }
@@ -377,7 +401,10 @@ const searchCounselors = async (req, res) => {
       const specLower = specialization.toLowerCase();
       const filtered = [];
       for (let i = 0; i < counselors.length; i++) {
-        if (counselors[i].specialization && counselors[i].specialization.toLowerCase().includes(specLower)) {
+        if (
+          counselors[i].specialization &&
+          counselors[i].specialization.toLowerCase().includes(specLower)
+        ) {
           filtered.push(counselors[i]);
         }
       }

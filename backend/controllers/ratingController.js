@@ -1,5 +1,6 @@
 const Rating = require("../models/Rating");
 const Appointment = require("../models/Appointment");
+const { createNotification } = require("./notificationController");
 
 // It allows a student to submit a rating for a completed session with a counselor
 exports.submitRating = async (req, res) => {
@@ -65,6 +66,15 @@ exports.submitRating = async (req, res) => {
       helpfulness,
       overallSatisfaction,
     });
+
+    await createNotification(
+      appointment.counselorId,
+      "You received a new rating",
+      "A student has submitted a rating for your session on " +
+        appointment.date,
+      "general",
+      "/counselor-ratings",
+    );
 
     res.status(201).json({
       message: "Thank you! Your rating has been recorded.",
@@ -184,7 +194,13 @@ exports.getPublicCounselorRating = async (req, res) => {
     let totalOverall = 0;
     for (let i = 0; i < ratings.length; i++) {
       const r = ratings[i];
-      const avg = (r.professionalism + r.clarity + r.empathy + r.helpfulness + r.overallSatisfaction) / 5;
+      const avg =
+        (r.professionalism +
+          r.clarity +
+          r.empathy +
+          r.helpfulness +
+          r.overallSatisfaction) /
+        5;
       totalOverall = totalOverall + avg;
     }
 

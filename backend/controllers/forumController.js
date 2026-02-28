@@ -1,6 +1,7 @@
 const Post = require("../models/Post");
 const User = require("../models/User");
 const { createNotification } = require("./notificationController");
+const { awardPoints } = require("./gamificationController");
 
 // --- Get All Posts ---
 const getAllPosts = async (req, res) => {
@@ -37,6 +38,11 @@ const createPost = async (req, res) => {
     });
 
     await newPost.save();
+
+    if (req.user.role === "Student") {
+      await awardPoints(req.user._id.toString(), "post");
+    }
+
     res.status(201).json({ message: "Post created!", post: newPost });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
@@ -109,6 +115,10 @@ const addReply = async (req, res) => {
           "/community-forum",
         );
       }
+    }
+
+    if (req.user.role === "Student") {
+      await awardPoints(req.user._id.toString(), "reply");
     }
 
     res.json({ message: "Reply added!", post });
@@ -215,6 +225,11 @@ const likeReply = async (req, res) => {
       reply.likes = newLikes;
     } else {
       reply.likes.push(req.user._id);
+      const replyAuthorId = reply.authorId.toString();
+      const isFirstLike = reply.likes.length === 1;
+      if (isFirstLike && replyAuthorId !== userId) {
+        await awardPoints(replyAuthorId, "helped");
+      }
     }
 
     await post.save();

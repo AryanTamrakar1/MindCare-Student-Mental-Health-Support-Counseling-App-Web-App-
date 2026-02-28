@@ -26,6 +26,7 @@ import PostDetail from "./pages/PostDetail";
 import MoodQuiz from "./pages/MoodQuiz";
 import ResourceLibrary from "./pages/ResourceLibrary";
 import AdminResourceLibrary from "./pages/AdminResourceLibrary";
+import GamificationPage from "./pages/GamificationPage";
 
 function App() {
   return (
@@ -188,6 +189,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AdminResourceLibrary />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/gamification"
+              element={
+                <ProtectedRoute>
+                  <GamificationPage />
                 </ProtectedRoute>
               }
             />

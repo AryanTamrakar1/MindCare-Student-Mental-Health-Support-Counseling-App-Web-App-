@@ -1,6 +1,7 @@
 const Appointment = require("../models/Appointment");
 const { createZoomMeeting } = require("../utils/zoomService");
 const { createNotification } = require("./notificationController");
+const { awardPoints } = require("./gamificationController");
 
 // It approves a session request and creates a Zoom meeting
 exports.approveAndCreateZoom = async (req, res) => {
@@ -95,6 +96,7 @@ exports.endSession = async (req, res) => {
 
     appointment.status = "Completed";
     await appointment.save();
+    await awardPoints(appointment.studentId.toString(), "session");
 
     res.status(200).json({
       message: "Session Ended! Please write a summary for the student.",

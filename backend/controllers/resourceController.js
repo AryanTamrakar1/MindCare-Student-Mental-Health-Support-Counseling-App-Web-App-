@@ -1,8 +1,17 @@
 const Resource = require("../models/Resource");
+const { awardPoints } = require("./gamificationController");
 
 const addResource = async (req, res) => {
   try {
-    const { title, link, type, category, estimatedTime, description, isPriority } = req.body;
+    const {
+      title,
+      link,
+      type,
+      category,
+      estimatedTime,
+      description,
+      isPriority,
+    } = req.body;
 
     const newResource = new Resource({
       title,
@@ -16,36 +25,49 @@ const addResource = async (req, res) => {
 
     await newResource.save();
 
-    res.status(201).json({ message: "Resource added successfully", resource: newResource });
+    res
+      .status(201)
+      .json({ message: "Resource added successfully", resource: newResource });
   } catch (error) {
-    res.status(500).json({ message: "Failed to add resource", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to add resource", error: error.message });
   }
 };
 
 const editResource = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, link, type, category, estimatedTime, description, isPriority } = req.body;
+    const {
+      title,
+      link,
+      type,
+      category,
+      estimatedTime,
+      description,
+      isPriority,
+    } = req.body;
 
     const updated = await Resource.findByIdAndUpdate(
       id,
       { title, link, type, category, estimatedTime, description, isPriority },
-      { new: true }
+      { new: true },
     );
 
     if (!updated) {
       return res.status(404).json({ message: "Resource not found" });
     }
 
-    res.status(200).json({ message: "Resource updated successfully", resource: updated });
+    res
+      .status(200)
+      .json({ message: "Resource updated successfully", resource: updated });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update resource", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update resource", error: error.message });
   }
 };
 
-// ============================================
-// ADMIN: Delete a resource
-// ============================================
 const deleteResource = async (req, res) => {
   try {
     const { id } = req.params;
@@ -58,7 +80,9 @@ const deleteResource = async (req, res) => {
 
     res.status(200).json({ message: "Resource deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete resource", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete resource", error: error.message });
   }
 };
 
@@ -107,10 +131,11 @@ const getAllResources = async (req, res) => {
 
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch resources", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch resources", error: error.message });
   }
 };
-
 
 const reactToResource = async (req, res) => {
   try {
@@ -151,12 +176,13 @@ const reactToResource = async (req, res) => {
     }
 
     await resource.save();
-    res.status(200).json({ message: "Reaction updated", reactions: resource.reactions });
+    res
+      .status(200)
+      .json({ message: "Reaction updated", reactions: resource.reactions });
   } catch (error) {
     res.status(500).json({ message: "Failed to react", error: error.message });
   }
 };
-
 
 const toggleBookmark = async (req, res) => {
   try {
@@ -187,12 +213,33 @@ const toggleBookmark = async (req, res) => {
       resource.bookmarks = newBookmarks;
     } else {
       resource.bookmarks.push(studentId);
+      await awardPoints(studentId.toString(), "resource");
+      const allResources = await Resource.find();
+      let bookmarkedCount = 0;
+      for (let i = 0; i < allResources.length; i++) {
+        for (let j = 0; j < allResources[i].bookmarks.length; j++) {
+          if (
+            allResources[i].bookmarks[j].toString() === studentId.toString()
+          ) {
+            bookmarkedCount = bookmarkedCount + 1;
+            break;
+          }
+        }
+      }
+
+      if (bookmarkedCount === 5) {
+        await awardPoints(studentId.toString(), "resource_5");
+      }
     }
 
     await resource.save();
-    res.status(200).json({ message: "Bookmark updated", bookmarks: resource.bookmarks });
+    res
+      .status(200)
+      .json({ message: "Bookmark updated", bookmarks: resource.bookmarks });
   } catch (error) {
-    res.status(500).json({ message: "Failed to bookmark", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to bookmark", error: error.message });
   }
 };
 
@@ -216,7 +263,9 @@ const getBookmarkedResources = async (req, res) => {
 
     res.status(200).json(bookmarked);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch bookmarks", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch bookmarks", error: error.message });
   }
 };
 

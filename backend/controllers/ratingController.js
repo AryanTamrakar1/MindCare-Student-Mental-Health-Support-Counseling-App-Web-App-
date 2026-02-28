@@ -1,6 +1,7 @@
 const Rating = require("../models/Rating");
 const Appointment = require("../models/Appointment");
 const { createNotification } = require("./notificationController");
+const { awardPoints } = require("./gamificationController");
 
 // It allows a student to submit a rating for a completed session with a counselor
 exports.submitRating = async (req, res) => {
@@ -75,6 +76,8 @@ exports.submitRating = async (req, res) => {
       "general",
       "/counselor-ratings",
     );
+
+    await awardPoints(studentId, "rating");
 
     res.status(201).json({
       message: "Thank you! Your rating has been recorded.",

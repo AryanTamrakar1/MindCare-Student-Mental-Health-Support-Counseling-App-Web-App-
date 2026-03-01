@@ -8,6 +8,7 @@ import {
   Star,
   BookOpen,
   Zap,
+  ThumbsUp,
 } from "lucide-react";
 
 const POINT_GUIDE = [
@@ -25,6 +26,11 @@ const POINT_GUIDE = [
     activity: "Post in Forum",
     points: 10,
     icon: <PenLine className="w-4 h-4 text-indigo-400 shrink-0" />,
+  },
+  {
+    activity: "Like a Post",
+    points: 10,
+    icon: <ThumbsUp className="w-4 h-4 text-indigo-400 shrink-0" />,
   },
   {
     activity: "Help Someone (reply liked)",
@@ -68,7 +74,7 @@ const PointsDisplay = ({ points, currentStreak, moodTrend }) => {
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-black/10 flex flex-col gap-4 h-full">
-      <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+      <p className="text-xs font-black text-gray-800 uppercase tracking-widest">
         Points & Streak
       </p>
 
@@ -92,7 +98,7 @@ const PointsDisplay = ({ points, currentStreak, moodTrend }) => {
       {renderMultiplierNotice()}
 
       <div className="flex-1 flex flex-col gap-1">
-        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+        <p className="text-xs font-black text-gray-800 uppercase tracking-widest mb-2">
           How to Earn Points
         </p>
         {POINT_GUIDE.map(function (item) {

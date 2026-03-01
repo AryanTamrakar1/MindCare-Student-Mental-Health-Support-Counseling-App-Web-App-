@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const gamificationSchema = new mongoose.Schema(
   {
-    // --- Studen ID ---
+    // --- Student ID ---
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -48,7 +48,10 @@ const gamificationSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-
+    lastRestDayDate: {
+      type: String,
+      default: null,
+    },
     // --- Streak tracking ---
     currentStreak: {
       type: Number,
@@ -60,7 +63,7 @@ const gamificationSchema = new mongoose.Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Gamification", gamificationSchema);

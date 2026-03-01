@@ -42,7 +42,7 @@ const MilestoneLetters = ({ letters }) => {
   return (
     <div className="bg-white rounded-2xl p-6 border border-black/10 flex flex-col gap-5">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+        <p className="text-xs font-black text-gray-800 uppercase tracking-widest">
           Letters to Myself
         </p>
         <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">

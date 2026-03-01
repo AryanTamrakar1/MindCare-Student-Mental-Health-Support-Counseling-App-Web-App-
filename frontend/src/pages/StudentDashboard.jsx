@@ -27,7 +27,7 @@ const StudentDashboard = () => {
   function getProgressPercent() {
     if (!gamification) return 0;
     if (gamification.level >= 5) return 100;
-    const LEVEL_THRESHOLDS = [0, 100, 250, 500, 800];
+    const LEVEL_THRESHOLDS = [0, 20, 40, 60, 80];
     const currentLevelStart = LEVEL_THRESHOLDS[gamification.level - 1];
     const pointsSinceLevel = gamification.points - currentLevelStart;
     const pointsNeeded = gamification.nextLevelPoints - currentLevelStart;

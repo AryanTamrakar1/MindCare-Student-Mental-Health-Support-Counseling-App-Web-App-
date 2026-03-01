@@ -43,7 +43,7 @@ const ALL_BADGES = [
     earnedColor: "bg-pink-500",
   },
   {
-    name: "Being Consistent",
+    name: "The Consistent One",
     description: "Completed the quiz 3 weeks in a row",
     icon: <CalendarCheck className="w-5 h-5" />,
     color: "bg-teal-100 text-teal-600 border-teal-200",
@@ -89,14 +89,18 @@ const ALL_BADGES = [
 const BadgeCollection = ({ badges }) => {
   function isEarned(badgeName) {
     for (let i = 0; i < badges.length; i++) {
-      if (badges[i].name === badgeName) return true;
+      const stored = badges[i].name.trim().toLowerCase();
+      const check = badgeName.trim().toLowerCase();
+      if (stored === check) return true;
     }
     return false;
   }
 
   function getEarnedDate(badgeName) {
     for (let i = 0; i < badges.length; i++) {
-      if (badges[i].name === badgeName) {
+      const stored = badges[i].name.trim().toLowerCase();
+      const check = badgeName.trim().toLowerCase();
+      if (stored === check) {
         const date = new Date(badges[i].earnedAt);
         return date.toLocaleDateString("en-GB", {
           day: "numeric",
@@ -111,7 +115,7 @@ const BadgeCollection = ({ badges }) => {
   return (
     <div className="bg-white rounded-2xl p-6 border border-black/10 flex flex-col gap-5 h-full">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+        <p className="text-xs font-black text-gray-800 uppercase tracking-widest">
           Badges & Achievements
         </p>
         <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
@@ -133,22 +137,24 @@ const BadgeCollection = ({ badges }) => {
               >
                 {earned ? badge.icon : <Lock className="w-4 h-4" />}
               </div>
-              <div className="flex flex-col gap-0.5">
-                <p
-                  className={`text-xs font-black ${earned ? "text-gray-800" : "text-gray-400"}`}
-                >
-                  {badge.name}
-                </p>
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p
+                    className={`text-xs font-black ${earned ? "text-gray-800" : "text-gray-400"}`}
+                  >
+                    {badge.name}
+                  </p>
+                  {earned && earnedDate && (
+                    <p className="text-xs font-bold text-gray-400 shrink-0">
+                      {earnedDate}
+                    </p>
+                  )}
+                </div>
                 <p
                   className={`text-xs font-medium leading-snug ${earned ? "text-gray-500" : "text-gray-400"}`}
                 >
                   {badge.description}
                 </p>
-                {earned && earnedDate && (
-                  <p className="text-xs font-bold text-gray-400 mt-1">
-                    {earnedDate}
-                  </p>
-                )}
               </div>
             </div>
           );

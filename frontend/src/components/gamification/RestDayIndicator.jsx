@@ -1,23 +1,31 @@
-import React, { useState } from "react";
-import { Shield, ShieldOff, AlertCircle, Info } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Shield, ShieldOff, AlertCircle, RefreshCw, Info } from "lucide-react";
 import API from "../../api/axios";
 
 const RestDayIndicator = ({
-  restDaysUsed,
-  restDaysRemaining,
-  onRestDayUsed,
+  restDaysRemaining = 2,
+  onRestDayUsed = () => {},
+  usedRestDayToday = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [usedThisSession, setUsedThisSession] = useState(false);
+  const [justUsed, setJustUsed] = useState(false);
+  const [localRemaining, setLocalRemaining] = useState(restDaysRemaining);
+
+  useEffect(
+    function () {
+      setLocalRemaining(restDaysRemaining);
+    },
+    [restDaysRemaining],
+  );
+
+  const alreadyUsedToday = usedRestDayToday || justUsed;
+  const isDisabled = loading || localRemaining === 0 || alreadyUsedToday;
 
   async function handleUseRestDay() {
-    if (loading || usedThisSession) return;
+    if (isDisabled) return;
     setLoading(true);
     setError(null);
-    setSuccessMessage(null);
-
     try {
       const token = sessionStorage.getItem("token");
       const res = await API.put(
@@ -27,68 +35,77 @@ const RestDayIndicator = ({
           headers: { Authorization: "Bearer " + token },
         },
       );
-      setSuccessMessage(res.data.message);
-      setUsedThisSession(true);
+      setJustUsed(true);
+      setLocalRemaining(res.data.restDaysRemaining);
       onRestDayUsed(res.data.restDaysRemaining);
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+      setError(
+        err?.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      );
     }
-
     setLoading(false);
-  }
-
-  function renderShields() {
-    const shields = [];
-    for (let i = 0; i < 2; i++) {
-      if (i < restDaysRemaining) {
-        shields.push(<Shield key={i} className="w-7 h-7 text-indigo-500" />);
-      } else {
-        shields.push(<ShieldOff key={i} className="w-7 h-7 text-gray-300" />);
-      }
-    }
-    return shields;
   }
 
   function getButtonLabel() {
     if (loading) return "Using...";
-    if (usedThisSession) return "Rest Day Used";
-    if (restDaysRemaining === 0) return "No Rest Days Left";
+    if (localRemaining === 0) return "No Rest Days Left";
+    if (alreadyUsedToday) return "Rest Day Used Today ✓";
     return "Use a Rest Day";
   }
 
-  const isDisabled = loading || restDaysRemaining === 0 || usedThisSession;
-
   return (
-    <div className="bg-white rounded-2xl p-6 border border-black/10 flex flex-col gap-4 h-full">
-      <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+    <div className="bg-white rounded-2xl p-6 border border-black/10 flex flex-col h-full">
+      <p className="text-xs font-black text-gray-800 uppercase tracking-widest mb-5">
         Rest Days
       </p>
 
-      <div className="flex items-center gap-3">
-        <div className="flex gap-1.5">{renderShields()}</div>
-        <div>
-          <p className="text-sm font-black text-gray-800">
-            {restDaysRemaining} of 2 Remaining
-          </p>
-          <p className="text-xs text-gray-400 font-semibold">
-            Resets every month
+      <div className="rounded-xl border border-gray-100 overflow-hidden mb-4">
+        <div className="flex items-stretch">
+          <div className="flex-1 flex items-center gap-2.5 px-4 py-3 bg-indigo-50">
+            <div className="flex gap-1">
+              {[0, 1].map((i) =>
+                i < localRemaining ? (
+                  <Shield
+                    key={i}
+                    className="w-4 h-4 text-indigo-500"
+                    strokeWidth={2.5}
+                  />
+                ) : (
+                  <ShieldOff
+                    key={i}
+                    className="w-4 h-4 text-indigo-200"
+                    strokeWidth={2}
+                  />
+                ),
+              )}
+            </div>
+            <p className="text-sm font-black text-indigo-900 whitespace-nowrap">
+              {localRemaining} of 2{" "}
+              <span className="text-indigo-400 font-semibold">Remaining</span>
+            </p>
+          </div>
+          <div className="w-px bg-indigo-100" />
+          <div className="flex items-center gap-1.5 px-3 py-3 bg-emerald-50">
+            <RefreshCw className="w-3 h-3 text-emerald-400 shrink-0" />
+            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider whitespace-nowrap">
+              Resets monthly
+            </p>
+          </div>
+        </div>
+        <div className="h-px bg-gray-100" />
+        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white">
+          <Info className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+          <p className="text-xs text-gray-400 font-medium">
+            Use a rest day to protect your streak when you miss a day of
+            activity.
           </p>
         </div>
       </div>
 
-      {successMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-          <p className="text-xs font-bold text-green-700">{successMessage}</p>
-        </div>
-      )}
-
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+        <div className="flex items-start gap-1.5 mb-4">
+          <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
           <p className="text-xs font-bold text-red-600">{error}</p>
         </div>
       )}
@@ -97,16 +114,10 @@ const RestDayIndicator = ({
         <button
           onClick={handleUseRestDay}
           disabled={isDisabled}
-          className="w-full py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          className="w-full py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98] disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         >
           {getButtonLabel()}
         </button>
-
-        {restDaysRemaining === 0 && (
-          <p className="text-xs text-center text-gray-400 font-semibold mt-2">
-            Rest days reset at the start of next month.
-          </p>
-        )}
       </div>
     </div>
   );

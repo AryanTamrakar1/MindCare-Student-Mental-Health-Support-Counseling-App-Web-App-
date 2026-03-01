@@ -186,6 +186,9 @@ const iFeelThis = async (req, res) => {
       post.iFeelThis = newList;
     } else {
       post.iFeelThis.push(req.user._id);
+      if (req.user.role === "Student") {
+        await awardPoints(req.user._id.toString(), "like");
+      }
     }
 
     await post.save();

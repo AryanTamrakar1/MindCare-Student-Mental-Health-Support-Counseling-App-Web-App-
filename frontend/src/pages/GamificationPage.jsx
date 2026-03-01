@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import StudentSidebar from "../components/Sidebars/StudentSidebar";
 import Navbar from "../components/Navbar";
-import MindGarden from "../components/gamification/MindGarden";
 import LevelBadge from "../components/gamification/LevelBadge";
 import PointsDisplay from "../components/gamification/PointsDisplay";
 import BadgeCollection from "../components/gamification/BadgeCollection";
@@ -43,6 +42,7 @@ const GamificationPage = () => {
     }
     updatedData.restDaysRemaining = newRemaining;
     updatedData.restDaysUsed = 2 - newRemaining;
+    updatedData.usedRestDayToday = true;
     setData(updatedData);
   }
 
@@ -97,12 +97,9 @@ const GamificationPage = () => {
               restDaysUsed={data.restDaysUsed}
               restDaysRemaining={data.restDaysRemaining}
               onRestDayUsed={handleRestDayUsed}
+              usedRestDayToday={data.usedRestDayToday}
             />
           </div>
-        </div>
-
-        <div className="mb-6">
-          <MindGarden level={data.level} moodTrend={data.moodTrend} />
         </div>
 
         <div className="grid grid-cols-3 gap-6 mb-6 items-stretch">

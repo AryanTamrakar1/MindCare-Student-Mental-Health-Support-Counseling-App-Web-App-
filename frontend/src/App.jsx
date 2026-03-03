@@ -27,6 +27,7 @@ import MoodQuiz from "./pages/MoodQuiz";
 import ResourceLibrary from "./pages/ResourceLibrary";
 import AdminResourceLibrary from "./pages/AdminResourceLibrary";
 import GamificationPage from "./pages/GamificationPage";
+import AdminAnalytics from "./pages/AdminAnalytics";
 
 function App() {
   return (
@@ -197,6 +198,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <GamificationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-analytics"
+              element={
+                <ProtectedRoute>
+                  <AdminAnalytics />
                 </ProtectedRoute>
               }
             />

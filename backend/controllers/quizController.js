@@ -110,7 +110,7 @@ const submitCheckIn = async (req, res) => {
       return res.status(400).json({ message: "You already checked in today." });
     }
 
-    const emojiMap = { 1: "😔", 2: "😐", 3: "😊" };
+    const emojiMap = { 1: "😔", 2: "😟", 3: "😐", 4: "🙂", 5: "😊" };
 
     const checkIn = new DailyCheckIn({
       student: studentId,

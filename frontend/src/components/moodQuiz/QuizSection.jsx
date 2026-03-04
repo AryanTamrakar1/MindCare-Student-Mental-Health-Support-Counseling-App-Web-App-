@@ -11,7 +11,7 @@ const questionBank = [
   { id: 5, text: "How confident are you feeling this week?", category: "Confidence", followUp: { question: "What is lowering your confidence?", options: ["Poor Academic Performance", "Skill Gap", "Comparison with Peers", "Negative Feedback"] } },
   { id: 6, text: "How happy do you feel overall this week?", category: "Happiness", followUp: { question: "What is affecting your happiness?", options: ["Loneliness", "Academic Pressure", "Personal Loss", "Feeling Stuck"] } },
   { id: 7, text: "How productive were you this week?", category: "Productivity", followUp: { question: "What stopped you from being productive?", options: ["Procrastination", "Distractions", "Low Energy", "Too Many Tasks"] } },
-  { id: 8, text: "How often did you feel frustrated this week?", category: "Emotional", followUp: { question: "What frustrated you the most?", options: ["Studies", "People Around Me", "My Own Progress", "System / Institution"] } },
+  { id: 8, text: "How frustrated did you feel this week?", category: "Emotional", followUp: { question: "What frustrated you the most?", options: ["Studies", "People Around Me", "My Own Progress", "System / Institution"] } },
   { id: 9, text: "How well did you manage your emotions this week?", category: "Emotional", followUp: { question: "What made it hard to manage emotions?", options: ["Too Much Pressure", "No One to Talk To", "Bad News", "Overwhelmed by Tasks"] } },
   { id: 10, text: "How connected did you feel with your peers this week?", category: "Social", followUp: { question: "What affected your social connection?", options: ["Shyness", "Conflict with Friends", "Too Busy", "Feeling Different from Others"] } },
   { id: 11, text: "How balanced did your life feel this week?", category: "Balance", followUp: { question: "What area felt most unbalanced?", options: ["Study vs Rest", "Social vs Personal Time", "Health vs Work", "Family vs College"] } },
@@ -48,11 +48,19 @@ function getWeeklyQuestions() {
   return selected;
 }
 
+
 function getScoreColor(score) {
   if (score >= 80) return "text-green-600";
   if (score >= 60) return "text-blue-600";
   if (score >= 40) return "text-yellow-600";
   return "text-red-600";
+}
+
+function getScoreBg(score) {
+  if (score >= 80) return "bg-green-50";
+  if (score >= 60) return "bg-blue-50";
+  if (score >= 40) return "bg-yellow-50";
+  return "bg-red-50";
 }
 
 const QuizSection = ({ onQuizComplete }) => {
@@ -88,21 +96,41 @@ const QuizSection = ({ onQuizComplete }) => {
 
   const handleSelect = (score, followUpAnswer = null) => {
     setSelectedScore(score);
-    if (followUpAnswer) setSelectedFollowUp(followUpAnswer);
+    if (followUpAnswer) {
+      setSelectedFollowUp(followUpAnswer);
+    }
   };
 
   const handleNext = () => {
     const currentQuestion = questions[currentIndex];
+    let followUpQuestion = null;
+    let followUpAnswer = null;
+
+    if (selectedScore <= 2 && currentQuestion.followUp) {
+      followUpQuestion = currentQuestion.followUp.question;
+    }
+    if (selectedScore <= 2) {
+      followUpAnswer = selectedFollowUp;
+    }
+
     const answerEntry = {
       questionText: currentQuestion.text,
+      category: currentQuestion.category,
       score: selectedScore,
-      followUpQuestion: selectedScore <= 2 && currentQuestion.followUp ? currentQuestion.followUp.question : null,
-      followUpAnswer: selectedScore <= 2 ? selectedFollowUp : null,
+      followUpQuestion: followUpQuestion,
+      followUpAnswer: followUpAnswer,
     };
-    const newAnswers = [...answers, answerEntry];
+
+    const newAnswers = [];
+    for (let i = 0; i < answers.length; i++) {
+      newAnswers.push(answers[i]);
+    }
+    newAnswers.push(answerEntry);
+
     setAnswers(newAnswers);
     setSelectedScore(null);
     setSelectedFollowUp(null);
+
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex(currentIndex + 1);
     } else {
@@ -119,7 +147,9 @@ const QuizSection = ({ onQuizComplete }) => {
       });
       setResult({ moodScore: res.data.moodScore, moodLabel: res.data.moodLabel });
       setSubmitted(true);
-      if (onQuizComplete) onQuizComplete();
+      if (onQuizComplete) {
+        onQuizComplete();
+      }
     } catch (error) {
       console.error("Submit error", error);
     }
@@ -127,9 +157,13 @@ const QuizSection = ({ onQuizComplete }) => {
   };
 
   if (checking || loading) {
+    let loadingText = "Submitting your quiz...";
+    if (checking) {
+      loadingText = "Loading quiz...";
+    }
     return (
       <div className="bg-white rounded-2xl p-8 border border-black/10 text-center">
-        <p className="text-sm text-gray-400">{checking ? "Loading quiz..." : "Submitting your quiz..."}</p>
+        <p className="text-sm text-gray-400">{loadingText}</p>
       </div>
     );
   }
@@ -142,8 +176,10 @@ const QuizSection = ({ onQuizComplete }) => {
           <p className="text-xs text-gray-400">Come back next week for a new one.</p>
         </div>
         {result && (
-          <div className={`text-center rounded-2xl px-8 py-4 ${getScoreColor(result.moodScore).replace("text-", "bg-").replace("600","50").replace("500","50")}`}>
-            <p className={`text-4xl font-black ${getScoreColor(result.moodScore)}`}>{result.moodScore}%</p>
+          <div className={`text-center rounded-2xl px-8 py-4 ${getScoreBg(result.moodScore)}`}>
+            <p className={`text-4xl font-black ${getScoreColor(result.moodScore)}`}>
+              {result.moodScore}%
+            </p>
             <p className="text-sm text-gray-500 mt-1">{result.moodLabel}</p>
           </div>
         )}
@@ -159,13 +195,20 @@ const QuizSection = ({ onQuizComplete }) => {
           <p className="text-xs text-gray-400">See you next week.</p>
         </div>
         {result && (
-          <div className={`text-center rounded-2xl px-8 py-4 ${getScoreColor(result.moodScore).replace("text-", "bg-").replace("600","50").replace("500","50")}`}>
-            <p className={`text-4xl font-black ${getScoreColor(result.moodScore)}`}>{result.moodScore}%</p>
+          <div className={`text-center rounded-2xl px-8 py-4 ${getScoreBg(result.moodScore)}`}>
+            <p className={`text-4xl font-black ${getScoreColor(result.moodScore)}`}>
+              {result.moodScore}%
+            </p>
             <p className="text-sm text-gray-500 mt-1">{result.moodLabel}</p>
           </div>
         )}
       </div>
     );
+  }
+
+  let buttonText = "Next Question →";
+  if (currentIndex + 1 === questions.length) {
+    buttonText = "Submit Quiz";
   }
 
   return (
@@ -181,7 +224,7 @@ const QuizSection = ({ onQuizComplete }) => {
         disabled={selectedScore === null}
         className="mt-6 w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-sm hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {currentIndex + 1 === questions.length ? "Submit Quiz" : "Next Question →"}
+        {buttonText}
       </button>
     </div>
   );

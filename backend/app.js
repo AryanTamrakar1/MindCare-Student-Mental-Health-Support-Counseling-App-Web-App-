@@ -13,6 +13,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const { startNotificationScheduler } = require("./utils/notificationScheduler");
 const gamificationRoutes = require("./routes/gamificationRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const moodAnalysisRoutes = require("./routes/moodAnalysisRoutes");
 const path = require("path");
 
 require("dotenv").config();
@@ -47,6 +48,8 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/gamification", gamificationRoutes);
 
 app.use("/api/analytics", analyticsRoutes);
+
+app.use("/api/smart/mood-analysis", moodAnalysisRoutes);
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

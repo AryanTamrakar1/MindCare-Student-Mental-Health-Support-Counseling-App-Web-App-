@@ -16,6 +16,7 @@ const moodQuizSchema = new mongoose.Schema(
     answers: [
       {
         questionText: { type: String },
+        category: { type: String, default: "General" },
         score: { type: Number, min: 1, max: 5 },
         followUpQuestion: { type: String, default: null },
         followUpAnswer: { type: String, default: null },
@@ -30,7 +31,7 @@ const moodQuizSchema = new mongoose.Schema(
       type: String,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("MoodQuiz", moodQuizSchema);

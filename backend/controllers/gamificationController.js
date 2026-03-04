@@ -12,7 +12,7 @@ const ALL_BADGES = [
     description: "attended your first counseling session",
   },
   {
-    name: "The Voice",
+    name: "First Voice",
     description: "made your first post in the community forum",
   },
   { name: "The Helper", description: "helped someone in the community forum" },
@@ -69,13 +69,35 @@ function checkAndResetRestDays(gamification) {
   }
 }
 
+function checkAndResetMonthlyActivities(gamification) {
+  const now = new Date();
+  const lastReset = gamification.lastMonthlyActivityReset
+    ? new Date(gamification.lastMonthlyActivityReset)
+    : null;
+
+  if (
+    !lastReset ||
+    now.getMonth() !== lastReset.getMonth() ||
+    now.getFullYear() !== lastReset.getFullYear()
+  ) {
+    gamification.monthlyActivities = {
+      quiz: false,
+      session: false,
+      post: false,
+      resource: false,
+      rating: false,
+    };
+    gamification.lastMonthlyActivityReset = now;
+  }
+}
+
 function generateMilestoneLetter(badgeName, moodTrend) {
   const LETTER_TEMPLATES = {
     "First Step":
       "Dear Student, you just completed your very first mood quiz — and that matters more than you might think. Checking in with yourself is not always easy, but you did it anyway. Keep showing up for yourself, one small step at a time.",
     "Session Starter":
       "Dear Student, you attended your first counseling session today, and that took real courage. Reaching out for support is one of the strongest things a person can do. We hope the session was helpful — you deserve that support.",
-    "The Voice":
+    "First Voice":
       "Dear Student, you shared your thoughts in the community forum for the first time. Speaking up, even anonymously, is a brave and meaningful act. Someone out there may have read your words and felt less alone because of you.",
     "The Helper":
       "Dear Student, someone found your reply helpful and liked it — you genuinely helped another student today. In a space where everyone is going through something, your kindness made a real difference. Keep being that person for others.",
@@ -159,6 +181,7 @@ const awardPoints = async (studentId, activityType) => {
     }
 
     checkAndResetRestDays(gamification);
+    checkAndResetMonthlyActivities(gamification);
 
     let pointsToAdd = POINT_VALUES[activityType];
     if (!pointsToAdd) {
@@ -181,6 +204,26 @@ const awardPoints = async (studentId, activityType) => {
     if (gamification.lastActivityDate !== todayStr) {
       gamification.currentStreak = gamification.currentStreak + 1;
       gamification.lastActivityDate = todayStr;
+    }
+
+    if (!gamification.monthlyActivities) {
+      gamification.monthlyActivities = {
+        quiz: false,
+        session: false,
+        post: false,
+        resource: false,
+        rating: false,
+      };
+    }
+    if (activityType === "quiz") gamification.monthlyActivities.quiz = true;
+    if (activityType === "session") gamification.monthlyActivities.session = true;
+    if (activityType === "post") gamification.monthlyActivities.post = true;
+    if (activityType === "resource") gamification.monthlyActivities.resource = true;
+    if (activityType === "rating") gamification.monthlyActivities.rating = true;
+    gamification.markModified("monthlyActivities");
+
+    if (activityType === "post" || activityType === "reply") {
+      gamification.forumInteractions = (gamification.forumInteractions || 0) + 1;
     }
 
     await gamification.save();
@@ -231,9 +274,9 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
 
     if (
       activityType === "post" &&
-      !hasBadge(gamification.badges, "The Voice")
+      !hasBadge(gamification.badges, "First Voice")
     ) {
-      newBadgesToAward.push("The Voice");
+      newBadgesToAward.push("First Voice");
     }
 
     if (
@@ -273,6 +316,22 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
     ) {
       if (gamification.points > 20) {
         newBadgesToAward.push("The Comeback");
+      }
+    }
+
+    if (
+      (activityType === "post" || activityType === "reply") &&
+      !hasBadge(gamification.badges, "The Community Pillar")
+    ) {
+      if ((gamification.forumInteractions || 0) >= 10) {
+        newBadgesToAward.push("The Community Pillar");
+      }
+    }
+
+    if (!hasBadge(gamification.badges, "The MindCare Champion")) {
+      const ma = gamification.monthlyActivities || {};
+      if (ma.quiz && ma.session && ma.post && ma.resource && ma.rating) {
+        newBadgesToAward.push("The MindCare Champion");
       }
     }
 
@@ -334,10 +393,12 @@ const getGamificationData = async (req, res) => {
         currentStreak: 0,
         nextLevelPoints: LEVEL_THRESHOLDS[1],
         moodTrend: "Stable",
+        usedRestDayToday: false,
       });
     }
 
     checkAndResetRestDays(gamification);
+    checkAndResetMonthlyActivities(gamification);
     await gamification.save();
 
     let safeLevel = gamification.level;

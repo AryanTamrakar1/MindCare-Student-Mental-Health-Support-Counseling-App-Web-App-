@@ -3,6 +3,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import StudentSidebar from "../components/Sidebars/StudentSidebar";
+import SmartCounselorCard from "../components/recommendations/SmartCounselorCard";
 import API from "../api/axios";
 
 const StudentDashboard = () => {
@@ -47,6 +48,27 @@ const StudentDashboard = () => {
     return "from-indigo-600 to-indigo-800";
   }
 
+  function getProgressLabel() {
+    if (gamification && gamification.level < 5) {
+      return "Progress to Level " + (gamification.level + 1);
+    }
+    return "Maximum Level Reached";
+  }
+
+  function getPointsDisplay() {
+    if (gamification) {
+      return gamification.points;
+    }
+    return "—";
+  }
+
+  function getLevelDisplay() {
+    if (gamification) {
+      return "Level " + gamification.level + ": " + gamification.levelTitle;
+    }
+    return "Loading...";
+  }
+
   const progressPercent = getProgressPercent();
 
   return (
@@ -67,22 +89,22 @@ const StudentDashboard = () => {
         </div>
 
         <section
-          className={`bg-gradient-to-br ${getLevelColor()} rounded-2xl p-8 mb-6 text-white shadow-lg`}
+          className={
+            "bg-gradient-to-br " +
+            getLevelColor() +
+            " rounded-2xl p-8 mb-6 text-white shadow-lg"
+          }
         >
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-black">Your Progression</h3>
             <span className="bg-white/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider">
-              {gamification
-                ? "Level " + gamification.level + ": " + gamification.levelTitle
-                : "Loading..."}
+              {getLevelDisplay()}
             </span>
           </div>
 
           <div className="flex items-center gap-10">
             <div className="flex flex-col items-center justify-center border-4 border-white/30 rounded-full w-32 h-32">
-              <span className="text-3xl font-black">
-                {gamification ? gamification.points : "—"}
-              </span>
+              <span className="text-3xl font-black">{getPointsDisplay()}</span>
               <span className="text-xs uppercase tracking-wider opacity-80">
                 Total Points
               </span>
@@ -90,11 +112,7 @@ const StudentDashboard = () => {
 
             <div className="flex-1">
               <div className="flex justify-between text-sm font-bold mb-2">
-                <span>
-                  {gamification && gamification.level < 5
-                    ? "Progress to Level " + (gamification.level + 1)
-                    : "Maximum Level Reached"}
-                </span>
+                <span>{getProgressLabel()}</span>
                 <span>{progressPercent}%</span>
               </div>
               <div className="bg-white/20 h-3 rounded-full overflow-hidden mb-4">
@@ -138,56 +156,11 @@ const StudentDashboard = () => {
           </div>
         </section>
 
-        <section className="bg-white rounded-2xl p-8 mb-6 border border-black/10">
+        <section className="mb-6">
           <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
             Recommended Counselors
           </h4>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col items-center text-center hover:shadow-md transition">
-              <div className="w-14 h-14 rounded-full bg-indigo-400 flex items-center justify-center text-white font-black text-xl mb-3">
-                R
-              </div>
-              <strong className="text-base font-bold text-gray-900">
-                Cslr. Rohan
-              </strong>
-              <span className="text-xs text-gray-500 font-semibold mb-3">
-                Stress Expert
-              </span>
-              <button className="w-full bg-white border border-gray-200 py-2 rounded-lg text-xs font-black uppercase hover:bg-gray-50 transition">
-                View Profile
-              </button>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col items-center text-center hover:shadow-md transition">
-              <div className="w-14 h-14 rounded-full bg-pink-400 flex items-center justify-center text-white font-black text-xl mb-3">
-                A
-              </div>
-              <strong className="text-base font-bold text-gray-900">
-                Dr. Anjali
-              </strong>
-              <span className="text-xs text-gray-500 font-semibold mb-3">
-                Depression Spec.
-              </span>
-              <button className="w-full bg-white border border-gray-200 py-2 rounded-lg text-xs font-black uppercase hover:bg-gray-50 transition">
-                View Profile
-              </button>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col items-center text-center hover:shadow-md transition">
-              <div className="w-14 h-14 rounded-full bg-green-400 flex items-center justify-center text-white font-black text-xl mb-3">
-                S
-              </div>
-              <strong className="text-base font-bold text-gray-900">
-                Cslr. Sameer
-              </strong>
-              <span className="text-xs text-gray-500 font-semibold mb-3">
-                Career Pressure
-              </span>
-              <button className="w-full bg-white border border-gray-200 py-2 rounded-lg text-xs font-black uppercase hover:bg-gray-50 transition">
-                View Profile
-              </button>
-            </div>
-          </div>
+          <SmartCounselorCard />
         </section>
 
         <div className="grid grid-cols-2 gap-6 mb-6">

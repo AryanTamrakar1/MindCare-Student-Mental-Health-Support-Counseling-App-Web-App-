@@ -6,6 +6,7 @@ import DailyCheckIn from "../components/moodQuiz/DailyCheckIn";
 import QuizSection from "../components/moodQuiz/QuizSection";
 import MoodGraph from "../components/moodQuiz/MoodGraph";
 import MoodAnalysisCard from "../components/moodQuiz/MoodAnalysisCard";
+import MoodPredictionCard from "../components/moodQuiz/MoodPredictionCard";
 import API from "../api/axios";
 
 function weekLabelToDateRange(weekLabel) {
@@ -221,6 +222,9 @@ const MoodQuiz = () => {
         </div>
 
         <MoodAnalysisCard />
+
+        <SectionLabel text="Mood Prediction" />
+        <MoodPredictionCard />
 
         <SectionLabel text="Daily Check-In" />
         <DailyCheckIn />

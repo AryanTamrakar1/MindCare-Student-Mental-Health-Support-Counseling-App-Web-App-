@@ -4,9 +4,20 @@ import StudentSidebar from "../components/Sidebars/StudentSidebar";
 import Navbar from "../components/Navbar";
 import ResourceCard from "../components/resourceLibrary/ResourceCard";
 import ResourceFilter from "../components/resourceLibrary/ResourceFilter";
+import SmartResourceCard from "../components/recommendations/SmartResourceCard";
 import API from "../api/axios";
 
-const CARDS_PER_PAGE = 6;
+const CARDS_PER_PAGE = 9;
+
+const SectionLabel = ({ text }) => (
+  <div className="flex items-center gap-3 mb-4 mt-8">
+    <div className="w-1.5 h-5 rounded-full bg-indigo-500" />
+    <p className="text-sm font-black text-gray-700 uppercase tracking-widest">
+      {text}
+    </p>
+    <div className="flex-1 h-px bg-gray-200" />
+  </div>
+);
 
 const ResourceLibrary = () => {
   const { user } = useContext(AuthContext);
@@ -148,8 +159,7 @@ const ResourceLibrary = () => {
         if (titleLower.includes(searchLower) === false) continue;
       }
 
-      if (categoryApplied !== "All" && resource.category !== categoryApplied)
-        continue;
+      if (categoryApplied !== "All" && resource.category !== categoryApplied) continue;
       if (typeApplied !== "All" && resource.type !== typeApplied) continue;
       if (counselorApplied === true && resource.isPriority !== true) continue;
 
@@ -183,10 +193,7 @@ const ResourceLibrary = () => {
     if (sortApplied === "Newest") {
       for (let i = 0; i < filtered.length - 1; i++) {
         for (let j = 0; j < filtered.length - 1 - i; j++) {
-          if (
-            new Date(filtered[j].createdAt) <
-            new Date(filtered[j + 1].createdAt)
-          ) {
+          if (new Date(filtered[j].createdAt) < new Date(filtered[j + 1].createdAt)) {
             const temp = filtered[j];
             filtered[j] = filtered[j + 1];
             filtered[j + 1] = temp;
@@ -198,10 +205,7 @@ const ResourceLibrary = () => {
     if (sortApplied === "Oldest") {
       for (let i = 0; i < filtered.length - 1; i++) {
         for (let j = 0; j < filtered.length - 1 - i; j++) {
-          if (
-            new Date(filtered[j].createdAt) >
-            new Date(filtered[j + 1].createdAt)
-          ) {
+          if (new Date(filtered[j].createdAt) > new Date(filtered[j + 1].createdAt)) {
             const temp = filtered[j];
             filtered[j] = filtered[j + 1];
             filtered[j + 1] = temp;
@@ -260,6 +264,11 @@ const ResourceLibrary = () => {
           <Navbar />
         </div>
 
+        <div className="mb-6">
+          <SectionLabel text="Recommended For You" />
+          <SmartResourceCard />
+        </div>
+
         <ResourceFilter
           searchDraft={searchDraft}
           setSearchDraft={setSearchDraft}
@@ -279,13 +288,15 @@ const ResourceLibrary = () => {
           handleClearFilter={handleClearFilter}
         />
 
-        {filteredResources.length === 0 ? (
+        {filteredResources.length === 0 && (
           <div className="text-center py-24 bg-white rounded-2xl border-2 border-dashed border-gray-200">
             <p className="text-gray-400 font-bold text-lg">
               No resources found.
             </p>
           </div>
-        ) : (
+        )}
+
+        {filteredResources.length > 0 && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-6">
               {currentCards.map(function (resource) {
@@ -304,9 +315,7 @@ const ResourceLibrary = () => {
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8 pb-4">
                 <button
-                  onClick={function () {
-                    setCurrentPage(currentPage - 1);
-                  }}
+                  onClick={function () { setCurrentPage(currentPage - 1); }}
                   disabled={currentPage === 1}
                   className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                 >
@@ -314,17 +323,15 @@ const ResourceLibrary = () => {
                 </button>
 
                 {pageNumbers.map(function (page) {
+                  let btnClass = "w-10 h-10 rounded-xl font-bold text-sm transition-all border bg-white text-gray-400 border-gray-200 hover:border-indigo-400 hover:text-indigo-600";
+                  if (currentPage === page) {
+                    btnClass = "w-10 h-10 rounded-xl font-bold text-sm transition-all border bg-indigo-600 text-white border-indigo-600 shadow-sm";
+                  }
                   return (
                     <button
                       key={page}
-                      onClick={function () {
-                        setCurrentPage(page);
-                      }}
-                      className={`w-10 h-10 rounded-xl font-bold text-sm transition-all border ${
-                        currentPage === page
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                          : "bg-white text-gray-400 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
-                      }`}
+                      onClick={function () { setCurrentPage(page); }}
+                      className={btnClass}
                     >
                       {page}
                     </button>
@@ -332,9 +339,7 @@ const ResourceLibrary = () => {
                 })}
 
                 <button
-                  onClick={function () {
-                    setCurrentPage(currentPage + 1);
-                  }}
+                  onClick={function () { setCurrentPage(currentPage + 1); }}
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                 >

@@ -17,6 +17,7 @@ const moodAnalysisRoutes = require("./routes/moodAnalysisRoutes");
 const moodPredictionRoutes = require("./routes/moodPredictionRoutes");
 const counselorMatchRoutes = require("./routes/counselorMatchRoutes");
 const resourceMatchRoutes = require("./routes/resourceMatchRoutes");
+const smartQuizRoutes = require("./routes/smartQuizRoutes");
 const path = require("path");
 
 require("dotenv").config();
@@ -59,6 +60,8 @@ app.use("/api/smart/mood-prediction", moodPredictionRoutes);
 app.use("/api/smart/counselor-match", counselorMatchRoutes);
 
 app.use("/api/smart/resource-match", resourceMatchRoutes);
+
+app.use("/api/smart/smart-quiz", smartQuizRoutes);
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

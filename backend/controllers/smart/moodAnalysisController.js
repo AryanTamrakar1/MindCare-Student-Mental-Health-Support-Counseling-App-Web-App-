@@ -1,4 +1,5 @@
 const MoodQuiz = require("../../models/MoodQuiz");
+const DailyCheckIn = require("../../models/DailyCheckIn");
 
 function calculateWeightedAverage(scores) {
   let weightedSum = 0;
@@ -15,8 +16,9 @@ function calculateWeightedAverage(scores) {
 }
 
 function calculateRateOfChange(scores) {
-  let totalChange = 0;
+  if (scores.length < 2) return 0;
 
+  let totalChange = 0;
   for (let i = 1; i < scores.length; i++) {
     totalChange = totalChange + (scores[i] - scores[i - 1]);
   }
@@ -26,12 +28,8 @@ function calculateRateOfChange(scores) {
 }
 
 function getTrendLabel(rate) {
-  if (rate > 0.3) {
-    return "Improving";
-  }
-  if (rate < -0.3) {
-    return "Declining";
-  }
+  if (rate > 0.3) return "Improving";
+  if (rate < -0.3) return "Declining";
   return "Stable";
 }
 
@@ -40,7 +38,6 @@ function buildCategoryScores(allQuizzes) {
 
   for (let i = 0; i < allQuizzes.length; i++) {
     const quiz = allQuizzes[i];
-
     for (let j = 0; j < quiz.answers.length; j++) {
       const answer = quiz.answers[j];
       const category = answer.category || "General";
@@ -48,9 +45,7 @@ function buildCategoryScores(allQuizzes) {
       if (categoryData[category] === undefined) {
         categoryData[category] = { total: 0, count: 0 };
       }
-
-      categoryData[category].total =
-        categoryData[category].total + answer.score;
+      categoryData[category].total = categoryData[category].total + answer.score;
       categoryData[category].count = categoryData[category].count + 1;
     }
   }
@@ -69,10 +64,7 @@ function buildCategoryScores(allQuizzes) {
 
 function findWeakestCategory(categoryAverages) {
   const names = Object.keys(categoryAverages);
-
-  if (names.length === 0) {
-    return null;
-  }
+  if (names.length === 0) return null;
 
   let weakestName = names[0];
   let weakestScore = categoryAverages[names[0]];
@@ -87,18 +79,43 @@ function findWeakestCategory(categoryAverages) {
   return { category: weakestName, score: weakestScore };
 }
 
+async function checkDailyCheckInCrisis(studentId) {
+  const recentCheckIns = await DailyCheckIn.find({ student: studentId })
+    .sort({ date: -1 })
+    .limit(3);
+
+  if (recentCheckIns.length < 3) return false;
+
+  let allLow = true;
+  for (let i = 0; i < recentCheckIns.length; i++) {
+    if (recentCheckIns[i].mood > 2) {
+      allLow = false;
+      break;
+    }
+  }
+
+  return allLow;
+}
+
 const getMoodAnalysis = async (req, res) => {
   try {
     const studentId = req.user.id;
+
     const quizzes = await MoodQuiz.find({ student: studentId })
       .sort({ createdAt: 1 })
       .limit(4);
 
-    if (quizzes.length < 2) {
+    const dailyCrisis = await checkDailyCheckInCrisis(studentId);
+
+    if (quizzes.length < 1) {
+      let message = "Complete your first weekly quiz to see your mood analysis.";
+      if (dailyCrisis) {
+        message = "Your daily check-ins show you have been feeling very low. Please consider talking to a counselor.";
+      }
       return res.json({
         hasEnoughData: false,
-        message:
-          "Complete at least 2 weekly quizzes to see your mood analysis.",
+        isCrisis: dailyCrisis,
+        message,
       });
     }
 
@@ -114,17 +131,18 @@ const getMoodAnalysis = async (req, res) => {
     const weakestCategory = findWeakestCategory(categoryAverages);
 
     let isCrisis = false;
-    if (weightedAverage < 40) {
-      isCrisis = true;
-    }
+    if (weightedAverage < 40) isCrisis = true;
+    if (dailyCrisis) isCrisis = true;
 
     return res.json({
       hasEnoughData: true,
       weightedAverage,
       trend,
+      rateOfChange,
       categoryAverages,
       weakestCategory,
       isCrisis,
+      dailyCrisis,
       totalQuizzes: quizzes.length,
     });
   } catch (error) {

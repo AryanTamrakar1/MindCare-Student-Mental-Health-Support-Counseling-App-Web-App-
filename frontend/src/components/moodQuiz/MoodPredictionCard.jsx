@@ -151,13 +151,31 @@ const MoodPredictionCard = () => {
 
   if (!prediction.hasEnoughData) {
     return (
-      <div className="bg-white rounded-2xl p-8 border border-black/10 text-center">
-        <div className="flex justify-center mb-3">
-          <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
-            <CalendarCheck size={20} />
+      <div className="flex flex-col gap-4">
+        {prediction.isCrisisRisk && (
+          <div className="bg-red-50 border border-black/10 rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center text-red-500 shrink-0">
+              <AlertTriangle size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-red-600">
+                Hey, we are worried about you
+              </p>
+              <p className="text-xs text-red-400 mt-0.5">
+                You have been feeling low for 3 days in a row. Please consider
+                talking to a counselor.
+              </p>
+            </div>
           </div>
+        )}
+        <div className="bg-white rounded-2xl p-8 border border-black/10 text-center">
+          <div className="flex justify-center mb-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
+              <CalendarCheck size={20} />
+            </div>
+          </div>
+          <p className="text-sm text-gray-500">{prediction.message}</p>
         </div>
-        <p className="text-sm text-gray-500">{prediction.message}</p>
       </div>
     );
   }

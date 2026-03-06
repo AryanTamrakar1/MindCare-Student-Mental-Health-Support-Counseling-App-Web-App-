@@ -559,7 +559,6 @@ const getSmartQuestions = async (req, res) => {
       const defaultQuestions = getDefaultQuestions(weekNumber);
       return res.json({
         questions: defaultQuestions,
-        isAdaptive: false,
         weakCategories: [],
       });
     }

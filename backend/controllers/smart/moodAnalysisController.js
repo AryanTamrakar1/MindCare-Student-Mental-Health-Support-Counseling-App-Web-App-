@@ -101,13 +101,16 @@ const getMoodAnalysis = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    const quizzes = await MoodQuiz.find({ student: studentId })
+    const recentQuizzes = await MoodQuiz.find({ student: studentId })
       .sort({ createdAt: 1 })
       .limit(4);
 
+    const allQuizzes = await MoodQuiz.find({ student: studentId })
+      .sort({ createdAt: 1 });
+
     const dailyCrisis = await checkDailyCheckInCrisis(studentId);
 
-    if (quizzes.length < 1) {
+    if (recentQuizzes.length < 1) {
       let message = "Complete your first weekly quiz to see your mood analysis.";
       if (dailyCrisis) {
         message = "Your daily check-ins show you have been feeling very low. Please consider talking to a counselor.";
@@ -120,14 +123,15 @@ const getMoodAnalysis = async (req, res) => {
     }
 
     const overallScores = [];
-    for (let i = 0; i < quizzes.length; i++) {
-      overallScores.push(quizzes[i].moodScore);
+    for (let i = 0; i < recentQuizzes.length; i++) {
+      overallScores.push(recentQuizzes[i].moodScore);
     }
 
     const weightedAverage = calculateWeightedAverage(overallScores);
     const rateOfChange = calculateRateOfChange(overallScores);
     const trend = getTrendLabel(rateOfChange);
-    const categoryAverages = buildCategoryScores(quizzes);
+
+    const categoryAverages = buildCategoryScores(allQuizzes);
     const weakestCategory = findWeakestCategory(categoryAverages);
 
     let isCrisis = false;
@@ -143,7 +147,7 @@ const getMoodAnalysis = async (req, res) => {
       weakestCategory,
       isCrisis,
       dailyCrisis,
-      totalQuizzes: quizzes.length,
+      totalQuizzes: recentQuizzes.length,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });

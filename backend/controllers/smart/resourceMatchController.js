@@ -3,15 +3,15 @@ const MoodQuiz = require("../../models/MoodQuiz");
 
 function mapQuizCategoryToResourceCategory(quizCategory) {
   const map = {
-    "Stress": "Exam & Academic Pressure",
-    "Anxiety": "Exam & Academic Pressure",
-    "Motivation": "Low Motivation",
-    "Sleep": "Sleep & Energy",
-    "Energy": "Sleep & Energy",
-    "Confidence": "Skill Gap & Career Fear",
-    "Social": "Social Isolation",
-    "Emotional": "General Mental Health",
-    "General": "General Mental Health",
+    Stress: "Exam & Academic Pressure",
+    Anxiety: "Exam & Academic Pressure",
+    Motivation: "Low Motivation",
+    Sleep: "Sleep & Energy",
+    Energy: "Sleep & Energy",
+    Confidence: "Skill Gap & Career Fear",
+    Social: "Social Isolation",
+    Emotional: "General Mental Health",
+    General: "General Mental Health",
   };
 
   const keys = Object.keys(map);
@@ -36,7 +36,8 @@ function buildCategoryScores(quizzes) {
       if (categoryData[category] === undefined) {
         categoryData[category] = { total: 0, count: 0 };
       }
-      categoryData[category].total = categoryData[category].total + answer.score;
+      categoryData[category].total =
+        categoryData[category].total + answer.score;
       categoryData[category].count = categoryData[category].count + 1;
     }
   }
@@ -46,9 +47,9 @@ function buildCategoryScores(quizzes) {
 
   for (let i = 0; i < names.length; i++) {
     const name = names[i];
-    categoryAverages[name] = Math.round(
-      (categoryData[name].total / categoryData[name].count) * 10
-    ) / 10;
+    categoryAverages[name] =
+      Math.round((categoryData[name].total / categoryData[name].count) * 10) /
+      10;
   }
 
   return categoryAverages;
@@ -122,9 +123,9 @@ const getSmartResourceSuggestions = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    const quizzes = await MoodQuiz.find({ student: studentId })
-      .sort({ createdAt: -1 })
-      .limit(4);
+    const quizzes = await MoodQuiz.find({ student: studentId }).sort({
+      createdAt: -1,
+    });
 
     let targetCategory = "General Mental Health";
     let weakestQuizCategory = null;
@@ -140,13 +141,20 @@ const getSmartResourceSuggestions = async (req, res) => {
       }
     }
 
-    const collaborativeIds = await getCollaborativeResourceIds(studentId, latestScore);
+    const collaborativeIds = await getCollaborativeResourceIds(
+      studentId,
+      latestScore,
+    );
     const allResources = await Resource.find();
 
     const scored = [];
     for (let i = 0; i < allResources.length; i++) {
       const resource = allResources[i];
-      const matchScore = scoreResource(resource, targetCategory, collaborativeIds);
+      const matchScore = scoreResource(
+        resource,
+        targetCategory,
+        collaborativeIds,
+      );
       scored.push({ resource, matchScore });
     }
 

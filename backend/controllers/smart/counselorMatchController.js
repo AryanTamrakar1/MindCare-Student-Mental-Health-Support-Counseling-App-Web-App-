@@ -68,9 +68,9 @@ const getSmartCounselorSuggestions = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    const quizzes = await MoodQuiz.find({ student: studentId })
-      .sort({ createdAt: -1 })
-      .limit(4);
+    const quizzes = await MoodQuiz.find({ student: studentId }).sort({
+      createdAt: -1,
+    });
 
     let weakestCategory = null;
     let isCrisis = false;

@@ -231,7 +231,7 @@ const MoodAnalysisCard = () => {
             <BarChart2 size={16} className="text-blue-500" />
           </div>
           <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
-            Category Breakdown
+            How You're Doing In Each Area
           </p>
         </div>
 

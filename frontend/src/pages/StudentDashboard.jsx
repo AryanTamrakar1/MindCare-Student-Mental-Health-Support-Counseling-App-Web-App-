@@ -1,15 +1,16 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import StudentSidebar from "../components/Sidebars/StudentSidebar";
 import SmartCounselorCard from "../components/recommendations/SmartCounselorCard";
+import MoodScoreCard from "../components/studentDashboard/MoodScoreCard";
+import MoodTrendCard from "../components/studentDashboard/MoodTrendCard";
 import API from "../api/axios";
 
 const StudentDashboard = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-
   const [gamification, setGamification] = useState(null);
 
   useEffect(function () {
@@ -49,27 +50,31 @@ const StudentDashboard = () => {
   }
 
   function getProgressLabel() {
-    if (gamification && gamification.level < 5) {
+    if (gamification && gamification.level < 5)
       return "Progress to Level " + (gamification.level + 1);
-    }
     return "Maximum Level Reached";
   }
 
   function getPointsDisplay() {
-    if (gamification) {
-      return gamification.points;
-    }
+    if (gamification) return gamification.points;
     return "—";
   }
 
   function getLevelDisplay() {
-    if (gamification) {
+    if (gamification)
       return "Level " + gamification.level + ": " + gamification.levelTitle;
-    }
     return "Loading...";
   }
 
+  function getBadges() {
+    if (gamification && gamification.badges.length > 0) {
+      return gamification.badges.slice(0, 3);
+    }
+    return [];
+  }
+
   const progressPercent = getProgressPercent();
+  const badges = getBadges();
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -101,7 +106,6 @@ const StudentDashboard = () => {
               {getLevelDisplay()}
             </span>
           </div>
-
           <div className="flex items-center gap-10">
             <div className="flex flex-col items-center justify-center border-4 border-white/30 rounded-full w-32 h-32">
               <span className="text-3xl font-black">{getPointsDisplay()}</span>
@@ -109,7 +113,6 @@ const StudentDashboard = () => {
                 Total Points
               </span>
             </div>
-
             <div className="flex-1">
               <div className="flex justify-between text-sm font-bold mb-2">
                 <span>{getProgressLabel()}</span>
@@ -121,12 +124,10 @@ const StudentDashboard = () => {
                   style={{ width: progressPercent + "%" }}
                 />
               </div>
-
               <div className="flex items-center justify-between">
                 <div className="flex gap-2 flex-wrap">
-                  {gamification &&
-                    gamification.badges.length > 0 &&
-                    gamification.badges.slice(0, 3).map(function (badge) {
+                  {badges.length > 0 &&
+                    badges.map(function (badge) {
                       return (
                         <span
                           key={badge.name}
@@ -136,13 +137,12 @@ const StudentDashboard = () => {
                         </span>
                       );
                     })}
-                  {(!gamification || gamification.badges.length === 0) && (
+                  {badges.length === 0 && (
                     <span className="bg-white/15 px-3 py-1 rounded-lg text-xs font-bold opacity-60">
                       No badges yet
                     </span>
                   )}
                 </div>
-
                 <button
                   onClick={function () {
                     navigate("/student/gamification");
@@ -158,158 +158,19 @@ const StudentDashboard = () => {
 
         <section className="mb-6">
           <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
+            Your Well-being Overview
+          </h4>
+          <div className="grid grid-cols-3 gap-5 items-stretch">
+            <MoodTrendCard />
+            <MoodScoreCard />
+          </div>
+        </section>
+
+        <section className="mb-6">
+          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
             Recommended Counselors
           </h4>
           <SmartCounselorCard />
-        </section>
-
-        <div className="grid grid-cols-2 gap-6 mb-6">
-          <section className="bg-white rounded-2xl p-8 border border-black/10">
-            <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
-              Weekly Mood Score
-            </h4>
-            <div className="flex items-baseline gap-3 mb-2">
-              <span className="text-5xl font-black text-indigo-600">78%</span>
-              <span className="text-sm font-bold text-green-600">
-                ↑ Improving
-              </span>
-            </div>
-            <p className="text-sm text-gray-600 font-medium">
-              Good! Your mood is higher than last week.
-            </p>
-          </section>
-
-          <section className="bg-white rounded-2xl p-8 border border-black/10">
-            <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
-              Next Session
-            </h4>
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-              <strong className="block text-base font-bold text-gray-900 mb-1">
-                Dr. Smriti (Anxiety Spec.)
-              </strong>
-              <span className="text-sm text-gray-600 font-medium block mb-3">
-                Feb 12, 10:30 AM
-              </span>
-              <button className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition">
-                View Session Details
-              </button>
-            </div>
-          </section>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6 mb-6">
-          <section className="bg-white rounded-2xl p-8 border border-black/10">
-            <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
-              Mood Distribution
-            </h4>
-            <div className="flex items-center gap-8">
-              <div
-                className="w-28 h-28 rounded-full"
-                style={{
-                  background:
-                    "conic-gradient(#10b981 0% 60%, #fbbf24 60% 90%, #ef4444 90% 100%)",
-                }}
-              ></div>
-              <div className="flex flex-col gap-3 text-sm font-bold">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                  <span>Positive (60%)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-yellow-400"></span>
-                  <span>Neutral (30%)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                  <span>Negative (10%)</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="bg-white rounded-2xl p-8 border border-black/10">
-            <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
-              Activity (Points)
-            </h4>
-            <div className="flex items-end justify-between gap-2 h-36">
-              <div className="flex flex-col items-center flex-1">
-                <div
-                  className="w-full bg-indigo-100 rounded-t-lg"
-                  style={{ height: "40%" }}
-                ></div>
-                <span className="text-xs font-black text-gray-400 mt-2">M</span>
-              </div>
-              <div className="flex flex-col items-center flex-1">
-                <div
-                  className="w-full bg-indigo-100 rounded-t-lg"
-                  style={{ height: "70%" }}
-                ></div>
-                <span className="text-xs font-black text-gray-400 mt-2">T</span>
-              </div>
-              <div className="flex flex-col items-center flex-1">
-                <div
-                  className="w-full bg-indigo-100 rounded-t-lg"
-                  style={{ height: "30%" }}
-                ></div>
-                <span className="text-xs font-black text-gray-400 mt-2">W</span>
-              </div>
-              <div className="flex flex-col items-center flex-1">
-                <div
-                  className="w-full bg-indigo-600 rounded-t-lg"
-                  style={{ height: "90%" }}
-                ></div>
-                <span className="text-xs font-black text-indigo-600 mt-2">
-                  T
-                </span>
-              </div>
-              <div className="flex flex-col items-center flex-1">
-                <div
-                  className="w-full bg-indigo-100 rounded-t-lg"
-                  style={{ height: "50%" }}
-                ></div>
-                <span className="text-xs font-black text-gray-400 mt-2">F</span>
-              </div>
-              <div className="flex flex-col items-center flex-1">
-                <div
-                  className="w-full bg-indigo-100 rounded-t-lg"
-                  style={{ height: "20%" }}
-                ></div>
-                <span className="text-xs font-black text-gray-400 mt-2">S</span>
-              </div>
-              <div className="flex flex-col items-center flex-1">
-                <div
-                  className="w-full bg-indigo-100 rounded-t-lg"
-                  style={{ height: "60%" }}
-                ></div>
-                <span className="text-xs font-black text-gray-400 mt-2">S</span>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <section className="bg-white rounded-2xl p-8 border border-black/10">
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
-            Mood Trend Analysis (7 Days)
-          </h4>
-          <div className="relative">
-            <svg viewBox="0 0 500 120" className="w-full h-32">
-              <path
-                d="M0,100 Q50,70 100,80 T200,30 T300,50 T400,10 T500,40"
-                fill="none"
-                stroke="#4f46e5"
-                strokeWidth="4"
-              />
-            </svg>
-            <div className="flex justify-between text-xs font-black text-gray-400 mt-2">
-              <span>Mon</span>
-              <span>Tue</span>
-              <span>Wed</span>
-              <span>Thu</span>
-              <span>Fri</span>
-              <span>Sat</span>
-              <span>Sun</span>
-            </div>
-          </div>
         </section>
       </main>
     </div>

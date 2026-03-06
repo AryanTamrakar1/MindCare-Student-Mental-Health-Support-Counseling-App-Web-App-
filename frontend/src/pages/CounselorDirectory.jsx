@@ -22,7 +22,7 @@ const CounselorDirectory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedCards, setExpandedCards] = useState({});
 
-  const cardsPerPage = 2;
+  const cardsPerPage = 3;
 
   useEffect(() => {
     loadPage();
@@ -114,33 +114,19 @@ const CounselorDirectory = () => {
     return () => clearInterval(interval);
   }, [counselors]);
 
-  const handleToggleTag = (tag) => {
-    if (tag === "All") {
-      setSelectedSpecialties(["All"]);
-      return;
-    }
-    let newList = selectedSpecialties.filter((t) => t !== "All");
-    if (newList.includes(tag)) {
-      newList = newList.filter((t) => t !== tag);
-    } else {
-      newList = [...newList, tag];
-    }
-    setSelectedSpecialties(newList.length === 0 ? ["All"] : newList);
-  };
-
-  const handleApplyFilter = () => {
+  const applyFilter = (term, specialties) => {
     setCurrentPage(1);
     const results = counselors.filter((c) => {
       const matchesSearch =
-        !searchTerm ||
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        !term ||
+        c.name.toLowerCase().includes(term.toLowerCase()) ||
         (c.specialization &&
-          c.specialization.toLowerCase().includes(searchTerm.toLowerCase()));
+          c.specialization.toLowerCase().includes(term.toLowerCase()));
 
-      const allSelected = selectedSpecialties.includes("All");
+      const allSelected = specialties.includes("All");
       const matchesTag =
         allSelected ||
-        selectedSpecialties.some(
+        specialties.some(
           (spec) =>
             c.specialization &&
             c.specialization
@@ -152,6 +138,35 @@ const CounselorDirectory = () => {
       return matchesSearch && matchesTag;
     });
     setDisplayCounselors(results);
+  };
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    applyFilter(term, selectedSpecialties);
+  };
+
+  const handleToggleTag = (tag) => {
+    if (tag === "All") {
+      setSelectedSpecialties(["All"]);
+      applyFilter(searchTerm, ["All"]);
+      return;
+    }
+    let newList = selectedSpecialties.filter((t) => t !== "All");
+    if (newList.includes(tag)) {
+      newList = newList.filter((t) => t !== tag);
+    } else {
+      newList = [...newList, tag];
+    }
+    let finalList = newList;
+    if (newList.length === 0) {
+      finalList = ["All"];
+    }
+    setSelectedSpecialties(finalList);
+    applyFilter(searchTerm, finalList);
+  };
+
+  const handleApplyFilter = () => {
+    applyFilter(searchTerm, selectedSpecialties);
   };
 
   const handleClear = () => {
@@ -205,7 +220,8 @@ const CounselorDirectory = () => {
         <SearchBar
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          onSearch={handleApplyFilter}
+          onSearch={handleSearch}
+          onClear={handleClear}
         />
 
         <FilterSection
@@ -217,21 +233,7 @@ const CounselorDirectory = () => {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-          {currentCards.length > 0 ? (
-            currentCards.map((cslr) => (
-              <CounselorCard
-                key={cslr._id}
-                cslr={cslr}
-                stats={
-                  counselorStats[cslr._id] || { overall: 0, studentsHelped: 0 }
-                }
-                liveStatuses={liveStatuses}
-                expandedCards={expandedCards}
-                onToggleCardTags={toggleCardTags}
-                onViewProfile={(id) => navigate(`/counselor/${id}`)}
-              />
-            ))
-          ) : (
+          {currentCards.length === 0 && (
             <div className="col-span-full text-center py-24 bg-white rounded-[32px] border-2 border-dashed border-gray-200">
               <p className="text-gray-400 font-bold text-lg">
                 No counselors match your criteria.
@@ -244,6 +246,19 @@ const CounselorDirectory = () => {
               </button>
             </div>
           )}
+          {currentCards.map((cslr) => (
+            <CounselorCard
+              key={cslr._id}
+              cslr={cslr}
+              stats={
+                counselorStats[cslr._id] || { overall: 0, studentsHelped: 0 }
+              }
+              liveStatuses={liveStatuses}
+              expandedCards={expandedCards}
+              onToggleCardTags={toggleCardTags}
+              onViewProfile={(id) => navigate(`/counselor/${id}`)}
+            />
+          ))}
         </div>
 
         <Pagination

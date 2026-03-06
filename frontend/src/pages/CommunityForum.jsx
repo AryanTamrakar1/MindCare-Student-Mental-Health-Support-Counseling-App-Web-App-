@@ -27,6 +27,16 @@ const moodTags = [
 
 const POSTS_PER_PAGE = 4;
 
+const SectionLabel = ({ text }) => (
+  <div className="flex items-center gap-3 mb-4">
+    <div className="w-1.5 h-5 rounded-full bg-indigo-500" />
+    <p className="text-sm font-black text-gray-700 uppercase tracking-widest">
+      {text}
+    </p>
+    <div className="flex-1 h-px bg-gray-200" />
+  </div>
+);
+
 const CommunityForum = () => {
   const { user } = useContext(AuthContext);
   const [posts, setPosts] = useState([]);
@@ -179,10 +189,6 @@ const CommunityForum = () => {
           <Navbar />
         </div>
 
-        <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-2">
-          Search Posts
-        </p>
-        <div className="border-b border-gray-200 mb-3"></div>
         <div className="flex bg-white p-2 rounded-2xl border border-gray-200 shadow-sm mb-6">
           <div className="flex items-center gap-2 flex-1 px-2">
             <Search size={16} className="text-gray-400 flex-shrink-0" />
@@ -205,10 +211,6 @@ const CommunityForum = () => {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-2">
-          <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-3">
-            Filter by Category
-          </p>
-          <div className="border-b border-gray-100 mb-4"></div>
           <div className="flex flex-wrap gap-2 justify-center items-center">
             {categories.map((cat) => (
               <button
@@ -246,12 +248,9 @@ const CommunityForum = () => {
 
         {user?.role === "Student" && (
           <>
-            <div className="mt-6 mb-2">
-              <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest">
-                Share with the Community
-              </p>
+            <div className="mt-6 mb-4">
+              <SectionLabel text="Share with the Community" />
             </div>
-            <div className="border-b border-gray-200 mb-4"></div>
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-6 overflow-hidden">
               <div
                 className="flex items-center gap-3 p-4 cursor-pointer"
@@ -358,13 +357,9 @@ const CommunityForum = () => {
           </>
         )}
 
-        <div className="mt-4 mb-2">
-          <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest">
-            {filteredPosts.length} Post{filteredPosts.length !== 1 ? "s" : ""}
-            {searchTerm && ` for "${searchTerm}"`}
-          </p>
+        <div className="mt-4 mb-4">
+          <SectionLabel text="Community Posts" />
         </div>
-        <div className="border-b border-gray-200 mb-4"></div>
 
         {filteredPosts.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-2xl border-2 border-dashed border-gray-200">

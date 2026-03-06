@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Brain, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 
@@ -18,24 +18,32 @@ function SpecializationTags({ specialization }) {
   if (tags.length === 0) return null;
 
   let visible = tags.slice(0, VISIBLE_TAGS);
-  if (expanded) {
-    visible = tags;
-  }
+  if (expanded) visible = tags;
   const remaining = tags.length - VISIBLE_TAGS;
+
+  function handleExpand() {
+    setExpanded(true);
+  }
+
+  function handleCollapse() {
+    setExpanded(false);
+  }
 
   return (
     <div className="flex flex-wrap gap-1.5">
-      {visible.map((tag, i) => (
-        <span
-          key={i}
-          className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full"
-        >
-          {tag}
-        </span>
-      ))}
+      {visible.map(function (tag, i) {
+        return (
+          <span
+            key={i}
+            className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full"
+          >
+            {tag}
+          </span>
+        );
+      })}
       {!expanded && remaining > 0 && (
         <button
-          onClick={() => setExpanded(true)}
+          onClick={handleExpand}
           className="text-xs bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded-full font-semibold hover:bg-indigo-100 transition"
         >
           +{remaining}
@@ -43,7 +51,7 @@ function SpecializationTags({ specialization }) {
       )}
       {expanded && tags.length > VISIBLE_TAGS && (
         <button
-          onClick={() => setExpanded(false)}
+          onClick={handleCollapse}
           className="text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full font-semibold hover:bg-gray-200 transition"
         >
           Show less
@@ -54,9 +62,11 @@ function SpecializationTags({ specialization }) {
 }
 
 function CounselorAvatar({ verificationPhoto, name }) {
+  const hasPhoto = verificationPhoto;
+
   return (
     <div className="shrink-0">
-      {verificationPhoto && (
+      {hasPhoto && (
         <img
           src={
             "http://127.0.0.1:5050/uploads/verifications/" + verificationPhoto
@@ -65,7 +75,7 @@ function CounselorAvatar({ verificationPhoto, name }) {
           className="w-12 h-12 rounded-xl object-cover"
         />
       )}
-      {!verificationPhoto && (
+      {!hasPhoto && (
         <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 font-black text-lg">
           {name.charAt(0)}
         </div>
@@ -114,7 +124,9 @@ const SmartCounselorCard = () => {
     );
   }
 
-  if (!data || data.suggestions.length === 0) {
+  const noSuggestions = !data || data.suggestions.length === 0;
+
+  if (noSuggestions) {
     return (
       <div className="bg-white rounded-2xl p-6 border border-black/10 text-center">
         <div className="flex justify-center mb-3">
@@ -130,22 +142,17 @@ const SmartCounselorCard = () => {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {data.weakestCategory && (
-        <div className="bg-blue-50 border border-black/10 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-500 shrink-0">
-            <Brain size={16} />
-          </div>
-          <p className="text-xs text-blue-700 font-semibold">
-            Showing counselors that best match your{" "}
-            <span className="font-black">{data.weakestCategory}</span> concern,
-            ranked by specialization.
-          </p>
-        </div>
-      )}
+    <div className="grid grid-cols-3 gap-4 items-start">
+      {data.suggestions.map(function (counselor, index) {
+        const isBestMatch = index === 0;
+        const hasBio = counselor.bio;
+        const hasProfTitle = counselor.profTitle;
 
-      <div className="grid grid-cols-3 gap-4 items-start">
-        {data.suggestions.map((counselor, index) => (
+        function handleView() {
+          navigate("/counselor/" + counselor._id);
+        }
+
+        return (
           <div
             key={counselor._id}
             className="bg-white rounded-2xl border border-black/10 p-5 flex flex-col gap-3"
@@ -155,17 +162,15 @@ const SmartCounselorCard = () => {
                 verificationPhoto={counselor.verificationPhoto}
                 name={counselor.name}
               />
-
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-black text-gray-800 truncate">
                   {counselor.name}
                 </p>
-                {counselor.profTitle && (
+                {hasProfTitle && (
                   <p className="text-xs text-gray-400">{counselor.profTitle}</p>
                 )}
               </div>
-
-              {index === 0 && (
+              {isBestMatch && (
                 <span className="text-xs bg-indigo-50 text-indigo-600 font-black px-2 py-0.5 rounded-full shrink-0">
                   Best Match
                 </span>
@@ -174,7 +179,7 @@ const SmartCounselorCard = () => {
 
             <SpecializationTags specialization={counselor.specialization} />
 
-            {counselor.bio && (
+            {hasBio && (
               <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
                 {counselor.bio}
               </p>
@@ -185,14 +190,14 @@ const SmartCounselorCard = () => {
             </p>
 
             <button
-              onClick={() => navigate("/counselor/" + counselor._id)}
+              onClick={handleView}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black py-2.5 rounded-xl transition mt-auto"
             >
               View Profile
             </button>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 };

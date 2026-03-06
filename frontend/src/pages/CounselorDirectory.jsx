@@ -66,31 +66,38 @@ const CounselorDirectory = () => {
       setAvailableTags(tags);
 
       const statsMap = {};
-      for (const c of data) {
-        let overall = 0;
-        let totalRatings = 0;
-        let studentsHelped = 0;
 
-        try {
-          const ratingRes = await axios.get(`/ratings/counselor/${c._id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          overall = ratingRes.data.overall || 0;
-          totalRatings = ratingRes.data.totalRatings || 0;
-        } catch {}
+      await Promise.all(
+        data.map(async (c) => {
+          let overall = 0;
+          let totalRatings = 0;
+          let studentsHelped = 0;
 
-        try {
-          const countRes = await axios.get(
-            `/appointments/completed-count/${c._id}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            },
-          );
-          studentsHelped = countRes.data.count || 0;
-        } catch {}
+          await Promise.all([
+            axios
+              .get(`/ratings/counselor/${c._id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              })
+              .then((r) => {
+                overall = r.data.overall || 0;
+                totalRatings = r.data.totalRatings || 0;
+              })
+              .catch(() => {}),
 
-        statsMap[c._id] = { overall, totalRatings, studentsHelped };
-      }
+            axios
+              .get(`/appointments/completed-count/${c._id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              })
+              .then((r) => {
+                studentsHelped = r.data.count || 0;
+              })
+              .catch(() => {}),
+          ]);
+
+          statsMap[c._id] = { overall, totalRatings, studentsHelped };
+        }),
+      );
+
       setCounselorStats(statsMap);
       setLoading(false);
     } catch (err) {
@@ -189,7 +196,7 @@ const CounselorDirectory = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3f4f6] flex">
+      <div className="min-h-screen bg-slate-50 flex">
         <StudentSidebar user={user} />
         <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>

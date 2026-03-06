@@ -12,6 +12,16 @@ import DeleteConfirmModal from "../components/postManagement/DeleteConfirmModal"
 
 const POSTS_PER_PAGE = 5;
 
+const SectionLabel = ({ text }) => (
+  <div className="flex items-center gap-3 mb-4">
+    <div className="w-1.5 h-5 rounded-full bg-indigo-500" />
+    <p className="text-sm font-black text-gray-700 uppercase tracking-widest">
+      {text}
+    </p>
+    <div className="flex-1 h-px bg-gray-200" />
+  </div>
+);
+
 const PostManagement = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -75,7 +85,6 @@ const PostManagement = () => {
     setCurrentPage(1);
   };
 
-  // Filter posts
   const filteredPosts = [];
   for (let i = 0; i < posts.length; i++) {
     const p = posts[i];
@@ -122,9 +131,9 @@ const PostManagement = () => {
     pageNumbers.push(i);
   }
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <div className="min-h-screen bg-[#f3f4f6] flex">
+      <div className="min-h-screen bg-slate-50 flex">
         <AdminSidebar user={user} />
         <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -166,10 +175,7 @@ const PostManagement = () => {
           onSelectCategory={handleSelectCategory}
         />
 
-        <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-3">
-          {filteredPosts.length} Post{filteredPosts.length !== 1 ? "s" : ""}
-        </p>
-        <div className="border-b border-gray-200 mb-4"></div>
+        <SectionLabel text="Community Posts" />
 
         {paginatedPosts.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-2xl border-2 border-dashed border-gray-200">
@@ -190,19 +196,35 @@ const PostManagement = () => {
 
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8 pb-6">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+            >
+              ← Prev
+            </button>
+
             {pageNumbers.map((num) => (
               <button
                 key={num}
                 onClick={() => setCurrentPage(num)}
-                className={`w-10 h-10 rounded-xl font-bold text-sm transition-all duration-200 border ${
+                className={`w-10 h-10 rounded-xl font-black text-sm transition-all duration-200 border ${
                   currentPage === num
                     ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
-                    : "bg-white text-gray-400 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
+                    : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
                 }`}
               >
                 {num}
               </button>
             ))}
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+            >
+              Next →
+            </button>
           </div>
         )}
       </main>

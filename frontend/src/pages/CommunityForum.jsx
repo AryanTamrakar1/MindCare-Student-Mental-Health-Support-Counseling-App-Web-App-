@@ -157,7 +157,7 @@ const CommunityForum = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3f4f6] flex">
+      <div className="min-h-screen bg-slate-50 flex">
         {user?.role === "Student" && <StudentSidebar user={user} />}
         {user?.role === "Counselor" && <CounselorSidebar user={user} />}
         <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
@@ -399,7 +399,7 @@ const CommunityForum = () => {
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                 >
                   ← Prev
                 </button>
@@ -408,10 +408,10 @@ const CommunityForum = () => {
                     <button
                       key={num}
                       onClick={() => setCurrentPage(num)}
-                      className={`w-10 h-10 rounded-xl font-bold text-sm transition-all border ${
+                      className={`w-10 h-10 rounded-xl font-black text-sm transition-all border ${
                         currentPage === num
                           ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                          : "bg-white text-gray-400 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
+                          : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
                       }`}
                     >
                       {num}
@@ -423,7 +423,7 @@ const CommunityForum = () => {
                     setCurrentPage((p) => Math.min(p + 1, totalPages))
                   }
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                 >
                   Next →
                 </button>

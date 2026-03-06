@@ -12,6 +12,7 @@ const StudentDashboard = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [gamification, setGamification] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(function () {
     async function fetchGamification() {
@@ -21,7 +22,10 @@ const StudentDashboard = () => {
           headers: { Authorization: "Bearer " + token },
         });
         setGamification(res.data);
-      } catch (err) {}
+      } catch (err) {
+      } finally {
+        setLoading(false);
+      }
     }
     fetchGamification();
   }, []);
@@ -75,6 +79,20 @@ const StudentDashboard = () => {
 
   const progressPercent = getProgressPercent();
   const badges = getBadges();
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex">
+        <StudentSidebar user={user} />
+        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+            Loading Dashboard...
+          </p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

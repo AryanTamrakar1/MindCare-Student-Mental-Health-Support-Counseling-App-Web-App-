@@ -11,10 +11,6 @@ const categories = [
 const CategoryFilter = ({ selectedCategory, onSelectCategory }) => {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-6">
-      <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-3">
-        Filter by Category
-      </p>
-      <div className="border-b border-gray-100 mb-4"></div>
       <div className="flex flex-wrap gap-2 justify-center">
         {categories.map((cat) => (
           <button

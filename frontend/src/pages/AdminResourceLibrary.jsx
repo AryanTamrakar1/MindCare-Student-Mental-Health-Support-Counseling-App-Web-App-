@@ -330,7 +330,7 @@ function AdminResourceLibrary() {
                       setCurrentPage(currentPage - 1);
                     }}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+                    className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                   >
                     ← Prev
                   </button>
@@ -341,10 +341,10 @@ function AdminResourceLibrary() {
                         onClick={function () {
                           setCurrentPage(page);
                         }}
-                        className={`w-10 h-10 rounded-xl font-bold text-sm transition-all border ${
+                        className={`w-10 h-10 rounded-xl font-black text-sm transition-all border ${
                           currentPage === page
                             ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                            : "bg-white text-gray-400 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
+                            : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
                         }`}
                       >
                         {page}
@@ -356,7 +356,7 @@ function AdminResourceLibrary() {
                       setCurrentPage(currentPage + 1);
                     }}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+                    className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                   >
                     Next →
                   </button>

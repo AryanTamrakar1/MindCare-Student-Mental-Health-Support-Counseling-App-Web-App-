@@ -46,14 +46,14 @@ const CounselorRatings = () => {
     init();
   }, []);
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className="min-h-screen bg-slate-50 flex">
         <CounselorSidebar user={user} />
-        <main className="flex-1 ml-[280px] flex items-center justify-center flex-col gap-3">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-            Loading Ratings…
+        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+            Loading Ratings...
           </p>
         </main>
       </div>

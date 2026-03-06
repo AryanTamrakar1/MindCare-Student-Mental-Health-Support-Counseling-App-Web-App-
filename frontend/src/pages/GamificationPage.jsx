@@ -46,13 +46,14 @@ const GamificationPage = () => {
     setData(updatedData);
   }
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className="min-h-screen bg-slate-50 flex">
         <StudentSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex items-center justify-center">
-          <p className="text-gray-400 font-bold text-sm">
-            Loading your progress...
+        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+            Loading Progress...
           </p>
         </main>
       </div>

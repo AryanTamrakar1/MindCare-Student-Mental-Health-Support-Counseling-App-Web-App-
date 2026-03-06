@@ -57,7 +57,8 @@ const CounselorSessions = () => {
   };
 
   const handleEnd = async (appointmentId) => {
-    if (!window.confirm("End this session? It will be marked as Completed.")) return;
+    if (!window.confirm("End this session? It will be marked as Completed."))
+      return;
     try {
       const token = sessionStorage.getItem("token");
       await axios.post(
@@ -86,23 +87,31 @@ const CounselorSessions = () => {
   };
 
   const upcomingCount = sessions.filter((s) => s.status === "Approved").length;
-  const completedCount = sessions.filter((s) => s.status === "Completed").length;
+  const completedCount = sessions.filter(
+    (s) => s.status === "Completed",
+  ).length;
   const missedCount = sessions.filter((s) => s.status === "Missed").length;
 
   const getFiltered = () => {
-    if (activeTab === "Upcoming") return sessions.filter((s) => s.status === "Approved");
-    if (activeTab === "Completed") return sessions.filter((s) => s.status === "Completed");
-    if (activeTab === "Missed") return sessions.filter((s) => s.status === "Missed");
-    if (activeTab === "Summary") return sessions.filter((s) => s.status === "Completed");
+    if (activeTab === "Upcoming")
+      return sessions.filter((s) => s.status === "Approved");
+    if (activeTab === "Completed")
+      return sessions.filter((s) => s.status === "Completed");
+    if (activeTab === "Missed")
+      return sessions.filter((s) => s.status === "Missed");
+    if (activeTab === "Summary")
+      return sessions.filter((s) => s.status === "Completed");
     return sessions;
   };
 
   const filtered = getFiltered();
 
   let emptyMessage = "No sessions yet.";
-  if (activeTab === "Upcoming") emptyMessage = "Students will book sessions with you from the directory.";
+  if (activeTab === "Upcoming")
+    emptyMessage = "Students will book sessions with you from the directory.";
   if (activeTab === "Missed") emptyMessage = "No missed sessions. Great work!";
-  if (activeTab === "Summary") emptyMessage = "Summaries will appear here after sessions are completed.";
+  if (activeTab === "Summary")
+    emptyMessage = "Summaries will appear here after sessions are completed.";
 
   const tabs = [
     { label: "Upcoming", count: upcomingCount },
@@ -112,14 +121,14 @@ const CounselorSessions = () => {
     { label: "See All", count: sessions.length },
   ];
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className="min-h-screen bg-slate-50 flex">
         <CounselorSidebar user={user} />
-        <main className="flex-1 ml-[280px] flex items-center justify-center flex-col gap-3">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-            Loading Sessions…
+        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+            Loading Sessions...
           </p>
         </main>
       </div>
@@ -147,7 +156,9 @@ const CounselorSessions = () => {
               <Calendar size={20} className="text-emerald-600" />
             </div>
             <div>
-              <p className="text-3xl font-black text-gray-800">{upcomingCount}</p>
+              <p className="text-3xl font-black text-gray-800">
+                {upcomingCount}
+              </p>
               <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
                 Upcoming
               </p>
@@ -159,7 +170,9 @@ const CounselorSessions = () => {
               <CheckCircle size={20} className="text-indigo-600" />
             </div>
             <div>
-              <p className="text-3xl font-black text-gray-800">{completedCount}</p>
+              <p className="text-3xl font-black text-gray-800">
+                {completedCount}
+              </p>
               <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
                 Completed
               </p>
@@ -183,7 +196,9 @@ const CounselorSessions = () => {
               <Users size={20} className="text-purple-600" />
             </div>
             <div>
-              <p className="text-3xl font-black text-gray-800">{sessions.length}</p>
+              <p className="text-3xl font-black text-gray-800">
+                {sessions.length}
+              </p>
               <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
                 Total Sessions
               </p>
@@ -210,7 +225,9 @@ const CounselorSessions = () => {
         <div className="mt-10">
           <div className="border-t-2 border-slate-300 pt-6 pb-6 border-b-2 flex justify-between items-start mb-5">
             <div>
-              <h2 className="text-2xl font-black text-gray-800">All Sessions</h2>
+              <h2 className="text-2xl font-black text-gray-800">
+                All Sessions
+              </h2>
               <p className="text-gray-500 mt-0.5">
                 View all your upcoming and past sessions.
               </p>
@@ -233,7 +250,9 @@ const CounselorSessions = () => {
                     {tab.count > 0 && (
                       <span
                         className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${
-                          isActive ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-gray-200 text-gray-600"
                         }`}
                       >
                         {tab.count}

@@ -69,17 +69,25 @@ const StudentSessions = () => {
 
   const upcomingCount = sessions.filter((s) => s.status === "Approved").length;
   const pendingCount = sessions.filter((s) => s.status === "Pending").length;
-  const completedCount = sessions.filter((s) => s.status === "Completed").length;
+  const completedCount = sessions.filter(
+    (s) => s.status === "Completed",
+  ).length;
   const declinedCount = sessions.filter((s) => s.status === "Declined").length;
   const missedCount = sessions.filter((s) => s.status === "Missed").length;
 
   const getFilteredSessions = () => {
-    if (activeTab === "Upcoming") return sessions.filter((s) => s.status === "Approved");
-    if (activeTab === "Pending") return sessions.filter((s) => s.status === "Pending");
-    if (activeTab === "Completed") return sessions.filter((s) => s.status === "Completed");
-    if (activeTab === "Declined") return sessions.filter((s) => s.status === "Declined");
-    if (activeTab === "Missed") return sessions.filter((s) => s.status === "Missed");
-    if (activeTab === "Summary") return sessions.filter((s) => s.status === "Completed");
+    if (activeTab === "Upcoming")
+      return sessions.filter((s) => s.status === "Approved");
+    if (activeTab === "Pending")
+      return sessions.filter((s) => s.status === "Pending");
+    if (activeTab === "Completed")
+      return sessions.filter((s) => s.status === "Completed");
+    if (activeTab === "Declined")
+      return sessions.filter((s) => s.status === "Declined");
+    if (activeTab === "Missed")
+      return sessions.filter((s) => s.status === "Missed");
+    if (activeTab === "Summary")
+      return sessions.filter((s) => s.status === "Completed");
     return sessions;
   };
 
@@ -136,12 +144,12 @@ const StudentSessions = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3f4f6] flex">
+      <div className="min-h-screen bg-slate-50 flex">
         <StudentSidebar user={user} />
-        <main className="flex-1 ml-[280px] flex items-center justify-center flex-col gap-3">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-            Loading Sessions…
+        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+            Loading Sessions...
           </p>
         </main>
       </div>
@@ -168,11 +176,15 @@ const StudentSessions = () => {
               key={card.label}
               className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4"
             >
-              <div className={`w-12 h-12 ${card.bg} rounded-xl flex items-center justify-center flex-shrink-0`}>
+              <div
+                className={`w-12 h-12 ${card.bg} rounded-xl flex items-center justify-center flex-shrink-0`}
+              >
                 {card.icon}
               </div>
               <div>
-                <p className="text-3xl font-black text-gray-800">{card.count}</p>
+                <p className="text-3xl font-black text-gray-800">
+                  {card.count}
+                </p>
                 <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
                   {card.label}
                 </p>
@@ -200,7 +212,9 @@ const StudentSessions = () => {
         <div className="mt-10">
           <div className="border-t-2 border-slate-300 pt-6 pb-6 border-b-2 flex justify-between items-start mb-5">
             <div>
-              <h2 className="text-2xl font-black text-gray-800">All Sessions</h2>
+              <h2 className="text-2xl font-black text-gray-800">
+                All Sessions
+              </h2>
               <p className="text-gray-500 mt-0.5">
                 View all your upcoming and past sessions.
               </p>
@@ -222,7 +236,9 @@ const StudentSessions = () => {
                     {tab.count > 0 && (
                       <span
                         className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${
-                          isActive ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-gray-200 text-gray-600"
                         }`}
                       >
                         {tab.count}
@@ -251,22 +267,35 @@ const StudentSessions = () => {
                   <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-3">
                     <FileText size={22} className="text-indigo-300" />
                   </div>
-                  <p className="font-black text-gray-600 mb-1">No Summaries Yet</p>
+                  <p className="font-black text-gray-600 mb-1">
+                    No Summaries Yet
+                  </p>
                   <p className="text-sm text-gray-400 max-w-xs">
-                    The Session Summary will appear after your counselor writes them.
+                    The Session Summary will appear after your counselor writes
+                    them.
                   </p>
                 </div>
               )
             ) : filtered.length > 0 ? (
-              filtered.map((s) => (
-                <SessionCard
-                  key={s._id}
-                  session={s}
-                  onOpen={setSelectedSession}
-                  onViewSummary={setSummarySession}
-                  onRate={setRatingSession}
-                />
-              ))
+              filtered.map((s) =>
+                s.status === "Completed" ? (
+                  <SummaryCard
+                    key={s._id}
+                    session={s}
+                    onOpen={setSelectedSession}
+                    onViewSummary={setSummarySession}
+                    onRate={setRatingSession}
+                  />
+                ) : (
+                  <SessionCard
+                    key={s._id}
+                    session={s}
+                    onOpen={setSelectedSession}
+                    onViewSummary={setSummarySession}
+                    onRate={setRatingSession}
+                  />
+                ),
+              )
             ) : (
               <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 py-16 flex flex-col items-center text-center">
                 <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-3">
@@ -279,8 +308,8 @@ const StudentSessions = () => {
                   {activeTab === "Upcoming"
                     ? "Visit the counselor directory to book a session!"
                     : activeTab === "Missed"
-                    ? "No missed sessions. Keep it up!"
-                    : `No ${activeTab.toLowerCase()} sessions yet.`}
+                      ? "No missed sessions. Keep it up!"
+                      : `No ${activeTab.toLowerCase()} sessions yet.`}
                 </p>
               </div>
             )}

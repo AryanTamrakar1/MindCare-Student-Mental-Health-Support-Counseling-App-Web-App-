@@ -53,7 +53,7 @@ const AdminAnalytics = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3f4f6] flex">
+      <div className="min-h-screen bg-slate-50 flex">
         <AdminSidebar user={user} />
         <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>

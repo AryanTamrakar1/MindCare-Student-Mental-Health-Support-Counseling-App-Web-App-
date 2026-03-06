@@ -9,6 +9,7 @@ import ApplicantModal from "../components/counselorApprovals/ApplicantModal";
 const CounselorApprovals = () => {
   const [pendingUsers, setPendingUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -17,10 +18,13 @@ const CounselorApprovals = () => {
 
   const fetchPending = async () => {
     try {
+      setLoading(true);
       const res = await API.get("/admin/pending");
       setPendingUsers(res.data);
+      setLoading(false);
     } catch (err) {
       console.error("Error fetching pending users:", err);
+      setLoading(false);
     }
   };
 
@@ -34,6 +38,20 @@ const CounselorApprovals = () => {
       alert("Action failed");
     }
   };
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex">
+        <AdminSidebar user={user} />
+        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+            Loading Approvals...
+          </p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex font-inter">

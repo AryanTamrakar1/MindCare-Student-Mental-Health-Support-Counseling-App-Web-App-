@@ -249,21 +249,13 @@ const CounselorProfileView = () => {
 
   if (loading || !counselor) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex">
+      <div className="min-h-screen bg-slate-50 flex">
         <StudentSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-6 flex items-center justify-center">
-          {loading ? (
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-indigo-600 font-black text-xs uppercase tracking-widest">
-                Loading Profile...
-              </p>
-            </div>
-          ) : (
-            <div className="p-10 text-center font-bold">
-              Counselor not found.
-            </div>
-          )}
+        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+            Loading Profile...
+          </p>
         </main>
       </div>
     );

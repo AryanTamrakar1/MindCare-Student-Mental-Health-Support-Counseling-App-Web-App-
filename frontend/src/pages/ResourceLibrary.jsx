@@ -159,7 +159,8 @@ const ResourceLibrary = () => {
         if (titleLower.includes(searchLower) === false) continue;
       }
 
-      if (categoryApplied !== "All" && resource.category !== categoryApplied) continue;
+      if (categoryApplied !== "All" && resource.category !== categoryApplied)
+        continue;
       if (typeApplied !== "All" && resource.type !== typeApplied) continue;
       if (counselorApplied === true && resource.isPriority !== true) continue;
 
@@ -193,7 +194,10 @@ const ResourceLibrary = () => {
     if (sortApplied === "Newest") {
       for (let i = 0; i < filtered.length - 1; i++) {
         for (let j = 0; j < filtered.length - 1 - i; j++) {
-          if (new Date(filtered[j].createdAt) < new Date(filtered[j + 1].createdAt)) {
+          if (
+            new Date(filtered[j].createdAt) <
+            new Date(filtered[j + 1].createdAt)
+          ) {
             const temp = filtered[j];
             filtered[j] = filtered[j + 1];
             filtered[j + 1] = temp;
@@ -205,7 +209,10 @@ const ResourceLibrary = () => {
     if (sortApplied === "Oldest") {
       for (let i = 0; i < filtered.length - 1; i++) {
         for (let j = 0; j < filtered.length - 1 - i; j++) {
-          if (new Date(filtered[j].createdAt) > new Date(filtered[j + 1].createdAt)) {
+          if (
+            new Date(filtered[j].createdAt) >
+            new Date(filtered[j + 1].createdAt)
+          ) {
             const temp = filtered[j];
             filtered[j] = filtered[j + 1];
             filtered[j + 1] = temp;
@@ -233,9 +240,9 @@ const ResourceLibrary = () => {
     pageNumbers.push(i);
   }
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <div className="min-h-screen bg-[#f3f4f6] flex">
+      <div className="min-h-screen bg-slate-50 flex">
         <StudentSidebar user={user} />
         <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -315,23 +322,27 @@ const ResourceLibrary = () => {
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8 pb-4">
                 <button
-                  onClick={function () { setCurrentPage(currentPage - 1); }}
+                  onClick={function () {
+                    setCurrentPage(currentPage - 1);
+                  }}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                 >
                   ← Prev
                 </button>
 
                 {pageNumbers.map(function (page) {
-                  let btnClass = "w-10 h-10 rounded-xl font-bold text-sm transition-all border bg-white text-gray-400 border-gray-200 hover:border-indigo-400 hover:text-indigo-600";
-                  if (currentPage === page) {
-                    btnClass = "w-10 h-10 rounded-xl font-bold text-sm transition-all border bg-indigo-600 text-white border-indigo-600 shadow-sm";
-                  }
                   return (
                     <button
                       key={page}
-                      onClick={function () { setCurrentPage(page); }}
-                      className={btnClass}
+                      onClick={function () {
+                        setCurrentPage(page);
+                      }}
+                      className={`w-10 h-10 rounded-xl font-black text-sm transition-all border ${
+                        currentPage === page
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                          : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
+                      }`}
                     >
                       {page}
                     </button>
@@ -339,9 +350,11 @@ const ResourceLibrary = () => {
                 })}
 
                 <button
-                  onClick={function () { setCurrentPage(currentPage + 1); }}
+                  onClick={function () {
+                    setCurrentPage(currentPage + 1);
+                  }}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                 >
                   Next →
                 </button>

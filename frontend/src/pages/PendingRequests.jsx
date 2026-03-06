@@ -73,7 +73,7 @@ const PendingRequests = () => {
     }
   };
 
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen bg-slate-50 flex">
         <CounselorSidebar user={user} />

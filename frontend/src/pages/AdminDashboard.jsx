@@ -80,6 +80,7 @@ const PendingRow = ({ name, specialization, onView }) => {
 const AdminDashboard = () => {
   const [stats, setStats] = useState({ students: 0, counselors: 0 });
   const [pendingCounselors, setPendingCounselors] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -89,6 +90,7 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
+      setLoading(true);
       const userRes = await API.get("/admin/all-users");
       const allUsers = userRes.data;
       let studentCount = 0;
@@ -102,10 +104,26 @@ const AdminDashboard = () => {
       setPendingCounselors(pendingRes.data);
     } catch (err) {
       console.error("Failed to fetch dashboard data");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!user || user.role !== "Admin") return null;
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex">
+        <AdminSidebar user={user} />
+        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+            Loading Dashboard...
+          </p>
+        </main>
+      </div>
+    );
+  }
+
+  if (user.role !== "Admin") return null;
 
   const pendingCount = pendingCounselors.length;
   const paddedPending =

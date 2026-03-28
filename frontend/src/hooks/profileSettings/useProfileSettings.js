@@ -1,0 +1,1 @@
+export { useProfileSettingsContext as useProfileSettings } from "../../context/profileSettings/ProfileSettingsContext";

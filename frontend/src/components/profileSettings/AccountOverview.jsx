@@ -1,87 +1,176 @@
-const AccountOverview = ({
-  currentUser,
-  onPhotoUpload,
-  getProfilePhotoUrl,
-}) => {
+import { Camera, ShieldCheck, CalendarDays, Clock, UserCircle, Mail, User, Phone, Users, FileText } from "lucide-react";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+
+const formatDob = (dob) => {
+  if (!dob) return "Not provided";
+  const date = new Date(dob);
+  if (isNaN(date.getTime())) return "Not provided";
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "Not available";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "Not available";
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+};
+
+const AccountOverview = ({ currentUser, onPhotoUpload, getProfilePhotoUrl }) => {
+  const { user } = useContext(AuthContext);
+  const isStudent = user?.role === "Student";
+  const isCounselor = user?.role === "Counselor";
+
+  const baseStats = [
+    {
+      icon: User,
+      label: "Full Name",
+      value: currentUser.name,
+    },
+    {
+      icon: Mail,
+      label: "Email",
+      value: currentUser.email,
+      truncate: true,
+    },
+    {
+      icon: Phone,
+      label: "Phone Number",
+      value: currentUser.phone || "Not provided",
+    },
+  ];
+
+  if (isStudent) {
+    baseStats.push({
+      icon: FileText,
+      label: "Student ID",
+      value: currentUser.studentId || "Not provided",
+    });
+  }
+
+  if (isCounselor) {
+    baseStats.push({
+      icon: FileText,
+      label: "License No.",
+      value: currentUser.licenseNo || "Not provided",
+    });
+  }
+
+  if (isStudent) {
+    baseStats.push({
+      icon: CalendarDays,
+      label: "Date of Birth",
+      value: formatDob(currentUser.dob),
+    });
+  }
+
+  baseStats.push({
+    icon: Users,
+    label: "Gender",
+    value: currentUser.gender || "Not provided",
+  });
+
+  baseStats.push({
+    icon: UserCircle,
+    label: "System Role",
+    custom: (
+      <span className="px-2.5 py-0.5 bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] text-[13px] font-semibold capitalize">
+        {currentUser.role}
+      </span>
+    ),
+  });
+
+  baseStats.push({
+    icon: CalendarDays,
+    label: "Member Since",
+    value: formatDate(currentUser.createdAt),
+  });
+
+  baseStats.push({
+    icon: Clock,
+    label: "Last Login",
+    value: formatDate(currentUser.lastLogin),
+  });
+
+  baseStats.push({
+    icon: ShieldCheck,
+    label: "Account Status",
+    custom: (
+      <span className="flex items-center gap-1.5 text-[14px] font-semibold text-[#16A34A]">
+        <span className="w-2 h-2 bg-[#16A34A]" />
+        Verified
+      </span>
+    ),
+  });
+
   return (
-    <section className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm h-full flex flex-col justify-between">
-      <div>
-        <div className="border-b border-gray-200 pb-4 mb-6">
-          <h3 className="text-lg font-bold text-gray-900">Account Overview</h3>
-          <p className="text-sm text-gray-500 mt-1">
-            View your account information and status
-          </p>
-        </div>
-        <div className="flex flex-col items-center gap-3 mb-8">
-          <div className="w-40 h-40 rounded-full relative overflow-hidden border-4 border-indigo-100">
+    <section
+      className="bg-white border border-[#DBEAFE] overflow-hidden flex flex-col flex-1"
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+    >
+      <div className="px-7 py-5 border-b border-[#DBEAFE]">
+        <h3 className="text-[16px] font-semibold text-[#111827]">Account Overview</h3>
+        <p className="text-[13px] text-[#6B7280] mt-0.5">Your account information and status</p>
+      </div>
+
+      <div className="px-7 py-6 flex flex-col flex-1">
+        <div className="flex flex-col items-center gap-3 pb-5 border-b border-[#EFF6FF]">
+          <div className="relative">
             <img
               src={getProfilePhotoUrl()}
               alt="Profile"
-              className="w-full h-full object-cover"
+              className="w-20 h-20 object-cover border-2 border-[#BFDBFE] rounded-full"
               onError={(e) => {
-                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || "User")}&background=4f46e5&color=fff&size=200`;
+                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || "User")}&background=2563EB&color=fff&size=200`;
               }}
             />
+            <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#2563EB] flex items-center justify-center cursor-pointer hover:bg-[#1D4ED8] transition-colors border-2 border-white rounded-full">
+              <Camera size={13} className="text-white" strokeWidth={2} />
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={onPhotoUpload}
+              />
+            </label>
           </div>
-          <label className="bg-gray-100 border border-gray-300 px-6 py-2.5 rounded-lg text-sm font-semibold cursor-pointer hover:bg-gray-200 transition">
-            Update Photo
-            <input
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={onPhotoUpload}
-            />
-          </label>
+          <div className="text-center">
+            <p className="text-[15px] font-bold text-[#111827]">{currentUser.name}</p>
+            <p className="text-[13px] text-[#6B7280] mt-0.5">{currentUser.email}</p>
+          </div>
         </div>
-        <div className="w-full flex flex-col gap-5">
-          <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-            <span className="text-gray-500 text-base font-semibold">
-              Full Name
-            </span>
-            <span className="text-gray-900 font-bold text-base">
-              {currentUser.name}
-            </span>
-          </div>
-          <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-            <span className="text-gray-500 text-base font-semibold">
-              Email Address
-            </span>
-            <span className="text-gray-900 font-bold text-base">
-              {currentUser.email}
-            </span>
-          </div>
-          <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-            <span className="text-gray-500 text-base font-semibold">
-              System Role
-            </span>
-            <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold">
-              {currentUser.role}
-            </span>
-          </div>
-          <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-            <span className="text-gray-500 text-base font-semibold">
-              Member Since
-            </span>
-            <span className="text-gray-900 font-bold text-base">
-              Dec 15, 2025
-            </span>
-          </div>
-          <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-            <span className="text-gray-500 text-base font-semibold">
-              Last Login
-            </span>
-            <span className="text-gray-900 font-bold text-base">
-              Feb 16, 2026
-            </span>
-          </div>
-          <div className="flex justify-between items-center pb-4">
-            <span className="text-gray-500 text-base font-semibold">
-              Account Status
-            </span>
-            <span className="text-green-600 font-bold text-base">
-              ● Verified Account
-            </span>
-          </div>
+
+        <div className="pt-3 flex flex-col flex-1 justify-between">
+          {baseStats.map(({ icon: Icon, label, value, custom, truncate }, i) => {
+            let borderClass = "";
+            if (i < baseStats.length - 1) {
+              borderClass = "border-b border-[#EFF6FF]";
+            }
+
+            let textClass = "text-[13px] font-semibold text-[#111827] text-right";
+            if (truncate) {
+              textClass = textClass + " truncate max-w-[120px]";
+            }
+
+            return (
+              <div
+                key={`${label}-${i}`}
+                className={`flex items-center justify-between gap-3 ${borderClass} ${isStudent ? "py-2" : "py-3"}`}
+              >
+                <div className="flex items-center gap-2.5 flex-shrink-0">
+                  <div className="w-7 h-7 bg-[#EFF6FF] border border-[#DBEAFE] flex items-center justify-center flex-shrink-0">
+                    <Icon size={13} className="text-[#2563EB]" strokeWidth={2} />
+                  </div>
+                  <span className="text-[13px] text-[#6B7280] font-medium whitespace-nowrap">{label}</span>
+                </div>
+                {custom || (
+                  <span className={textClass}>
+                    {value}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

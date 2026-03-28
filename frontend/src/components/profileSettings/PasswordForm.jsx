@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 
 const PasswordForm = ({ onSubmit }) => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -16,89 +17,96 @@ const PasswordForm = ({ onSubmit }) => {
     setConfirmPassword("");
   };
 
+  const fields = [
+    {
+      label: "Current Password",
+      value: currentPassword,
+      onChange: setCurrentPassword,
+      show: showCurrent,
+      toggleShow: () => setShowCurrent(!showCurrent),
+      placeholder: "Enter your current password",
+    },
+    {
+      label: "New Password",
+      value: newPassword,
+      onChange: setNewPassword,
+      show: showNew,
+      toggleShow: () => setShowNew(!showNew),
+      placeholder: "Minimum 8 characters",
+    },
+    {
+      label: "Confirm New Password",
+      value: confirmPassword,
+      onChange: setConfirmPassword,
+      show: showConfirm,
+      toggleShow: () => setShowConfirm(!showConfirm),
+      placeholder: "Re-enter your new password",
+    },
+  ];
+
   return (
-    <section className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-      <div className="border-b border-gray-200 pb-4 mb-6">
-        <h3 className="text-lg font-bold text-gray-900">Security & Password</h3>
-        <p className="text-sm text-gray-500 mt-1">
-          Manage your password and security settings
-        </p>
+    <section
+      className="bg-white border border-[#DBEAFE] overflow-hidden"
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+    >
+      <div className="px-8 py-6 border-b border-[#DBEAFE]">
+        <h3 className="text-[17px] font-semibold text-[#111827]">Security & Password</h3>
+        <p className="text-[14px] text-[#6B7280] mt-1">Manage your password and security settings</p>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Current Password
-            </label>
-            <div className="relative">
-              <input
-                type={showCurrent ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter your current password"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition pr-20"
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrent(!showCurrent)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 text-sm font-medium transition"
-              >
-                {showCurrent ? "Hide" : "Show"}
-              </button>
-            </div>
+
+      <div className="px-8 py-7">
+        <form onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-5">
+            {fields.map(({ label, value, onChange, show, toggleShow, placeholder }) => {
+              let inputType = "password";
+              if (show) {
+                inputType = "text";
+              }
+
+              let iconComponent = <Eye size={17} strokeWidth={2} />;
+              if (show) {
+                iconComponent = <EyeOff size={17} strokeWidth={2} />;
+              }
+
+              return (
+                <div key={label}>
+                  <label className="block text-[14px] font-semibold text-[#374151] mb-2.5">
+                    {label}
+                  </label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                      <KeyRound size={15} className="text-[#BFDBFE]" strokeWidth={2} />
+                    </div>
+                    <input
+                      type={inputType}
+                      value={value}
+                      onChange={(e) => onChange(e.target.value)}
+                      placeholder={placeholder}
+                      className="w-full pl-10 pr-12 py-3.5 border border-[#BFDBFE] bg-[#F8FBFF] text-[15px] text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={toggleShow}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#2563EB] transition-colors"
+                    >
+                      {iconComponent}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              New Password
-            </label>
-            <div className="relative">
-              <input
-                type={showNew ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Minimum 8 characters"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition pr-20"
-              />
-              <button
-                type="button"
-                onClick={() => setShowNew(!showNew)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 text-sm font-medium transition"
-              >
-                {showNew ? "Hide" : "Show"}
-              </button>
-            </div>
+
+          <div className="mt-7 pt-6 border-t border-[#EFF6FF]">
+            <button
+              type="submit"
+              className="px-6 py-3 bg-[#2563EB] text-white text-[15px] font-semibold hover:bg-[#1D4ED8] transition-colors"
+            >
+              Update Password
+            </button>
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Confirm New Password
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirm ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Re-enter new password"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition pr-20"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 text-sm font-medium transition"
-              >
-                {showConfirm ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="pt-4">
-          <button
-            type="submit"
-            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-sm"
-          >
-            Update Password
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </section>
   );
 };

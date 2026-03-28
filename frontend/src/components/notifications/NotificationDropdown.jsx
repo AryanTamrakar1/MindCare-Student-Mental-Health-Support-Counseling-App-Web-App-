@@ -12,6 +12,12 @@ const NotificationDropdown = () => {
 
   useEffect(function () {
     fetchUnreadCount();
+    
+    const interval = setInterval(fetchUnreadCount, 10000);
+
+    return function () {
+      clearInterval(interval);
+    };
   }, []);
 
   async function fetchUnreadCount() {
@@ -161,16 +167,19 @@ const NotificationDropdown = () => {
     return diffDays + "d ago";
   }
 
+  let unreadDisplay = unreadCount;
+  if (unreadCount > 99) unreadDisplay = "99+";
+
   return (
     <div className="relative">
       <button
         onClick={toggleNotifications}
-        className="relative p-2 hover:bg-gray-100 rounded-lg transition"
+        className="relative p-2 hover:bg-gray-100 transition"
       >
         <Bell className="w-6 h-6 text-gray-600" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
-            {unreadCount > 99 ? "99+" : unreadCount}
+          <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1">
+            {unreadDisplay}
           </span>
         )}
       </button>
@@ -180,7 +189,7 @@ const NotificationDropdown = () => {
       )}
 
       {showNotifications && (
-        <div className="absolute right-0 mt-2 w-[420px] bg-white rounded-xl shadow-xl border border-gray-200 z-50">
+        <div className="absolute right-0 mt-2 w-[420px] bg-white shadow-xl border border-gray-200 z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
             <div className="flex items-center gap-3">
@@ -232,9 +241,9 @@ const NotificationDropdown = () => {
                   <div className="flex items-start gap-3">
                     <div className="mt-1.5 flex-shrink-0">
                       {!notif.isRead ? (
-                        <span className="w-2 h-2 bg-indigo-500 rounded-full block"></span>
+                        <span className="w-2 h-2 bg-indigo-500 block"></span>
                       ) : (
-                        <span className="w-2 h-2 rounded-full block"></span>
+                        <span className="w-2 h-2 block"></span>
                       )}
                     </div>
                     <div className="flex-1">

@@ -11,11 +11,12 @@ const {
 
 const { protect } = require("../controllers/authController");
 
-router.get("/", protect, getNotifications);
 router.get("/unread-count", protect, getUnreadCount);
-router.put("/:id/read", protect, markAsRead);
 router.put("/mark-all-read", protect, markAllAsRead);
 router.delete("/delete-all", protect, deleteAllNotifications);
+
+router.get("/", protect, getNotifications);
+router.put("/:id/read", protect, markAsRead);
 router.delete("/:id", protect, deleteNotification);
 
 module.exports = router;

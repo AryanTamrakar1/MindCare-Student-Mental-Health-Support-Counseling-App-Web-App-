@@ -1,0 +1,1 @@
+export { useResourceLibraryContext as useadminResourceLibrary } from "../../context/adminResourceLibrary/adminResourceLibraryContext";

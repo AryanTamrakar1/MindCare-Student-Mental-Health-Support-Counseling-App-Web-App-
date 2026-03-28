@@ -8,16 +8,12 @@ import {
   ExternalLink,
   BadgeCheck,
   X,
+  Clock,
 } from "lucide-react";
-import API from "../../api/axios";
+import { useResourceCard } from "../../hooks/resourceLibrary/useResourceCard";
 
-function ResourceCard({
-  resource,
-  currentUserId,
-  onReactionUpdate,
-  onBookmarkUpdate,
-}) {
-  const [loading, setLoading] = useState(false);
+function ResourceCard({ resource, currentUserId, onReactionUpdate, onBookmarkUpdate }) {
+  const { loading, handleReaction, handleBookmark } = useResourceCard();
   const [showPopup, setShowPopup] = useState(false);
 
   let myReaction = null;
@@ -36,258 +32,329 @@ function ResourceCard({
     }
   }
 
-  async function handleReaction(reaction) {
-    try {
-      setLoading(true);
-      const token = sessionStorage.getItem("token");
-      const response = await API.post(
-        `/resources/${resource._id}/react`,
-        { reaction: reaction },
-        { headers: { Authorization: "Bearer " + token } },
-      );
-      onReactionUpdate(resource._id, response.data.reactions);
-    } catch (error) {
-      console.log("Reaction error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleBookmark() {
-    try {
-      setLoading(true);
-      const token = sessionStorage.getItem("token");
-      const response = await API.post(
-        `/resources/${resource._id}/bookmark`,
-        {},
-        { headers: { Authorization: "Bearer " + token } },
-      );
-      onBookmarkUpdate(resource._id, response.data.bookmarks);
-    } catch (error) {
-      console.log("Bookmark error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   function getCategoryColor(category) {
-    if (category === "General Mental Health") return "bg-sky-100 text-sky-700";
-    if (category === "Exam & Academic Pressure")
-      return "bg-red-100 text-red-700";
-    if (category === "Skill Gap & Career Fear")
-      return "bg-orange-100 text-orange-700";
-    if (category === "Family Expectation Burden")
-      return "bg-yellow-100 text-yellow-700";
-    if (category === "Sleep & Energy") return "bg-blue-100 text-blue-700";
-    if (category === "Social Isolation") return "bg-purple-100 text-purple-700";
-    if (category === "Low Motivation") return "bg-green-100 text-green-700";
-    return "bg-gray-100 text-gray-700";
+    let colors = { bg: "#f3f4f6", color: "#6b7280", border: "#e5e7eb" };
+
+    if (category === "General Mental Health") {
+      colors = { bg: "#f0f9ff", color: "#0284c7", border: "#bae6fd" };
+    } else if (category === "Exam & Academic Pressure") {
+      colors = { bg: "#fef2f2", color: "#dc2626", border: "#fecaca" };
+    } else if (category === "Skill Gap & Career Fear") {
+      colors = { bg: "#fff7ed", color: "#ea580c", border: "#fed7aa" };
+    } else if (category === "Family Expectation Burden") {
+      colors = { bg: "#fffbeb", color: "#d97706", border: "#fde68a" };
+    } else if (category === "Sleep & Energy") {
+      colors = { bg: "#eff6ff", color: "#2563eb", border: "#bfdbfe" };
+    } else if (category === "Social Isolation") {
+      colors = { bg: "#f5f3ff", color: "#7c3aed", border: "#ddd6fe" };
+    } else if (category === "Low Motivation") {
+      colors = { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0" };
+    }
+
+    return colors;
   }
 
   const descriptionLimit = 80;
-  const isLongDescription = resource.description.length > descriptionLimit;
-  let shortDescription = resource.description.slice(0, descriptionLimit);
-  if (isLongDescription) {
-    shortDescription = shortDescription + "...";
+  let shortDescription = resource.description;
+  let isLongDescription = false;
+
+  if (resource.description.length > descriptionLimit) {
+    isLongDescription = true;
+    let trimmed = "";
+    for (let i = 0; i < descriptionLimit; i++) {
+      trimmed = trimmed + resource.description[i];
+    }
+    shortDescription = trimmed + "...";
   }
 
-  let typeBadge = null;
-  if (resource.type === "Video") {
-    typeBadge = (
-      <div className="flex items-center gap-1 text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg text-xs font-bold">
-        <Video size={12} />
-        Video
-      </div>
-    );
-  } else {
-    typeBadge = (
-      <div className="flex items-center gap-1 text-teal-600 bg-teal-50 px-2 py-1 rounded-lg text-xs font-bold">
-        <BookOpen size={12} />
-        Article
-      </div>
-    );
-  }
-
-  let typeBadgePopup = null;
-  if (resource.type === "Video") {
-    typeBadgePopup = (
-      <div className="flex items-center gap-1 text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg text-xs font-bold">
-        <Video size={12} />
-        Video
-      </div>
-    );
-  } else {
-    typeBadgePopup = (
-      <div className="flex items-center gap-1 text-teal-600 bg-teal-50 px-2 py-1 rounded-lg text-xs font-bold">
-        <BookOpen size={12} />
-        Article
-      </div>
-    );
-  }
+  const catColor = getCategoryColor(resource.category);
 
   let bookmarkFill = "none";
   if (isBookmarked) {
     bookmarkFill = "currentColor";
   }
 
+  let showPopupContent = false;
+  if (showPopup === true) {
+    showPopupContent = true;
+  }
+
+  let showReadMoreButton = false;
+  if (isLongDescription) {
+    showReadMoreButton = true;
+  }
+
+  let resourceTypeIcon = BookOpen;
+  let resourceTypeLabel = "Article";
+  let resourceTypeColor = "#0d9488";
+  let resourceTypeBg = "#f0fdfa";
+  let resourceTypeBorder = "#99f6e4";
+
+  if (resource.type === "Video") {
+    resourceTypeIcon = Video;
+    resourceTypeLabel = "Video";
+    resourceTypeColor = "#2563EB";
+    resourceTypeBg = "#EEF2FF";
+    resourceTypeBorder = "#C7D2FE";
+  }
+
+  let helpfulBorder = "1px solid #E5E9F2";
+  let helpfulBg = "#F9FAFB";
+  let helpfulColor = "#6B7280";
+
+  if (myReaction === "helpful") {
+    helpfulBorder = "1px solid #bbf7d0";
+    helpfulBg = "#f0fdf4";
+    helpfulColor = "#16a34a";
+  }
+
+  let notHelpfulBorder = "1px solid #E5E9F2";
+  let notHelpfulBg = "#F9FAFB";
+  let notHelpfulColor = "#6B7280";
+
+  if (myReaction === "notHelpful") {
+    notHelpfulBorder = "1px solid #fecaca";
+    notHelpfulBg = "#fef2f2";
+    notHelpfulColor = "#dc2626";
+  }
+
+  let bookmarkBorder = "1px solid #E5E9F2";
+  let bookmarkBg = "#F9FAFB";
+  let bookmarkColor = "#9CA3AF";
+
+  if (isBookmarked) {
+    bookmarkBorder = "1px solid #C7D2FE";
+    bookmarkBg = "#EEF2FF";
+    bookmarkColor = "#2563EB";
+  }
+
   return (
     <>
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow w-full">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[15px] font-black text-gray-800 leading-snug flex-1">
+      <div
+        style={{
+          background: "#fff", border: "1px solid #E5E9F2",
+          padding: "20px", display: "flex", flexDirection: "column", gap: "14px",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          transition: "border-color 0.2s, box-shadow 0.2s",
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#C7D2FE"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(37,99,235,0.06)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E5E9F2"; e.currentTarget.style.boxShadow = "none"; }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
+          <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#111827", lineHeight: 1.4, flex: 1 }}>
             {resource.title}
           </h3>
-          {isLongDescription && (
+          {showReadMoreButton && (
             <button
-              onClick={function () {
-                setShowPopup(true);
+              onClick={function () { setShowPopup(true); }}
+              style={{
+                flexShrink: 0, fontSize: "11px", fontWeight: "600",
+                color: "#2563EB", background: "#EEF2FF",
+                border: "1px solid #C7D2FE", padding: "5px 10px",
+                cursor: "pointer", whiteSpace: "nowrap",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
-              className="flex-shrink-0 text-[11px] font-black text-white bg-indigo-500 hover:bg-indigo-600 transition-colors px-3 py-1.5 rounded-lg uppercase tracking-wider"
             >
-              Show More
+              Read more
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {typeBadge}
-          <span className="text-gray-300 text-xs">→</span>
-          <span
-            className={`text-xs font-bold px-2 py-1 rounded-lg ${getCategoryColor(resource.category)}`}
-          >
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <span style={{
+            display: "flex", alignItems: "center", gap: "4px",
+            fontSize: "11px", fontWeight: "600", color: resourceTypeColor,
+            background: resourceTypeBg, border: `1px solid ${resourceTypeBorder}`,
+            padding: "4px 10px",
+          }}>
+            {resourceTypeIcon === Video ? <Video size={11} strokeWidth={2} /> : <BookOpen size={11} strokeWidth={2} />}
+            {resourceTypeLabel}
+          </span>
+          <span style={{
+            fontSize: "11px", fontWeight: "600",
+            color: catColor.color, background: catColor.bg,
+            border: `1px solid ${catColor.border}`,
+            padding: "4px 10px",
+          }}>
             {resource.category}
           </span>
         </div>
 
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          {resource.isPriority === true && (
-            <span className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 w-fit">
-              <BadgeCheck size={12} />
-              Counselor Recommended
-            </span>
-          )}
-          <p className="text-xs text-gray-400 font-medium ml-auto">
-            ⏱ {resource.estimatedTime}
-          </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+          <div>
+            {resource.isPriority === true && (
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: "4px",
+                fontSize: "11px", fontWeight: "600", color: "#16a34a",
+                background: "#f0fdf4", border: "1px solid #bbf7d0",
+                padding: "4px 10px",
+              }}>
+                <BadgeCheck size={11} strokeWidth={2} />
+                Counselor Recommended
+              </span>
+            )}
+          </div>
+          <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", fontWeight: "500", color: "#9CA3AF" }}>
+            <Clock size={11} strokeWidth={2} />
+            {resource.estimatedTime}
+          </span>
         </div>
 
         {resource.description !== "" && (
-          <p className="text-sm text-gray-500 leading-relaxed text-justify">
+          <p style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.6, margin: 0 }}>
             {shortDescription}
           </p>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-auto">
-          <div className="flex items-center gap-2">
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          paddingTop: "12px", borderTop: "1px solid #F1F1F1", marginTop: "auto",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <button
-              onClick={function () {
-                handleReaction("helpful");
-              }}
+              onClick={function () { handleReaction(resource._id, "helpful", onReactionUpdate); }}
               disabled={loading}
-              className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border transition-all ${
-                myReaction === "helpful"
-                  ? "bg-green-100 text-green-700 border-green-200"
-                  : "bg-gray-50 text-gray-500 border-gray-200 hover:border-green-300 hover:text-green-600"
-              }`}
+              style={{
+                display: "flex", alignItems: "center", gap: "6px",
+                fontSize: "12px", fontWeight: "600", padding: "6px 12px",
+                border: helpfulBorder,
+                background: helpfulBg,
+                color: helpfulColor,
+                cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
             >
-              <ThumbsUp size={12} />
+              <ThumbsUp size={12} strokeWidth={2} />
               {resource.helpfulCount}
             </button>
             <button
-              onClick={function () {
-                handleReaction("notHelpful");
-              }}
+              onClick={function () { handleReaction(resource._id, "notHelpful", onReactionUpdate); }}
               disabled={loading}
-              className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border transition-all ${
-                myReaction === "notHelpful"
-                  ? "bg-red-100 text-red-700 border-red-200"
-                  : "bg-gray-50 text-gray-500 border-gray-200 hover:border-red-300 hover:text-red-600"
-              }`}
+              style={{
+                display: "flex", alignItems: "center", gap: "6px",
+                fontSize: "12px", fontWeight: "600", padding: "6px 12px",
+                border: notHelpfulBorder,
+                background: notHelpfulBg,
+                color: notHelpfulColor,
+                cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
             >
-              <ThumbsDown size={12} />
+              <ThumbsDown size={12} strokeWidth={2} />
               {resource.notHelpfulCount}
             </button>
           </div>
-          <div className="flex items-center gap-2">
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <button
-              onClick={handleBookmark}
+              onClick={function () { handleBookmark(resource._id, onBookmarkUpdate); }}
               disabled={loading}
-              className={`p-2 rounded-full border transition-all ${
-                isBookmarked
-                  ? "bg-indigo-100 text-indigo-600 border-indigo-200"
-                  : "bg-gray-50 text-gray-400 border-gray-200 hover:border-indigo-300 hover:text-indigo-500"
-              }`}
+              style={{
+                padding: "7px 10px",
+                border: bookmarkBorder,
+                background: bookmarkBg,
+                color: bookmarkColor,
+                cursor: "pointer",
+              }}
             >
-              <Bookmark size={14} fill={bookmarkFill} />
+              <Bookmark size={13} strokeWidth={2} fill={bookmarkFill} />
             </button>
             <a
               href={resource.link}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              style={{
+                display: "flex", alignItems: "center", gap: "6px",
+                fontSize: "12px", fontWeight: "600", padding: "7px 14px",
+                background: "#2563EB", color: "#fff",
+                border: "none", textDecoration: "none",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
             >
-              <ExternalLink size={12} />
+              <ExternalLink size={12} strokeWidth={2} />
               Open
             </a>
           </div>
         </div>
       </div>
 
-      {showPopup === true && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl w-full max-w-3xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="flex items-start justify-between gap-3 px-6 py-5 border-b border-gray-100 flex-shrink-0">
-              <h3 className="text-lg font-black text-gray-800 leading-snug flex-1">
+      {showPopupContent && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 50, padding: "16px",
+        }}>
+          <div
+            style={{
+              background: "#fff", width: "100%", maxWidth: "640px",
+              border: "1px solid #E5E9F2", overflow: "hidden",
+              maxHeight: "90vh", display: "flex", flexDirection: "column",
+              boxShadow: "0 24px 64px rgba(0,0,0,0.12)",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}
+          >
+            <div style={{
+              display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+              gap: "12px", padding: "20px 24px", borderBottom: "1px solid #E5E9F2", flexShrink: 0,
+            }}>
+              <h3 style={{ fontSize: "17px", fontWeight: "700", color: "#111827", lineHeight: 1.4, flex: 1 }}>
                 {resource.title}
               </h3>
               <button
-                onClick={function () {
-                  setShowPopup(false);
+                onClick={function () { setShowPopup(false); }}
+                style={{
+                  width: "30px", height: "30px", flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "#F3F4F6", border: "1px solid #E5E7EB",
+                  color: "#9CA3AF", cursor: "pointer",
                 }}
-                className="flex-shrink-0 text-gray-400 hover:text-gray-600"
               >
-                <X size={20} />
+                <X size={15} strokeWidth={2} />
               </button>
             </div>
 
-            <div className="overflow-y-auto px-6 py-5 flex flex-col gap-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                {typeBadgePopup}
-                <span className="text-gray-300 text-xs">→</span>
-                <span
-                  className={`text-xs font-bold px-2 py-1 rounded-lg ${getCategoryColor(resource.category)}`}
-                >
+            <div style={{ overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: "600", color: resourceTypeColor, background: resourceTypeBg, border: `1px solid ${resourceTypeBorder}`, padding: "4px 10px" }}>
+                  {resourceTypeIcon === Video ? <Video size={11} strokeWidth={2} /> : <BookOpen size={11} strokeWidth={2} />}
+                  {resourceTypeLabel}
+                </span>
+                <span style={{ fontSize: "11px", fontWeight: "600", color: catColor.color, background: catColor.bg, border: `1px solid ${catColor.border}`, padding: "4px 10px" }}>
                   {resource.category}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between flex-wrap gap-2">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
                 {resource.isPriority === true && (
-                  <span className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 w-fit">
-                    <BadgeCheck size={12} />
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: "600", color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "4px 10px" }}>
+                    <BadgeCheck size={11} strokeWidth={2} />
                     Counselor Recommended
                   </span>
                 )}
-                <p className="text-xs text-gray-400 font-medium ml-auto">
-                  ⏱ {resource.estimatedTime}
-                </p>
+                <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", fontWeight: "500", color: "#9CA3AF", marginLeft: "auto" }}>
+                  <Clock size={11} strokeWidth={2} />
+                  {resource.estimatedTime}
+                </span>
               </div>
 
-              <div className="border-t border-gray-100"></div>
+              <div style={{ height: "1px", background: "#F1F1F1" }} />
 
-              <p className="text-sm text-gray-500 leading-relaxed text-justify whitespace-pre-wrap">
+              <p style={{ fontSize: "14px", color: "#374151", lineHeight: 1.7, whiteSpace: "pre-wrap", margin: 0 }}>
                 {resource.description}
               </p>
             </div>
 
-            <div className="px-6 py-5 border-t border-gray-100 flex-shrink-0">
+            <div style={{ padding: "16px 24px", borderTop: "1px solid #E5E9F2", flexShrink: 0, background: "#F9FAFB" }}>
               <a
                 href={resource.link}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 w-full text-sm font-bold py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                  width: "100%", fontSize: "14px", fontWeight: "600",
+                  padding: "12px", background: "#2563EB", color: "#fff",
+                  border: "none", textDecoration: "none",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                }}
               >
-                <ExternalLink size={14} />
+                <ExternalLink size={14} strokeWidth={2} />
                 Open Resource
               </a>
             </div>

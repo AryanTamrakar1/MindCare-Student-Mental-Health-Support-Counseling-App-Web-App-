@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -6,139 +6,86 @@ import StudentSidebar from "../components/Sidebars/StudentSidebar";
 import SmartCounselorCard from "../components/recommendations/SmartCounselorCard";
 import MoodScoreCard from "../components/studentDashboard/MoodScoreCard";
 import MoodTrendCard from "../components/studentDashboard/MoodTrendCard";
-import API from "../api/axios";
+import { StudentDashboardProvider } from "../context/studentDashboard/StudentDashboardContext";
+import { MoodTrendProvider } from "../context/studentDashboard/MoodTrendContext";
+import { MoodScoreProvider } from "../context/studentDashboard/MoodScoreContext";
+import { useStudentDashboard } from "../hooks/studentDashboard/useStudentDashboard";
+import { ArrowRight, Award } from "lucide-react";
 
-const StudentDashboard = () => {
+const StudentDashboardInner = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [gamification, setGamification] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(function () {
-    async function fetchGamification() {
-      try {
-        const token = sessionStorage.getItem("token");
-        const res = await API.get("/gamification/me", {
-          headers: { Authorization: "Bearer " + token },
-        });
-        setGamification(res.data);
-      } catch (err) {
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchGamification();
-  }, []);
-
-  function getProgressPercent() {
-    if (!gamification) return 0;
-    if (gamification.level >= 5) return 100;
-    const LEVEL_THRESHOLDS = [0, 20, 40, 60, 80];
-    const currentLevelStart = LEVEL_THRESHOLDS[gamification.level - 1];
-    const pointsSinceLevel = gamification.points - currentLevelStart;
-    const pointsNeeded = gamification.nextLevelPoints - currentLevelStart;
-    const percent = Math.round((pointsSinceLevel / pointsNeeded) * 100);
-    if (percent < 0) return 0;
-    if (percent > 100) return 100;
-    return percent;
-  }
-
-  function getLevelColor() {
-    if (!gamification) return "from-indigo-600 to-indigo-800";
-    if (gamification.level === 1) return "from-green-500 to-green-700";
-    if (gamification.level === 2) return "from-teal-500 to-teal-700";
-    if (gamification.level === 3) return "from-pink-500 to-pink-700";
-    if (gamification.level === 4) return "from-indigo-600 to-indigo-800";
-    if (gamification.level === 5) return "from-amber-500 to-amber-700";
-    return "from-indigo-600 to-indigo-800";
-  }
-
-  function getProgressLabel() {
-    if (gamification && gamification.level < 5)
-      return "Progress to Level " + (gamification.level + 1);
-    return "Maximum Level Reached";
-  }
-
-  function getPointsDisplay() {
-    if (gamification) return gamification.points;
-    return "—";
-  }
-
-  function getLevelDisplay() {
-    if (gamification)
-      return "Level " + gamification.level + ": " + gamification.levelTitle;
-    return "Loading...";
-  }
-
-  function getBadges() {
-    if (gamification && gamification.badges.length > 0) {
-      return gamification.badges.slice(0, 3);
-    }
-    return [];
-  }
+  const {
+    gamification,
+    getProgressPercent,
+    getLevelColor,
+    getProgressLabel,
+    getPointsDisplay,
+    getLevelDisplay,
+    getBadges,
+  } = useStudentDashboard();
 
   const progressPercent = getProgressPercent();
   const badges = getBadges();
 
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex">
-        <StudentSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-            Loading Dashboard...
-          </p>
-        </main>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      className="min-h-screen bg-[#EFF6FF] flex"
+    >
       <StudentSidebar user={user} />
+      <Navbar />
 
-      <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
-        <div className="mb-8 border-b-2 border-slate-300 pb-6 flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">
-              Student Dashboard
-            </h2>
-            <p className="text-gray-500">
-              Welcome back! Let's check your mental well-being today.
-            </p>
-          </div>
-          <Navbar />
-        </div>
-
+      <main
+        className="flex-1 ml-[260px] overflow-y-auto"
+        style={{
+          paddingTop: "calc(72px + 2.5rem)",
+          paddingBottom: "2.5rem",
+          paddingLeft: "2.5rem",
+          paddingRight: "2.5rem",
+        }}
+      >
         <section
           className={
             "bg-gradient-to-br " +
             getLevelColor() +
-            " rounded-2xl p-8 mb-6 text-white shadow-lg"
+            " p-8 mb-6 text-white border border-white/10"
           }
         >
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-black">Your Progression</h3>
-            <span className="bg-white/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider">
+            <div className="flex items-center gap-3">
+              <Award size={20} strokeWidth={2} className="opacity-80" />
+              <h3 className="text-[17px] font-semibold tracking-wide">
+                Your Progression
+              </h3>
+            </div>
+            <span className="bg-white/15 border border-white/20 px-4 py-1.5 text-[13px] font-semibold tracking-wider uppercase">
               {getLevelDisplay()}
             </span>
           </div>
-          <div className="flex items-center gap-10">
-            <div className="flex flex-col items-center justify-center border-4 border-white/30 rounded-full w-32 h-32">
-              <span className="text-3xl font-black">{getPointsDisplay()}</span>
-              <span className="text-xs uppercase tracking-wider opacity-80">
-                Total Points
+
+          <div className="flex items-center gap-12">
+            <div className="flex flex-col items-center justify-center border border-white/25 w-32 h-32 shrink-0">
+              <span className="text-[32px] font-bold leading-none">
+                {getPointsDisplay()}
+              </span>
+              <span className="text-[12px] uppercase tracking-widest opacity-70 mt-1.5">
+                Points
               </span>
             </div>
+
             <div className="flex-1">
-              <div className="flex justify-between text-sm font-bold mb-2">
+              <div className="flex justify-between text-[14px] font-medium mb-2.5 opacity-90">
                 <span>{getProgressLabel()}</span>
                 <span>{progressPercent}%</span>
               </div>
-              <div className="bg-white/20 h-3 rounded-full overflow-hidden mb-4">
+              <div className="bg-white/15 h-2 overflow-hidden mb-5">
                 <div
-                  className="bg-white h-full rounded-full transition-all duration-500"
+                  className="bg-white h-full transition-all duration-500"
                   style={{ width: progressPercent + "%" }}
                 />
               </div>
@@ -149,14 +96,14 @@ const StudentDashboard = () => {
                       return (
                         <span
                           key={badge.name}
-                          className="bg-white/15 px-3 py-1 rounded-lg text-xs font-bold"
+                          className="bg-white/15 border border-white/20 px-3.5 py-1 text-[13px] font-semibold"
                         >
                           {badge.name}
                         </span>
                       );
                     })}
                   {badges.length === 0 && (
-                    <span className="bg-white/15 px-3 py-1 rounded-lg text-xs font-bold opacity-60">
+                    <span className="bg-white/10 border border-white/15 px-3.5 py-1 text-[13px] font-medium opacity-60">
                       No badges yet
                     </span>
                   )}
@@ -165,33 +112,53 @@ const StudentDashboard = () => {
                   onClick={function () {
                     navigate("/student/gamification");
                   }}
-                  className="bg-white/20 hover:bg-white/30 transition px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shrink-0"
+                  className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 transition-all duration-150 px-5 py-2 text-[13px] font-semibold tracking-wide shrink-0"
                 >
-                  View My Progress
+                  View Progress
+                  <ArrowRight size={14} strokeWidth={2.5} />
                 </button>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="mb-6">
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
-            Your Well-being Overview
-          </h4>
-          <div className="grid grid-cols-3 gap-5 items-stretch">
+        <div className="flex gap-6 items-start">
+          <div className="flex-1 min-w-0 flex flex-col gap-6">
             <MoodTrendCard />
+
+            <section className="bg-white border border-[#DBEAFE]">
+              <div className="px-6 py-5 border-b border-[#DBEAFE]">
+                <p className="text-[17px] font-bold text-[#0F172A] tracking-tight">
+                  Recommended Counselors
+                </p>
+                <p className="text-[13px] text-[#94A3B8] mt-0.5">
+                  Counselors matched to your current mood and needs
+                </p>
+              </div>
+              <div className="p-6">
+                <SmartCounselorCard />
+              </div>
+            </section>
+          </div>
+
+          <div className="shrink-0" style={{ width: 360 }}>
             <MoodScoreCard />
           </div>
-        </section>
-
-        <section className="mb-6">
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">
-            Recommended Counselors
-          </h4>
-          <SmartCounselorCard />
-        </section>
+        </div>
       </main>
     </div>
+  );
+};
+
+const StudentDashboard = () => {
+  return (
+    <StudentDashboardProvider>
+      <MoodTrendProvider>
+        <MoodScoreProvider>
+          <StudentDashboardInner />
+        </MoodScoreProvider>
+      </MoodTrendProvider>
+    </StudentDashboardProvider>
   );
 };
 

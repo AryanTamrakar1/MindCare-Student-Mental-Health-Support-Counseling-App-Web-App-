@@ -1,0 +1,1 @@
+export { useMoodTrendContext as useMoodTrend } from "../../context/studentDashboard/MoodTrendContext";

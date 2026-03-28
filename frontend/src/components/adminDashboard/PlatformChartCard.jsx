@@ -1,135 +1,113 @@
 import React, { useState, useEffect } from "react";
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  Tooltip,
-  CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { TrendingUp } from "lucide-react";
 import API from "../../api/axios";
 
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload || payload.length === 0) return null;
-
   return (
-    <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-lg">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-        {label}
-      </p>
-      <p className="text-xl font-black text-indigo-600">{payload[0].value}</p>
-      <p className="text-xs text-slate-400">sessions</p>
+    <div className="bg-slate-900 text-white px-4 py-3 shadow-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">{label}</p>
+      {payload.map((p, i) => (
+        <div key={i} className="flex items-center gap-2 mb-1">
+          <span className="w-2 h-2 shrink-0" style={{ background: p.color }} />
+          <p className="text-sm font-bold" style={{ color: p.color }}>{p.value}</p>
+          <p className="text-sm text-slate-400">{p.name}</p>
+        </div>
+      ))}
     </div>
   );
 };
 
-const PlatformChartCard = () => {
-  const [monthlyData, setMonthlyData] = useState([]);
+const PlatformChartCard = ({ selectedYear }) => {
+  const [rawData, setRawData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
+      setLoading(true);
       try {
         const token = sessionStorage.getItem("token");
         const res = await API.get("/analytics/sessions", {
           headers: { Authorization: "Bearer " + token },
+          params: { year: selectedYear },
         });
-        setMonthlyData(res.data.monthlyData || []);
+        setRawData(res.data.monthlyData || []);
       } catch (err) {
         console.error(err);
+        setRawData([]);
       }
       setLoading(false);
     };
     fetchAnalytics();
-  }, []);
+  }, [selectedYear]);
 
-  const hasData = monthlyData.length > 0;
-  const noData = monthlyData.length === 0;
+  const chartData = MONTHS.map((month, monthIndex) => {
+    const found = rawData.find((d) => {
+      const label = (d.month || d.label || "").toString();
+      const byIndex = d.monthIndex === monthIndex || d.month_index === monthIndex;
+      const byName = label.toLowerCase().startsWith(month.toLowerCase());
+      const byDate = (() => {
+        try {
+          const parsed = new Date(label);
+          return !isNaN(parsed) && parsed.getMonth() === monthIndex;
+        } catch {
+          return false;
+        }
+      })();
+      return byIndex || byName || byDate;
+    });
+    return {
+      label: month,
+      sessions: found ? (found.sessions || 0) : 0,
+      students: found ? (found.students || 0) : 0,
+    };
+  });
+
+  if (loading) {
+    return (
+      <div className="h-64 flex items-center justify-center">
+        <div className="flex gap-1.5">
+          {[0, 150, 300].map((d) => (
+            <span
+              key={d}
+              className="w-2 h-2 bg-blue-200 animate-bounce"
+              style={{ animationDelay: `${d}ms` }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (rawData.length === 0) {
+    return (
+      <div className="h-64 flex flex-col items-center justify-center gap-2">
+        <TrendingUp size={28} className="text-blue-200" />
+        <p className="text-slate-400 text-sm">No session data for {selectedYear}</p>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {loading && (
-        <div className="h-48 flex items-center justify-center">
-          <div className="flex gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full bg-slate-200 animate-bounce"
-              style={{ animationDelay: "0ms" }}
-            />
-            <span
-              className="w-2 h-2 rounded-full bg-slate-200 animate-bounce"
-              style={{ animationDelay: "150ms" }}
-            />
-            <span
-              className="w-2 h-2 rounded-full bg-slate-200 animate-bounce"
-              style={{ animationDelay: "300ms" }}
-            />
-          </div>
-        </div>
-      )}
-
-      {!loading && hasData && (
-        <div className="h-48">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={monthlyData}
-              margin={{ top: 4, right: 4, left: -28, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity={0.12} />
-                  <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                stroke="#f1f5f9"
-                strokeDasharray="0"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 600 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 600 }}
-                axisLine={false}
-                tickLine={false}
-                allowDecimals={false}
-              />
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
-              />
-              <Area
-                type="monotone"
-                dataKey="sessions"
-                stroke="#6366f1"
-                strokeWidth={2}
-                fill="url(#areaFill)"
-                dot={{ fill: "#6366f1", r: 3, strokeWidth: 0 }}
-                activeDot={{
-                  fill: "#6366f1",
-                  r: 5,
-                  strokeWidth: 3,
-                  stroke: "#e0e7ff",
-                }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {!loading && noData && (
-        <div className="h-48 flex flex-col items-center justify-center gap-2">
-          <TrendingUp size={28} className="text-slate-200" />
-          <p className="text-slate-400 text-sm">
-            No session data available yet
-          </p>
-        </div>
-      )}
+    <div className="w-full h-72 min-w-0">
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={chartData} margin={{ top: 4, right: 4, left: -28, bottom: 0 }} barCategoryGap="32%">
+          <CartesianGrid stroke="#F1F5F9" strokeDasharray="4 4" vertical={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 13, fill: "#94A3B8", fontWeight: 600 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 12, fill: "#94A3B8", fontWeight: 600 }} axisLine={false} tickLine={false} allowDecimals={false} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: "#EFF6FF" }} />
+          <Bar dataKey="sessions" name="Sessions" fill="#1D4ED8" radius={0} />
+          <Bar dataKey="students" name="Students" fill="#93C5FD" radius={0} />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 };

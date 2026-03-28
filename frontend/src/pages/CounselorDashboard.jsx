@@ -7,64 +7,105 @@ import AverageRatingCard from "../components/counselorDashboard/AverageRatingCar
 import CounselorNextSessionCard from "../components/counselorDashboard/CounselorNextSessionCard";
 import SessionCompletionChart from "../components/counselorDashboard/SessionCompletionChart";
 import RecentActivityCard from "../components/counselorDashboard/RecentActivityCard";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { CounselorDashboardProvider } from "../context/counselorDashboard/CounselorDashboardContext";
+import { useCounselorDashboard } from "../hooks/counselorDashboard/useCounselorDashboard";
+import { useNavigate } from "react-router-dom";
 
-const CounselorDashboard = () => {
+const CounselorDashboardInner = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { selectedYear, prevYear, nextYear } = useCounselorDashboard();
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex">
-        <CounselorSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-            Loading Dashboard...
-          </p>
-        </main>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      className="min-h-screen bg-[#EFF6FF] flex"
+    >
       <CounselorSidebar user={user} />
+      <Navbar />
 
-      <main className="flex-1 ml-[280px] px-10 py-8 overflow-y-auto">
-        <div className="mb-8 border-b-2 border-slate-200 pb-6 flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">
-              Counselor Workspace
-            </h2>
-            <p className="text-gray-500">
-              Manage your appointments and support your students.
-            </p>
-          </div>
-          <Navbar />
-        </div>
-
-        <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-3 gap-5">
+      <main
+        className="flex-1 ml-[260px] overflow-y-auto"
+        style={{
+          paddingTop: "calc(72px + 2.5rem)",
+          paddingBottom: "2.5rem",
+          paddingLeft: "2.5rem",
+          paddingRight: "2.5rem",
+        }}
+      >
+        <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-3 gap-6">
             <PendingCountCard />
             <AverageRatingCard />
             <CounselorNextSessionCard />
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
-            <div className="px-6 pt-5 pb-2 border-b border-slate-100">
-              <p className="text-xs font-bold tracking-widest uppercase text-slate-400">
-                Session Completion Rate
-              </p>
+          <div className="bg-white border border-[#DBEAFE]">
+            <div className="px-6 py-5 border-b border-[#DBEAFE] flex items-center justify-between">
+              <div>
+                <p className="text-[17px] font-bold text-[#0F172A] tracking-tight">
+                  Session Completion Rate
+                </p>
+                <p className="text-[13px] text-[#94A3B8] mt-0.5">
+                  Sessions completed and new student registrations
+                </p>
+              </div>
+
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 bg-[#1D4ED8] inline-block" />
+                  <span className="text-[12px] font-semibold text-[#9CA3AF]">
+                    Completed
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={prevYear}
+                    className="w-7 h-7 flex items-center justify-center border border-[#DBEAFE] bg-[#F8FAFF] hover:bg-[#EFF6FF] text-[#2563EB] transition-colors"
+                  >
+                    <ChevronLeft size={14} strokeWidth={2.5} />
+                  </button>
+                  <span className="text-[14px] font-bold text-[#0F172A] min-w-[88px] text-center">
+                    {selectedYear}
+                  </span>
+                  <button
+                    onClick={nextYear}
+                    className="w-7 h-7 flex items-center justify-center border border-[#DBEAFE] bg-[#F8FAFF] hover:bg-[#EFF6FF] text-[#2563EB] transition-colors"
+                  >
+                    <ChevronRight size={14} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
             </div>
             <div className="p-6">
-              <SessionCompletionChart />
+              <div style={{ width: "100%", height: "210px" }}>
+                <SessionCompletionChart selectedYear={selectedYear} />
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
-            <div className="px-6 pt-5 pb-2 border-b border-slate-100">
-              <p className="text-xs font-bold tracking-widest uppercase text-slate-400">
-                Recent Community Activity
-              </p>
+          <div className="bg-white border border-[#DBEAFE]">
+            <div className="px-6 py-5 border-b border-[#DBEAFE] flex items-center justify-between">
+              <div>
+                <p className="text-[17px] font-bold text-[#0F172A] tracking-tight">
+                  Recent Community Activity
+                </p>
+                <p className="text-[13px] text-[#94A3B8] mt-0.5">
+                  Latest posts and discussions from students
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/community-forum")}
+                className="flex items-center gap-1.5 text-[13px] font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors shrink-0"
+              >
+                View all posts
+                <ArrowRight size={14} strokeWidth={2.5} />
+              </button>
             </div>
             <div className="p-6">
               <RecentActivityCard />
@@ -73,6 +114,14 @@ const CounselorDashboard = () => {
         </div>
       </main>
     </div>
+  );
+};
+
+const CounselorDashboard = () => {
+  return (
+    <CounselorDashboardProvider>
+      <CounselorDashboardInner />
+    </CounselorDashboardProvider>
   );
 };
 

@@ -1,30 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Clock, ArrowRight } from "lucide-react";
-import API from "../../api/axios";
+import { useCounselorDashboard } from "../../hooks/counselorDashboard/useCounselorDashboard";
 
 const PendingCountCard = () => {
-  const [count, setCount] = useState(0);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchPending = async () => {
-      try {
-        const token = sessionStorage.getItem("token");
-        const res = await API.get("/appointments/pending", {
-          headers: { Authorization: "Bearer " + token },
-        });
-        setCount(res.data.length);
-      } catch (err) {}
-      setLoading(false);
-    };
-    fetchPending();
-  }, []);
+  const { pendingCount, loading } = useCounselorDashboard();
 
   let displayCount = "—";
   if (!loading) {
-    displayCount = count < 10 ? "0" + count : "" + count;
+    if (pendingCount < 10) {
+      displayCount = "0" + pendingCount;
+    } else {
+      displayCount = "" + pendingCount;
+    }
   }
 
   function handleClick() {
@@ -32,28 +21,33 @@ const PendingCountCard = () => {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200">
+    <div
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      className="bg-white border border-[#DBEAFE] p-6"
+    >
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-          <Clock size={18} className="text-amber-600" />
+        <div className="w-11 h-11 bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+          <Clock size={20} className="text-amber-600" />
         </div>
         <div>
-          <p className="text-[11px] font-semibold tracking-widest uppercase text-slate-400">
+          <p className="text-[12px] font-semibold tracking-widest uppercase text-[#94A3B8]">
             Pending Requests
           </p>
-          <p className="text-3xl font-black tracking-tight leading-tight text-amber-600">
+          <p className="text-[34px] font-bold tracking-tight leading-tight text-amber-600">
             {displayCount}
           </p>
         </div>
       </div>
-      <p className="text-xs text-slate-400 font-medium border-t border-slate-100 pt-4 mb-4">
+
+      <p className="text-[13px] text-[#94A3B8] font-medium border-t border-[#DBEAFE] pt-4 mb-5">
         Waiting for your review
       </p>
+
       <button
         onClick={handleClick}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-colors duration-150 flex items-center justify-center gap-2"
+        className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white py-3 text-[14px] font-semibold tracking-wide transition-colors duration-150 flex items-center justify-center gap-2"
       >
-        Review Now <ArrowRight size={14} />
+        Review Now <ArrowRight size={15} />
       </button>
     </div>
   );

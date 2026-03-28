@@ -1,26 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, ArrowRight } from "lucide-react";
-import API from "../../api/axios";
+import { useCounselorDashboard } from "../../hooks/counselorDashboard/useCounselorDashboard";
 
 const AverageRatingCard = () => {
-  const [ratingData, setRatingData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchRatings = async () => {
-      try {
-        const token = sessionStorage.getItem("token");
-        const res = await API.get("/ratings/my-ratings", {
-          headers: { Authorization: "Bearer " + token },
-        });
-        setRatingData(res.data);
-      } catch (err) {}
-      setLoading(false);
-    };
-    fetchRatings();
-  }, []);
+  const { ratingData, loading } = useCounselorDashboard();
 
   let displayRating = "—";
   let displayTotal = "No ratings yet";
@@ -39,30 +24,41 @@ const AverageRatingCard = () => {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:border-slate-300 transition-all duration-200">
+    <div
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      className="bg-white border border-[#DBEAFE] p-6"
+    >
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center shrink-0">
-          <Star size={18} className="text-yellow-500" fill="#eab308" />
+        <div className="w-11 h-11 bg-yellow-50 border border-yellow-100 flex items-center justify-center shrink-0">
+          <Star size={20} className="text-yellow-500" fill="#EAB308" />
         </div>
         <div>
-          <p className="text-[11px] font-semibold tracking-widest uppercase text-slate-400">
+          <p className="text-[12px] font-semibold tracking-widest uppercase text-[#94A3B8]">
             Average Rating
           </p>
-          <p className="text-3xl font-black tracking-tight leading-tight text-slate-800">
+          <p className="text-[34px] font-bold tracking-tight leading-tight text-[#0F172A]">
             {displayRating}
           </p>
         </div>
       </div>
 
-      <div className="border-t border-slate-100 pt-4 flex items-center justify-between mb-5">
-        <p className="text-xs text-slate-400 font-medium">{displayTotal}</p>
+      <div className="border-t border-[#DBEAFE] pt-4 flex items-center justify-between mb-5">
+        <p className="text-[13px] text-[#94A3B8] font-medium">{displayTotal}</p>
         <div className="flex gap-0.5">
           {stars.map(function (s) {
-            const filled = s <= filledCount;
-            const fillColor = filled ? "#facc15" : "none";
-            const starClass = filled ? "text-yellow-400" : "text-slate-200";
+            let starClass = "text-[#E2E8F0]";
+            let starFill = "none";
+            if (s <= filledCount) {
+              starClass = "text-yellow-400";
+              starFill = "#FACC15";
+            }
             return (
-              <Star key={s} size={13} className={starClass} fill={fillColor} />
+              <Star
+                key={s}
+                size={15}
+                className={starClass}
+                fill={starFill}
+              />
             );
           })}
         </div>
@@ -70,9 +66,9 @@ const AverageRatingCard = () => {
 
       <button
         onClick={handleClick}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-colors duration-150 flex items-center justify-center gap-2"
+        className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white py-3 text-[14px] font-semibold tracking-wide transition-colors duration-150 flex items-center justify-center gap-2"
       >
-        View Ratings <ArrowRight size={14} />
+        View Ratings <ArrowRight size={15} />
       </button>
     </div>
   );

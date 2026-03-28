@@ -1,0 +1,1 @@
+export { useAdminDashboardContext as useadminDashboard } from "../../context/adminDashboard/adminDashboardContext";

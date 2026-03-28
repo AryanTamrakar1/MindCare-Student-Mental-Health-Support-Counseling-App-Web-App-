@@ -1,0 +1,1 @@
+export { useMoodScoreContext as useMoodScore } from "../../context/studentDashboard/MoodScoreContext";

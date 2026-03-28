@@ -1,6 +1,5 @@
-import { useState, useEffect, useContext } from "react";
+import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import API from "../api/axios";
 import AdminSidebar from "../components/Sidebars/AdminSidebar";
 import Navbar from "../components/Navbar";
 import OverviewCards from "../components/analytics/OverviewCards";
@@ -9,106 +8,40 @@ import MoodChart from "../components/analytics/MoodChart";
 import ForumChart from "../components/analytics/ForumChart";
 import CounselorTable from "../components/analytics/CounselorTable";
 import { Download } from "lucide-react";
+import { AdminAnalyticsProvider } from "../context/analytics/adminAnalyticsContext";
+import { useadminAnalytics } from "../hooks/analytics/useadminAnalytics";
 
-const AdminAnalytics = () => {
+const AdminAnalyticsInner = () => {
   const { user } = useContext(AuthContext);
-  const [overview, setOverview] = useState(null);
-  const [sessionData, setSessionData] = useState(null);
-  const [userData, setUserData] = useState(null);
-  const [forumData, setForumData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { overview, sessionData, userData, forumData, handleDownload } =
+    useadminAnalytics();
 
-  useEffect(() => {
-    fetchAllData();
-  }, []);
-
-  const fetchAllData = async () => {
-    try {
-      const token = sessionStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const overviewRes = await API.get("/analytics/overview", { headers });
-      const sessionRes = await API.get("/analytics/sessions", { headers });
-      const userRes = await API.get("/analytics/users", { headers });
-      const forumRes = await API.get("/analytics/forum", { headers });
-
-      setOverview(overviewRes.data);
-      setSessionData(sessionRes.data);
-      setUserData(userRes.data);
-      setForumData(forumRes.data);
-    } catch (error) {
-      console.log("Error fetching analytics:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDownload = () => {
-    const token = sessionStorage.getItem("token");
-    window.open(
-      `http://127.0.0.1:5050/api/analytics/report/download?format=pdf&token=${token}`,
-      "_blank",
-    );
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex">
-        <AdminSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-            Loading Analytics...
-          </p>
-        </main>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] flex">
+    <div
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      className="min-h-screen bg-[#EBF3FF] flex"
+    >
+      <Navbar />
       <AdminSidebar user={user} />
+      <main className="flex-1 ml-[260px] pt-[72px] min-h-screen">
+        <div className="px-8 py-8 flex flex-col gap-6">
+          {overview && <OverviewCards data={overview} />}
 
-      <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
-        <div className="mb-8 border-b-2 border-slate-200 pb-6 flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">
-              Platform Analytics
-            </h2>
-            <p className="text-gray-500">
-              Overview of platform activity and performance.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-black rounded-xl hover:bg-indigo-700 transition"
-            >
-              <Download size={14} />
-              DOWNLOAD PDF
-            </button>
-            <Navbar />
-          </div>
-        </div>
-
-        {overview && <OverviewCards data={overview} />}
-
-        <div className="flex gap-6 mb-6 items-stretch">
-          <div className="flex-1">
+          <div className="grid grid-cols-2 gap-6 items-stretch">
             {sessionData && (
               <SessionChart
                 monthlyData={sessionData.monthlyData}
                 statusBreakdown={sessionData.statusBreakdown}
               />
             )}
-          </div>
-          <div className="flex-1">
             {userData && <MoodChart moodBreakdown={userData.moodBreakdown} />}
           </div>
-        </div>
 
-        <div className="flex gap-6 items-stretch">
-          <div className="flex-1">
+          <div className="grid grid-cols-2 gap-6 items-stretch">
             {forumData && (
               <ForumChart
                 topicData={forumData.topicData}
@@ -116,15 +49,43 @@ const AdminAnalytics = () => {
                 totalReplies={forumData.totalReplies}
               />
             )}
-          </div>
-          <div className="flex-1">
             {userData && (
-              <CounselorTable counselorStats={userData.counselorStats} />
+              <div className="flex flex-col gap-6">
+                <CounselorTable counselorStats={userData.counselorStats} />
+                <div className="bg-white border border-[#DBEAFE] overflow-hidden">
+                  <div className="px-7 py-6">
+                    <p className="text-[16px] font-semibold text-[#111827]">
+                      Export Report
+                    </p>
+                    <p className="text-[13px] text-[#6B7280] mt-0.5">
+                      Download the full platform analytics as a PDF
+                    </p>
+                  </div>
+                  <div className="h-px w-full bg-[#F1F5F9]" />
+                  <div className="px-7 py-6">
+                    <button
+                      onClick={handleDownload}
+                      className="flex items-center justify-center gap-2.5 w-full py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-semibold transition-colors"
+                    >
+                      <Download size={16} strokeWidth={2} />
+                      Download Analytics PDF
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
       </main>
     </div>
+  );
+};
+
+const AdminAnalytics = () => {
+  return (
+    <AdminAnalyticsProvider>
+      <AdminAnalyticsInner />
+    </AdminAnalyticsProvider>
   );
 };
 

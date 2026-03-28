@@ -7,7 +7,7 @@ const getPendingUsers = async (req, res) => {
         const pendingUsers = await User.find({ 
             role: 'Counselor', 
             status: 'Pending' 
-        });
+        }).sort({ createdAt: -1 });
         res.json(pendingUsers);
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
@@ -17,7 +17,7 @@ const getPendingUsers = async (req, res) => {
 // Get ALL Users (Students and Counselors)
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({ role: { $ne: 'Admin' } });
+        const users = await User.find({ role: { $ne: 'Admin' } }).sort({ createdAt: -1 });
         res.json(users);
     } catch (error) {
         res.status(500).json({ message: "Error fetching users" });

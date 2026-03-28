@@ -61,7 +61,18 @@ const getOverview = async (req, res) => {
 
 const getSessionAnalytics = async (req, res) => {
   try {
-    const allAppointments = await Appointment.find();
+    const year = parseInt(req.query.year) || new Date().getFullYear();
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year + 1, 0, 1);
+
+    const allAppointments = await Appointment.find({
+      createdAt: { $gte: startDate, $lt: endDate },
+    });
+
+    const allStudents = await User.find({
+      role: "Student",
+      createdAt: { $gte: startDate, $lt: endDate },
+    });
 
     let completed = 0;
     let approved = 0;
@@ -71,43 +82,27 @@ const getSessionAnalytics = async (req, res) => {
 
     for (let i = 0; i < allAppointments.length; i++) {
       const status = allAppointments[i].status;
-      if (status === "Completed") {
-        completed = completed + 1;
-      } else if (status === "Approved") {
-        approved = approved + 1;
-      } else if (status === "Declined") {
-        declined = declined + 1;
-      } else if (status === "Pending") {
-        pending = pending + 1;
-      } else if (status === "Missed") {
-        missed = missed + 1;
-      }
+      if (status === "Completed") completed++;
+      else if (status === "Approved") approved++;
+      else if (status === "Declined") declined++;
+      else if (status === "Pending") pending++;
+      else if (status === "Missed") missed++;
     }
 
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const monthlyCounts = [];
     for (let m = 0; m < 12; m++) {
-      monthlyCounts.push({ month: monthNames[m], sessions: 0 });
+      monthlyCounts.push({ month: monthNames[m], sessions: 0, students: 0 });
     }
 
     for (let i = 0; i < allAppointments.length; i++) {
-      const date = new Date(allAppointments[i].createdAt);
-      const monthIndex = date.getMonth();
-      monthlyCounts[monthIndex].sessions =
-        monthlyCounts[monthIndex].sessions + 1;
+      const monthIndex = new Date(allAppointments[i].createdAt).getMonth();
+      monthlyCounts[monthIndex].sessions++;
+    }
+
+    for (let i = 0; i < allStudents.length; i++) {
+      const monthIndex = new Date(allStudents[i].createdAt).getMonth();
+      monthlyCounts[monthIndex].students++;
     }
 
     res.status(200).json({

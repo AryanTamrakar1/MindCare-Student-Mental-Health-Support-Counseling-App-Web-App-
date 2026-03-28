@@ -1,79 +1,32 @@
 import {
-  Users,
-  UserCheck,
-  CalendarCheck,
-  FileText,
-  MessageSquare,
-  Star,
+  Users, UserCheck, CalendarCheck, FileText, MessageSquare, Star,
 } from "lucide-react";
 
 const cards = [
-  {
-    key: "totalStudents",
-    label: "Total Students",
-    icon: Users,
-    color: "bg-blue-50",
-    iconColor: "text-blue-600",
-  },
-  {
-    key: "totalCounselors",
-    label: "Approved Counselors",
-    icon: UserCheck,
-    color: "bg-green-50",
-    iconColor: "text-green-600",
-  },
-  {
-    key: "totalSessions",
-    label: "Completed Sessions",
-    icon: CalendarCheck,
-    color: "bg-indigo-50",
-    iconColor: "text-indigo-600",
-  },
-  {
-    key: "totalPosts",
-    label: "Forum Posts",
-    icon: FileText,
-    color: "bg-yellow-50",
-    iconColor: "text-yellow-600",
-  },
-  {
-    key: "totalReplies",
-    label: "Forum Replies",
-    icon: MessageSquare,
-    color: "bg-pink-50",
-    iconColor: "text-pink-600",
-  },
-  {
-    key: "averageRating",
-    label: "Avg Counselor Rating",
-    icon: Star,
-    color: "bg-orange-50",
-    iconColor: "text-orange-500",
-  },
+  { key: "totalStudents",   label: "Total Students",        icon: Users,         bg: "bg-blue-50", border: "border-blue-300", iconColor: "text-blue-600"  },
+  { key: "totalCounselors", label: "Approved Counselors",   icon: UserCheck,     bg: "bg-green-50", border: "border-green-300", iconColor: "text-green-600"  },
+  { key: "totalSessions",   label: "Completed Sessions",    icon: CalendarCheck, bg: "bg-blue-50", border: "border-blue-300", iconColor: "text-blue-600"  },
+  { key: "totalPosts",      label: "Forum Posts",           icon: FileText,      bg: "bg-yellow-50", border: "border-yellow-300", iconColor: "text-yellow-600"  },
+  { key: "totalReplies",    label: "Forum Replies",         icon: MessageSquare, bg: "bg-red-50", border: "border-red-300", iconColor: "text-red-600"  },
+  { key: "averageRating",   label: "Avg Counselor Rating",  icon: Star,          bg: "bg-orange-50", border: "border-orange-300", iconColor: "text-orange-600"  },
 ];
 
 const OverviewCards = ({ data }) => {
   return (
-    <div className="grid grid-cols-3 gap-4 mb-8">
+    <div className="grid grid-cols-3 gap-5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {cards.map((card) => {
         const Icon = card.icon;
         return (
           <div
             key={card.key}
-            className="bg-white rounded-2xl border border-gray-200 p-5 flex items-center gap-4 shadow-sm"
+            className="bg-white border border-blue-200 px-6 py-5 flex items-center gap-5"
           >
-            <div
-              className={`w-12 h-12 ${card.color} rounded-xl flex items-center justify-center`}
-            >
-              <Icon size={22} className={card.iconColor} />
+            <div className={`w-12 h-12 ${card.bg} border ${card.border} flex items-center justify-center flex-shrink-0`}>
+              <Icon size={22} className={card.iconColor} strokeWidth={2} />
             </div>
             <div>
-              <p className="text-2xl font-black text-gray-800">
-                {data[card.key]}
-              </p>
-              <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                {card.label}
-              </p>
+              <p className="text-3xl font-bold text-gray-900 leading-none">{data[card.key]}</p>
+              <p className="text-sm font-medium text-gray-500 mt-1.5">{card.label}</p>
             </div>
           </div>
         );

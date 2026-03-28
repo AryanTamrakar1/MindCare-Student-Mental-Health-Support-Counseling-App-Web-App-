@@ -1,118 +1,108 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LabelList,
-  Cell,
-} from "recharts";
-import { TrendingUp, Minus, TrendingDown } from "lucide-react";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+
+const MOOD_CONFIG = [
+  { key: "positive", label: "Positive", color: "#1E3A8A" },
+  { key: "neutral",  label: "Neutral",  color: "#2563EB" },
+  { key: "negative", label: "Negative", color: "#93C5FD" },
+];
+
+const CustomTooltip = ({ active, payload }) => {
+  if (!active || !payload || payload.length === 0) return null;
+  return (
+    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="bg-white border border-slate-200 px-4 py-3 shadow-lg">
+      <p className="text-sm font-semibold text-gray-900">{payload[0].name}</p>
+      <p className="text-2xl font-bold mt-0.5" style={{ color: payload[0].payload.color }}>{payload[0].value}</p>
+      <p className="text-xs text-gray-500">students</p>
+    </div>
+  );
+};
 
 const MoodChart = ({ moodBreakdown }) => {
-  const chartData = [
-    { label: "Positive", value: moodBreakdown.positive },
-    { label: "Neutral", value: moodBreakdown.neutral },
-    { label: "Negative", value: moodBreakdown.negative },
-  ];
+  const chartData = MOOD_CONFIG.map(({ key, label, color }) => ({
+    name: label,
+    value: moodBreakdown[key] || 0,
+    color,
+  }));
 
-  const statusItems = [
-    {
-      label: "Positive (Good)",
-      value: moodBreakdown.positive,
-      color: "bg-indigo-500",
-      icon: TrendingUp,
-    },
-    {
-      label: "Neutral (Average)",
-      value: moodBreakdown.neutral,
-      color: "bg-yellow-400",
-      icon: Minus,
-    },
-    {
-      label: "Negative",
-      value: moodBreakdown.negative,
-      color: "bg-red-400",
-      icon: TrendingDown,
-    },
-  ];
+  let total = 0;
+  for (let i = 0; i < chartData.length; i++) {
+    total = total + chartData[i].value;
+  }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 h-full flex flex-col">
-      <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-1">
-        Student Mood Breakdown
-      </p>
-      <p className="text-gray-400 text-xs mb-4">
-        Based on all weekly quiz submissions
-      </p>
-      <div className="border-b border-gray-100 mb-5"></div>
+    <div className="bg-white border border-blue-200 overflow-hidden flex flex-col h-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
-      <div className="flex-1">
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart
-            data={chartData}
-            margin={{ top: 10, right: 20, left: 10, bottom: 30 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 11, fontWeight: "bold" }}
-              label={{
-                value: "Mood Category",
-                position: "insideBottom",
-                offset: -15,
-                fontSize: 11,
-                fill: "#6b7280",
-              }}
-            />
-            <YAxis
-              tick={{ fontSize: 11 }}
-              allowDecimals={false}
-              label={{
-                value: "Students",
-                angle: -90,
-                position: "insideLeft",
-                offset: 10,
-                fontSize: 11,
-                fill: "#6b7280",
-              }}
-            />
-            <Tooltip />
-            <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-              <LabelList
-                dataKey="value"
-                position="top"
-                style={{ fontSize: 11, fontWeight: "bold", fill: "#374151" }}
-              />
-              {chartData.map((entry, index) => {
-                const colors = ["#4f46e5", "#f59e0b", "#ef4444"];
-                return <Cell key={index} fill={colors[index]} />;
-              })}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="border-t border-gray-100 mt-5 pt-4">
-        <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-3">
-          Mood Breakdown
-        </p>
-        <div className="flex flex-wrap gap-3">
-          {statusItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.label} className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                <span className="text-xs font-bold text-gray-600">
-                  {item.label}: {item.value}
-                </span>
-              </div>
-            );
-          })}
+      <div className="px-8 pt-7 pb-5 flex items-start justify-between">
+        <div>
+          <p className="text-xl font-bold text-gray-900">Student Mood Breakdown</p>
+          <p className="text-sm text-gray-500 mt-1">Based on all weekly quiz submissions</p>
         </div>
+        <span className="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-300 px-3 py-1">
+          Total Students Surveyed: {total}
+        </span>
       </div>
+      <div className="h-px w-full bg-slate-100" />
+
+      <div className="grid flex-1" style={{ gridTemplateColumns: "1.2fr 1px 1fr" }}>
+
+        <div className="flex items-center justify-center p-6">
+          <ResponsiveContainer width="100%" height={310}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={75}
+                outerRadius={155}
+                paddingAngle={3}
+                dataKey="value"
+                strokeWidth={0}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={index} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-blue-200" />
+
+        <div className="flex flex-col overflow-hidden">
+          <div className="px-8 py-4 border-b border-blue-200">
+            <p className="text-sm font-bold text-gray-900 uppercase tracking-widest">
+              Mood Distribution
+            </p>
+          </div>
+          <div className="px-8 py-6 flex flex-col gap-6 justify-center flex-1">
+            {MOOD_CONFIG.map(({ key, label, color }) => {
+              const val = moodBreakdown[key] || 0;
+              const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+              return (
+                <div key={key} className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 flex-shrink-0" style={{ backgroundColor: color }} />
+                      <span className="text-sm font-semibold text-gray-700">{label}</span>
+                    </div>
+                    <span className="text-sm font-bold" style={{ color }}>{pct}%</span>
+                  </div>
+                  <div className="w-full h-3 bg-slate-100 overflow-hidden">
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{ width: `${pct}%`, background: color }}
+                    />
+                  </div>
+                  <p className="text-sm text-slate-400 font-medium">{val} students</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+
     </div>
   );
 };

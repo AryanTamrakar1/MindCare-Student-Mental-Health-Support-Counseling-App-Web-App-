@@ -2,63 +2,62 @@ import { Star } from "lucide-react";
 
 const CounselorTable = ({ counselorStats }) => {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 h-full flex flex-col">
-      <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-1">
-        Counselor Ratings
-      </p>
-      <p className="text-gray-400 text-xs mb-4">Average rating per counselor</p>
-      <div className="border-b border-gray-100 mb-5"></div>
-
-      {counselorStats.length === 0 ? (
-        <p className="text-center text-gray-400 font-bold py-8">
-          No counselor data yet.
-        </p>
-      ) : (
-        <div className="flex flex-col flex-1">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left">
-                <th className="text-[11px] font-black text-gray-400 uppercase tracking-widest pb-3">
-                  Counselor
-                </th>
-                <th className="text-[11px] font-black text-gray-400 uppercase tracking-widest pb-3">
-                  Avg Rating
-                </th>
-                <th className="text-[11px] font-black text-gray-400 uppercase tracking-widest pb-3">
-                  Total Ratings
-                </th>
-              </tr>
-            </thead>
-          </table>
-
-          <div className="overflow-y-auto" style={{ maxHeight: "260px" }}>
-            <table className="w-full">
-              <tbody>
-                {counselorStats.map((c, index) => (
-                  <tr key={index} className="border-t border-gray-100">
-                    <td className="py-3 text-sm font-bold text-gray-800">
-                      {c.name}
-                    </td>
-                    <td className="py-3">
-                      <div className="flex items-center gap-1">
-                        <Star
-                          size={14}
-                          className="text-yellow-400 fill-yellow-400"
-                        />
-                        <span className="text-sm font-black text-gray-800">
-                          {c.averageRating}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 text-sm font-bold text-gray-500">
-                      {c.totalRatings}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+    <div className="bg-white border border-blue-200 overflow-hidden" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <div className="px-8 pt-7 pb-5 flex items-start justify-between">
+        <div>
+          <p className="text-xl font-bold text-gray-900">Counselor Ratings</p>
+          <p className="text-sm text-gray-500 mt-1">Average rating per counselor</p>
         </div>
+        {counselorStats.length > 0 && (
+          <span className="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-300 px-3 py-1">
+            Total Counselors: {counselorStats.length}
+          </span>
+        )}
+      </div>
+      <div className="h-px w-full bg-slate-100" />
+
+      {counselorStats.length === 0 && (
+        <p className="text-center text-gray-400 font-medium py-10 text-base">No counselor data yet.</p>
+      )}
+
+      {counselorStats.length > 0 && (
+        <>
+          <div className="grid grid-cols-3 divide-x divide-slate-100">
+            <span className="px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-widest">Counselor</span>
+            <span className="px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-widest">Avg Rating</span>
+            <span className="px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-widest">Reviews</span>
+          </div>
+          <div className="h-px w-full bg-slate-100" />
+          <div className="overflow-y-auto" style={{ maxHeight: "252px" }}>
+            {counselorStats.map((c, index) => (
+              <div key={index} className="grid grid-cols-3 divide-x divide-slate-100 border-b border-blue-50 last:border-0 hover:bg-blue-50 transition-colors">
+                <span className="px-6 py-4 text-base font-semibold text-gray-900 truncate">{c.name}</span>
+                <div className="px-6 py-4 flex items-center gap-2">
+                  <div className="flex gap-0.5">
+                    {[1,2,3,4,5].map(i => {
+                      const roundedRating = Math.round(c.averageRating);
+                      const shouldFill = i <= roundedRating;
+                      let starClass = "fill-gray-200";
+                      if (shouldFill) {
+                        starClass = "fill-yellow-600";
+                      }
+                      return (
+                        <Star
+                          key={i}
+                          size={13}
+                          strokeWidth={0}
+                          className={starClass}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span className="text-base font-bold text-gray-900">{c.averageRating}</span>
+                </div>
+                <span className="px-6 py-4 text-base font-medium text-gray-500">{c.totalRatings}</span>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

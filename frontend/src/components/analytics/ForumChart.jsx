@@ -1,90 +1,59 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LabelList,
-} from "recharts";
-
 const ForumChart = ({ topicData, totalPosts, totalReplies }) => {
-  const statusItems = [
-    { label: "Total Posts", value: totalPosts, color: "bg-indigo-500" },
-    { label: "Total Replies", value: totalReplies, color: "bg-purple-400" },
-  ];
+  const sorted = [];
+  for (let i = 0; i < topicData.length; i++) {
+    sorted.push(topicData[i]);
+  }
+  sorted.sort((a, b) => b.count - a.count);
 
-  const chartHeight = topicData.length * 50;
+  let maxVal = 1;
+  for (let i = 0; i < sorted.length; i++) {
+    if (sorted[i].count > maxVal) {
+      maxVal = sorted[i].count;
+    }
+  }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 h-full flex flex-col">
-      <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-1">
-        Forum Analytics
-      </p>
-      <p className="text-gray-400 text-xs mb-4">Posts per category</p>
-      <div className="border-b border-gray-100 mb-5"></div>
-
-      <div className="flex-1">
-        <ResponsiveContainer width="100%" height={chartHeight}>
-          <BarChart
-            data={topicData}
-            layout="vertical"
-            margin={{ top: 10, right: 40, left: 10, bottom: 30 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis
-              type="number"
-              tick={{ fontSize: 11 }}
-              allowDecimals={false}
-              label={{
-                value: "Number of Posts",
-                position: "insideBottom",
-                offset: -15,
-                fontSize: 11,
-                fill: "#6b7280",
-              }}
-            />
-            <YAxis
-              dataKey="topic"
-              type="category"
-              tick={{ fontSize: 10, fontWeight: "bold" }}
-              width={170}
-              label={{
-                value: "Category",
-                angle: -90,
-                position: "insideLeft",
-                offset: 15,
-                fontSize: 11,
-                fill: "#6b7280",
-              }}
-            />
-            <Tooltip />
-            <Bar dataKey="count" fill="#818cf8" radius={[0, 6, 6, 0]}>
-              <LabelList
-                dataKey="count"
-                position="right"
-                style={{ fontSize: 11, fontWeight: "bold", fill: "#374151" }}
-              />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="border-t border-gray-100 mt-5 pt-4">
-        <p className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-3">
-          Forum Summary
-        </p>
-        <div className="flex flex-wrap gap-3">
-          {statusItems.map((item) => (
-            <div key={item.label} className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-              <span className="text-xs font-bold text-gray-600">
-                {item.label}: {item.value}
-              </span>
-            </div>
-          ))}
+    <div className="bg-white border border-blue-200 overflow-hidden flex flex-col h-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <div className="px-8 pt-7 pb-5 flex items-start justify-between">
+        <div>
+          <p className="text-xl font-bold text-gray-900">Forum Analytics</p>
+          <p className="text-sm text-gray-500 mt-1">Posts per topic category</p>
         </div>
+        <div className="flex gap-2">
+          <span className="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-300 px-3 py-1">Total Posts: {totalPosts}</span>
+        </div>
+      </div>
+      <div className="h-px w-full bg-slate-100" />
+
+      <div className="px-8 pt-7 pb-4 flex flex-col gap-9">
+        {sorted.map((item, index) => {
+          const pct = Math.round((item.count / maxVal) * 100);
+          let barColor = "#93C5FD";
+          if (index === 0) {
+            barColor = "#2563EB";
+          }
+          if (index === 1) {
+            barColor = "#3B82F6";
+          }
+
+          return (
+            <div key={index} className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-base font-semibold text-gray-700 leading-tight max-w-[75%]">{item.topic}</span>
+                <span className="text-base font-bold text-gray-900">{item.count}</span>
+              </div>
+              <div className="w-full bg-slate-100 h-2.5">
+                <div
+                  className="h-2.5 transition-all"
+                  style={{
+                    width: `${pct}%`,
+                    backgroundColor: barColor,
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

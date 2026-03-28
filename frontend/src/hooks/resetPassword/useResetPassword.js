@@ -1,0 +1,1 @@
+export { useResetPasswordContext as useResetPassword } from "../../context/resetPassword/ResetPasswordContext";

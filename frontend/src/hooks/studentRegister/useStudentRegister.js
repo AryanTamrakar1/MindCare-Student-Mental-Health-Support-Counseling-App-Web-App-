@@ -1,0 +1,1 @@
+export { useStudentRegisterContext as useStudentRegister } from "../../context/studentRegister/StudentRegisterContext";

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import StudentRegister from "./pages/StudentRegister";
 import CounselorRegister from "./pages/CounselorRegister";
@@ -28,6 +29,8 @@ import ResourceLibrary from "./pages/ResourceLibrary";
 import AdminResourceLibrary from "./pages/AdminResourceLibrary";
 import GamificationPage from "./pages/GamificationPage";
 import AdminAnalytics from "./pages/AdminAnalytics";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -35,7 +38,8 @@ function App() {
       <Router>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Login />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/Login" element={<Login />} />
             <Route path="/role-selection" element={<RoleSelection />} />
             <Route path="/verify-otp" element={<OTPVerification />} />
             <Route path="/register/student" element={<StudentRegister />} />
@@ -209,6 +213,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Routes>
         </AuthProvider>
       </Router>

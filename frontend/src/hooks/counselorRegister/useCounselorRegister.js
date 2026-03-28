@@ -1,0 +1,1 @@
+export { useCounselorRegisterContext as useCounselorRegister } from "../../context/counselorRegister/CounselorRegisterContext";

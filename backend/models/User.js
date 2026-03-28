@@ -35,9 +35,9 @@ const userSchema = mongoose.Schema(
 
     availability: [
       {
-        date: { type: String }, 
-        formattedDate: { type: String }, 
-        day: { type: String }, 
+        date: { type: String },
+        formattedDate: { type: String },
+        day: { type: String },
         timeSlot: { type: String },
       },
     ],
@@ -45,6 +45,9 @@ const userSchema = mongoose.Schema(
     // --- Verification System ---
     otp: { type: String },
     verificationPhoto: { type: String },
+
+    // --- Login Tracking ---
+    lastLogin: { type: Date },
   },
   { timestamps: true },
 );

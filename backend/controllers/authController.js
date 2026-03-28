@@ -4,10 +4,63 @@ const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const sendEmail = require("../utils/sendEmail");
 const { createNotification } = require("./notificationController");
+const PasswordReset = require("../models/PasswordReset");
+const crypto = require("crypto");
+const MoodQuiz = require("../models/MoodQuiz");
+const Notification = require("../models/Notification");
+
+// --- Normalize Email  ---
+const normalizeEmail = (email) => {
+  const [local, domain] = email.toLowerCase().trim().split("@");
+  if (domain === "gmail.com") return local.replace(/\./g, "") + "@" + domain;
+  return email.toLowerCase().trim();
+};
+
+function getWeekLabel(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d.setDate(diff));
+  const year = monday.getFullYear();
+  const jan4 = new Date(year, 0, 4);
+  const msPerWeek = 604800000;
+  const weekNumber = Math.ceil(
+    (monday - new Date(jan4.getFullYear(), 0, 4)) / msPerWeek + 1,
+  );
+  return year + "-W" + String(weekNumber).padStart(2, "0");
+}
+
+async function sendQuizNotificationIfNeeded(userId) {
+  const weekLabel = getWeekLabel(new Date());
+  const alreadySubmitted = await MoodQuiz.findOne({ student: userId, weekLabel });
+  if (alreadySubmitted) return;
+
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(now.setDate(diff));
+  monday.setHours(0, 0, 0, 0);
+
+  const alreadyNotified = await Notification.findOne({
+    userId: userId,
+    type: "quiz_reminder",
+    createdAt: { $gte: monday },
+  });
+  if (alreadyNotified) return;
+
+  await createNotification(
+    userId,
+    "Weekly Mood Quiz is Ready!",
+    "You haven't completed this week's mood quiz yet. Take a few minutes to check in with yourself.",
+    "quiz_reminder",
+    "/mood-quiz",
+  );
+}
 
 // --- Register ---
 const registerUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, password, role } = req.body;
+  const email = normalizeEmail(req.body.email);
 
   try {
     const userExists = await User.findOne({ email });
@@ -33,6 +86,8 @@ const registerUser = async (req, res) => {
       status: status,
       otp: otp,
       verificationPhoto: verificationPhoto,
+      studentId: req.body.studentId,
+      licenseNo: req.body.licenseNo,
       profTitle: req.body.profTitle,
       specialization: req.body.specialization,
       bio: req.body.bio,
@@ -78,7 +133,8 @@ const registerUser = async (req, res) => {
 
 // --- Verify OTP ---
 const verifyOTP = async (req, res) => {
-  const { email, otp } = req.body;
+  const { otp } = req.body;
+  const email = normalizeEmail(req.body.email);
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -86,10 +142,37 @@ const verifyOTP = async (req, res) => {
     if (user.otp === otp) {
       user.status = "Approved";
       user.otp = null;
+      user.lastLogin = new Date();
       await user.save();
+
+      const token = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" },
+      );
+
+      if (user.role === "Student") {
+        await sendQuizNotificationIfNeeded(user._id);
+      }
+
       res.json({
-        message: "OTP Verified! You can now login.",
-        status: user.status,
+        message: "OTP Verified! Redirecting to dashboard...",
+        token,
+        user: {
+          _id: user._id,
+          name: user.name,
+          role: user.role,
+          status: user.status,
+          email: user.email,
+          phone: user.phone,
+          dob: user.dob,
+          gender: user.gender,
+          studentId: user.studentId,
+          licenseNo: user.licenseNo,
+          verificationPhoto: user.verificationPhoto,
+          createdAt: user.createdAt,
+          lastLogin: user.lastLogin,
+        },
       });
     } else {
       res.status(400).json({ message: "Invalid OTP code" });
@@ -101,7 +184,7 @@ const verifyOTP = async (req, res) => {
 
 // --- Resend OTP ---
 const resendOTP = async (req, res) => {
-  const { email } = req.body;
+  const email = normalizeEmail(req.body.email);
   try {
     const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
     const user = await User.findOne({ email });
@@ -123,7 +206,8 @@ const resendOTP = async (req, res) => {
 
 // --- Login ---
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { password } = req.body;
+  const email = normalizeEmail(req.body.email);
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid Email" });
@@ -139,11 +223,20 @@ const loginUser = async (req, res) => {
       return res.status(403).json({ message: blockMsg });
     }
 
+    // --- Track Last Login ---
+    user.lastLogin = new Date();
+    await user.save();
+
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" },
     );
+
+    if (user.role === "Student") {
+      await sendQuizNotificationIfNeeded(user._id);
+    }
+
     res.json({
       message: "Login successful!",
       token,
@@ -153,7 +246,14 @@ const loginUser = async (req, res) => {
         role: user.role,
         status: user.status,
         email: user.email,
+        phone: user.phone,
+        dob: user.dob,
+        gender: user.gender,
+        studentId: user.studentId,
+        licenseNo: user.licenseNo,
         verificationPhoto: user.verificationPhoto,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin,
       },
     });
   } catch (error) {
@@ -170,38 +270,55 @@ const googleLogin = async (req, res) => {
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
-    const { email, name } = ticket.getPayload();
+    const payload = ticket.getPayload();
+    const email = normalizeEmail(payload.email);
+    const name = payload.name;
+
     let user = await User.findOne({ email });
 
     if (!user) {
-      const randomPassword = Math.random().toString(36);
-      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      res.json({
+        isNewUser: true,
+        googleData: {
+          email: email,
+          name: name,
+        },
+      });
+    } else {
+      // --- Track Last Login ---
+      user.lastLogin = new Date();
+      await user.save();
 
-      user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        role: "Pending_Selection",
-        status: "Approved",
-        verificationPhoto: null,
+      const jwtToken = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" },
+      );
+
+      if (user.role === "Student") {
+        await sendQuizNotificationIfNeeded(user._id);
+      }
+
+      res.json({
+        isNewUser: false,
+        token: jwtToken,
+        user: {
+          _id: user._id,
+          name: user.name,
+          role: user.role,
+          status: user.status,
+          email: user.email,
+          phone: user.phone,
+          dob: user.dob,
+          gender: user.gender,
+          studentId: user.studentId,
+          licenseNo: user.licenseNo,
+          verificationPhoto: user.verificationPhoto,
+          createdAt: user.createdAt,
+          lastLogin: user.lastLogin,
+        },
       });
     }
-
-    const jwtToken = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" },
-    );
-    res.json({
-      token: jwtToken,
-      user: {
-        _id: user._id,
-        name: user.name,
-        role: user.role,
-        status: user.status,
-        email: user.email,
-      },
-    });
   } catch (error) {
     res.status(400).json({ message: "Invalid Google Token" });
   }
@@ -209,12 +326,15 @@ const googleLogin = async (req, res) => {
 
 // --- Update Role ---
 const updateRole = async (req, res) => {
-  const { email, role } = req.body;
+  const { role } = req.body;
+  const email = normalizeEmail(req.body.email);
   try {
     const status = role === "Counselor" ? "Pending" : "Approved";
     const updateData = {
       role: role,
       status: status,
+      studentId: req.body.studentId,
+      licenseNo: req.body.licenseNo,
       profTitle: req.body.profTitle,
       specialization: req.body.specialization,
       bio: req.body.bio,
@@ -232,16 +352,15 @@ const updateRole = async (req, res) => {
 
     user.role = updateData.role;
     user.status = updateData.status;
+    if (updateData.studentId) user.studentId = updateData.studentId;
+    if (updateData.licenseNo) user.licenseNo = updateData.licenseNo;
     if (updateData.profTitle) user.profTitle = updateData.profTitle;
-    if (updateData.specialization)
-      user.specialization = updateData.specialization;
+    if (updateData.specialization) user.specialization = updateData.specialization;
     if (updateData.bio) user.bio = updateData.bio;
-    if (updateData.qualifications)
-      user.qualifications = updateData.qualifications;
+    if (updateData.qualifications) user.qualifications = updateData.qualifications;
     if (updateData.experience) user.experience = updateData.experience;
     if (updateData.availability) user.availability = updateData.availability;
-    if (updateData.verificationPhoto)
-      user.verificationPhoto = updateData.verificationPhoto;
+    if (updateData.verificationPhoto) user.verificationPhoto = updateData.verificationPhoto;
 
     await user.save();
 
@@ -253,18 +372,23 @@ const updateRole = async (req, res) => {
 
 // --- Update Profile ---
 const updateProfile = async (req, res) => {
-  const { userId, name, currentPassword, newPassword } = req.body;
+  const { userId, name, phone, gender, dob, studentId, licenseNo, currentPassword, newPassword } = req.body;
 
   try {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
+
     if (name) user.name = name;
+    if (phone) user.phone = phone;
+    if (gender) user.gender = gender;
+    if (dob) user.dob = dob;
+    if (studentId) user.studentId = studentId;
+    if (licenseNo) user.licenseNo = licenseNo;
+
     if (currentPassword && newPassword) {
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
-        return res
-          .status(400)
-          .json({ message: "Current password is incorrect" });
+        return res.status(400).json({ message: "Current password is incorrect" });
       }
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(newPassword, salt);
@@ -274,10 +398,19 @@ const updateProfile = async (req, res) => {
     res.json({
       message: "Profile updated successfully!",
       user: {
+        _id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
+        gender: user.gender,
+        dob: user.dob,
+        studentId: user.studentId,
+        licenseNo: user.licenseNo,
         role: user.role,
         status: user.status,
+        verificationPhoto: user.verificationPhoto,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin,
       },
     });
   } catch (error) {
@@ -330,6 +463,22 @@ const manageUserStatus = async (req, res) => {
       console.error("Admin Action Email Error:", err),
     );
 
+    const notificationTitle =
+      status === "Approved" ? "Application Approved! 🎉" : "Application Decision";
+
+    const notificationMessage =
+      status === "Approved"
+        ? "Congratulations! Your counselor application has been approved. You can now log in and start offering sessions."
+        : "Your counselor application was not approved at this time. You can reapply or contact admin for more information.";
+
+    await createNotification(
+      userId,
+      notificationTitle,
+      notificationMessage,
+      status === "Approved" ? "booking_approved" : "general",
+      status === "Approved" ? "/dashboard" : "/counselors",
+    );
+
     res.json({ message: `Account has been ${status} and user notified.` });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -348,7 +497,6 @@ const protect = async (req, res, next) => {
       const foundUser = await User.findById(decoded.id);
       foundUser.password = undefined;
       req.user = foundUser;
-
       next();
     } catch (error) {
       res.status(401).json({ message: "Not authorized, token failed" });
@@ -424,19 +572,11 @@ const editCounselorProfile = async (req, res) => {
 
     if (req.user.role !== "Counselor") {
       return res.status(403).json({
-        message:
-          "Access denied. Only counselors can update professional profiles.",
+        message: "Access denied. Only counselors can update professional profiles.",
       });
     }
 
-    const {
-      profTitle,
-      specialization,
-      bio,
-      qualifications,
-      experience,
-      availability,
-    } = req.body;
+    const { profTitle, specialization, bio, qualifications, experience, availability } = req.body;
 
     const updatedCounselor = await User.findById(counselorId);
 
@@ -453,12 +593,94 @@ const editCounselorProfile = async (req, res) => {
 
     await updatedCounselor.save();
 
-    res.json({
-      message: "Professional profile updated!",
-      user: updatedCounselor,
-    });
+    res.json({ message: "Professional profile updated!", user: updatedCounselor });
   } catch (error) {
     res.status(500).json({ message: "Error updating counselor profile" });
+  }
+};
+
+// --- Forgot Password ---
+const forgotPassword = async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000);
+
+    await PasswordReset.deleteMany({ email });
+
+    await PasswordReset.create({ email, token: resetToken, expiresAt });
+
+    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+
+    await sendEmail(
+      email,
+      "Password Reset Request",
+      `Hello ${user.name},\n\nClick the link below to reset your password:\n\n${resetLink}\n\nThis link will expire in 1 hour.\n\nIf you did not request this, please ignore this email.`,
+    );
+
+    res.json({ message: "Password reset link sent to your email!" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// --- Reset Password ---
+const resetPassword = async (req, res) => {
+  const { token, newPassword, confirmPassword } = req.body;
+
+  try {
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    const resetRecord = await PasswordReset.findOne({ token });
+
+    if (!resetRecord) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    if (resetRecord.expiresAt < new Date()) {
+      await PasswordReset.deleteOne({ token });
+      return res.status(400).json({ message: "Token has expired" });
+    }
+
+    const user = await User.findOne({ email: resetRecord.email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    await PasswordReset.deleteOne({ token });
+
+    res.json({ message: "Password reset successfully! You can now login." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// --- Verify Reset Token ---
+const verifyResetToken = async (req, res) => {
+  const { token } = req.params;
+
+  try {
+    const resetRecord = await PasswordReset.findOne({ token });
+
+    if (!resetRecord) {
+      return res.status(400).json({ message: "Invalid token" });
+    }
+
+    if (resetRecord.expiresAt < new Date()) {
+      await PasswordReset.deleteOne({ token });
+      return res.status(400).json({ message: "Token has expired" });
+    }
+
+    res.json({ message: "Token is valid", email: resetRecord.email });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -476,4 +698,7 @@ module.exports = {
   getCounselors,
   searchCounselors,
   editCounselorProfile,
+  forgotPassword,
+  resetPassword,
+  verifyResetToken,
 };

@@ -1,0 +1,1 @@
+export { useForgotPasswordContext as useForgotPassword } from "../../context/forgotPassword/ForgotPasswordContext";

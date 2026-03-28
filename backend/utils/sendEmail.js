@@ -1,32 +1,23 @@
 const nodemailer = require('nodemailer');
 
 const sendEmail = async (to, subject, text) => {
-    try {
-        // Create  Connection to Gmail
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER, // Gmail from .env
-                pass: process.env.EMAIL_PASS, // Password from .env
-            },
-        });
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 
-        // The Mail Options
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: to,
-            subject: subject,
-            text: text,
-        };
+  const mailOptions = {
+    from: `"MindCare" <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    text,
+  };
 
-        await transporter.sendMail(mailOptions);
-        
-        // This is  to see if it worked in the terminal or not
-        console.log(`Email sent successfully to: ${to}`);
-        
-    } catch (error) {
-        console.error("Email Error:", error);
-    }
+  await transporter.sendMail(mailOptions); 
+  console.log(`Email sent successfully to: ${to}`);
 };
 
 module.exports = sendEmail;

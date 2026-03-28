@@ -1,23 +1,15 @@
 import React, { useState, useEffect } from "react";
-import {
-  Calendar,
-  Clock,
-  Video,
-  CheckCircle,
-  XCircle,
-  X,
-  AlertCircle,
-  Star,
-} from "lucide-react";
-import {
-  isSessionTime,
-  parseTopics,
-  parseReason,
-  fmtLong,
-} from "../../utils/studentSessions/sessionhelper";
+import { Calendar, Clock, Video, CheckCircle, XCircle, X, AlertCircle, Star } from "lucide-react";
+import { isSessionTime, parseTopics, parseReason, fmtLong } from "../../utils/sessionHelper.js";
 import axios from "../../api/axios";
+import { useStudentSessions } from "../../hooks/studentSessions/useStudentSessions";
 
-const DetailModal = ({ session, onClose, onJoin, onRate }) => {
+const DetailModal = () => {
+  const { selectedSession: session, setSelectedSession, handleJoin, setRatingSession } = useStudentSessions();
+  const onClose = () => setSelectedSession(null);
+  const onJoin = handleJoin;
+  const onRate = setRatingSession;
+
   if (!session) return null;
 
   const canJoin = isSessionTime(session.date, session.timeSlot);
@@ -41,18 +33,18 @@ const DetailModal = ({ session, onClose, onJoin, onRate }) => {
     checkRating();
   }, [session._id, session.status]);
 
-  let scColor = "text-gray-600";
-  let scBg = "bg-gray-400";
-  let scLight = "bg-gray-50 border-gray-200";
+  let scColor = "text-[#6B7280]";
+  let scBg = "bg-[#94A3B8]";
+  let scLight = "bg-[#F8FAFC] border-[#E2E8F0]";
 
   if (session.status === "Approved") {
     scColor = "text-emerald-700";
     scBg = "bg-emerald-500";
     scLight = "bg-emerald-50 border-emerald-200";
   } else if (session.status === "Completed") {
-    scColor = "text-indigo-700";
-    scBg = "bg-indigo-500";
-    scLight = "bg-indigo-50 border-indigo-200";
+    scColor = "text-[#2563EB]";
+    scBg = "bg-[#2563EB]";
+    scLight = "bg-blue-50 border-blue-200";
   } else if (session.status === "Declined") {
     scColor = "text-red-700";
     scBg = "bg-red-500";
@@ -64,12 +56,10 @@ const DetailModal = ({ session, onClose, onJoin, onRate }) => {
   }
 
   let counselorInitial = "C";
-  if (
-    session.counselorId &&
-    session.counselorId.name &&
-    session.counselorId.name.length > 0
-  ) {
-    counselorInitial = session.counselorId.name.charAt(0);
+  if (session.counselorId && session.counselorId.name) {
+    if (session.counselorId.name.length > 0) {
+      counselorInitial = session.counselorId.name.charAt(0);
+    }
   }
 
   let counselorName = "Counselor";
@@ -77,90 +67,85 @@ const DetailModal = ({ session, onClose, onJoin, onRate }) => {
     counselorName = session.counselorId.name;
   }
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-6"
-      onClick={onClose}
-    >
-      <div className="absolute inset-0 bg-black/60" />
+  let joinButtonText = "Join Meeting Now";
+  if (!canJoin) {
+    joinButtonText = "Meeting Not Started";
+  }
 
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden"
-      >
-        <div className="px-8 pt-10 pb-7 flex items-start justify-between">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl flex-shrink-0">
+  let showApproved = false;
+  if (session.status === "Approved") {
+    showApproved = true;
+  }
+
+  let showPending = false;
+  if (session.status === "Pending") {
+    showPending = true;
+  }
+
+  let showCompleted = false;
+  if (session.status === "Completed") {
+    showCompleted = true;
+  }
+
+  let showDeclined = false;
+  if (session.status === "Declined") {
+    showDeclined = true;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }} onClick={onClose}>
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+      <div onClick={(e) => e.stopPropagation()} className="relative bg-white border border-[#E2E8F0] shadow-2xl w-full max-w-2xl overflow-hidden">
+
+        <div className="px-8 pt-7 pb-6 flex items-start justify-between border-b border-[#F1F5F9]">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#2563EB] text-white flex items-center justify-center font-bold text-[18px] flex-shrink-0">
               {counselorInitial}
             </div>
             <div>
-              <h2 className="text-lg font-black text-gray-900 leading-tight">
-                {counselorName}
-              </h2>
+              <h2 className="text-[17px] font-bold text-[#111827]">{counselorName}</h2>
               <div className="flex items-center gap-3 mt-1.5">
-                <span
-                  className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider ${scLight} ${scColor}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${scBg}`} />
+                <span className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 border ${scLight} ${scColor}`}>
+                  <span className={`w-1.5 h-1.5 ${scBg}`} />
                   {session.status}
                 </span>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                  Counseling Session
-                </span>
+                <span className="text-[11px] text-[#94A3B8] font-medium uppercase tracking-widest">Counseling Session</span>
               </div>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0"
-          >
-            <X size={16} className="text-gray-500" />
+          <button onClick={onClose} className="w-8 h-8 hover:bg-[#F1F5F9] flex items-center justify-center transition flex-shrink-0">
+            <X size={15} className="text-[#6B7280]" strokeWidth={2} />
           </button>
         </div>
 
-        <div className="mx-8 border-t border-gray-100" />
-
-        <div className="px-8 py-7 grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-4 bg-gray-50 rounded-2xl px-5 py-6 border border-gray-100">
-            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Calendar size={18} className="text-indigo-600" />
+        <div className="px-8 py-6 grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-4 bg-[#F8FAFC] border border-[#E2E8F0] px-5 py-4">
+            <div className="w-9 h-9 bg-blue-50 border border-[#DBEAFE] flex items-center justify-center flex-shrink-0">
+              <Calendar size={16} className="text-[#2563EB]" strokeWidth={2} />
             </div>
             <div>
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                Date
-              </p>
-              <p className="text-sm font-black text-gray-800 mt-0.5">
-                {fmtLong(session.date)}
-              </p>
+              <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest">Date</p>
+              <p className="text-[14px] font-semibold text-[#111827] mt-0.5">{fmtLong(session.date)}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 bg-gray-50 rounded-2xl px-5 py-6 border border-gray-100">
-            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Clock size={18} className="text-indigo-600" />
+          <div className="flex items-center gap-4 bg-[#F8FAFC] border border-[#E2E8F0] px-5 py-4">
+            <div className="w-9 h-9 bg-blue-50 border border-[#DBEAFE] flex items-center justify-center flex-shrink-0">
+              <Clock size={16} className="text-[#2563EB]" strokeWidth={2} />
             </div>
             <div>
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                Time
-              </p>
-              <p className="text-sm font-black text-gray-800 mt-0.5">
-                {session.timeSlot}
-              </p>
+              <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest">Time</p>
+              <p className="text-[14px] font-semibold text-[#111827] mt-0.5">{session.timeSlot}</p>
             </div>
           </div>
         </div>
 
-        <div className="px-8 pb-10 flex flex-col gap-6">
+        <div className="px-8 pb-7 flex flex-col gap-5">
           {topics.length > 0 && (
             <div>
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                Choosen Topics For this Session
-              </p>
+              <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest mb-3">Topics for this session</p>
               <div className="flex flex-wrap gap-2">
                 {topics.map((t, i) => (
-                  <span
-                    key={i}
-                    className="bg-indigo-50 text-indigo-700 text-[10px] font-black px-3 py-1.5 rounded-lg border border-indigo-100 uppercase"
-                  >
+                  <span key={i} className="bg-blue-50 text-[#2563EB] text-[12px] font-semibold px-3 py-1.5 border border-blue-200">
                     {t}
                   </span>
                 ))}
@@ -169,81 +154,57 @@ const DetailModal = ({ session, onClose, onJoin, onRate }) => {
           )}
           {reasonText && (
             <div>
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                Reason for the Appointment
-              </p>
-              <p className="text-sm text-gray-600 font-medium leading-relaxed bg-gray-50 rounded-xl px-5 py-5 border border-gray-100 whitespace-pre-wrap text-justify">
+              <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest mb-3">Reason for Appointment</p>
+              <p className="text-[13px] text-[#374151] font-medium leading-relaxed bg-[#F8FAFC] border border-[#E2E8F0] px-5 py-4 whitespace-pre-wrap">
                 {reasonText}
               </p>
             </div>
           )}
         </div>
 
-        <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex items-center gap-4">
+        <div className="px-8 py-5 bg-[#F8FAFC] border-t border-[#F1F5F9] flex items-center gap-3">
           <div className="flex-1 flex items-center gap-3">
-            {session.status === "Approved" && (
+            {showApproved && (
               <button
-                onClick={() => {
-                  onJoin(session._id, session.zoomLink);
-                  onClose();
-                }}
+                onClick={() => { onJoin(session._id, session.zoomLink); onClose(); }}
                 disabled={!canJoin}
-                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all
-                  ${canJoin ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-[13px] font-semibold transition ${
+                  canJoin ? "bg-[#2563EB] text-white hover:bg-blue-700" : "bg-[#F1F5F9] text-[#94A3B8] cursor-not-allowed"
+                }`}
               >
-                <Video size={16} />
-                {canJoin ? "Join Meeting Now" : "Meeting Not Started"}
+                <Video size={15} strokeWidth={2} />
+                {joinButtonText}
               </button>
             )}
-
-            {session.status === "Pending" && (
-              <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-yellow-100 border border-yellow-200">
-                <AlertCircle size={16} className="text-yellow-600" />
-                <span className="text-yellow-800 font-black text-xs uppercase">
-                  Waiting for Counselor Approval
-                </span>
+            {showPending && (
+              <div className="flex-1 flex items-center justify-center gap-2 py-3 bg-yellow-50 border border-yellow-200">
+                <AlertCircle size={15} className="text-yellow-600" strokeWidth={2} />
+                <span className="text-yellow-700 font-semibold text-[13px]">Waiting for Counselor Approval</span>
               </div>
             )}
-
-            {session.status === "Completed" && (
+            {showCompleted && (
               <>
-                <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-indigo-100 border border-indigo-200">
-                  <CheckCircle size={16} className="text-indigo-600" />
-                  <span className="text-indigo-800 font-black text-xs uppercase">
-                    Session Successfully Completed
-                  </span>
+                <div className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-50 border border-blue-200">
+                  <CheckCircle size={15} className="text-[#2563EB]" strokeWidth={2} />
+                  <span className="text-[#2563EB] font-semibold text-[13px]">Session Completed</span>
                 </div>
-
                 <button
-                  onClick={() => {
-                    onClose();
-                    if (onRate) onRate(session);
-                  }}
-                  className="flex items-center justify-center gap-1.5 px-6 py-4 rounded-xl text-xs font-black uppercase tracking-wider bg-yellow-400 text-yellow-900 hover:bg-yellow-500 transition-all flex-shrink-0 shadow-sm"
+                  onClick={() => { onClose(); if (onRate) onRate(session); }}
+                  className="flex items-center justify-center gap-1.5 px-5 py-3 text-[13px] font-semibold bg-yellow-400 text-yellow-900 hover:bg-yellow-500 transition flex-shrink-0"
                 >
-                  <Star
-                    size={14}
-                    className={hasRated ? "fill-yellow-500" : "fill-yellow-800"}
-                  />
-                  {hasRated ? "Rated ✓" : "Rate Session"}
+                  <Star size={14} className={hasRated ? "fill-yellow-600" : "fill-yellow-800"} strokeWidth={0} />
+                  {hasRated ? "Rated" : "Rate Session"}
                 </button>
               </>
             )}
-
-            {session.status === "Declined" && (
-              <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-red-100 border border-red-200">
-                <XCircle size={16} className="text-red-600" />
-                <span className="text-red-800 font-black text-xs uppercase">
-                  This Session was Declined
-                </span>
+            {showDeclined && (
+              <div className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-50 border border-red-200">
+                <XCircle size={15} className="text-red-500" strokeWidth={2} />
+                <span className="text-red-700 font-semibold text-[13px]">This Session was Declined</span>
               </div>
             )}
           </div>
-
-          <button
-            onClick={onClose}
-            className="px-7 py-4 rounded-xl text-xs font-black text-gray-600 bg-gray-200 hover:bg-gray-300 uppercase tracking-wider transition-all flex-shrink-0"
-          >
+          <button onClick={onClose} className="px-6 py-3 text-[13px] font-semibold text-[#6B7280] bg-white border border-[#E2E8F0] hover:bg-[#F1F5F9] transition flex-shrink-0">
             Close
           </button>
         </div>

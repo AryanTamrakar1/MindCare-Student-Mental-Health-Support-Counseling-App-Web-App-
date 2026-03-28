@@ -1,39 +1,31 @@
 import React from "react";
 import { X, Clock, ArrowRight } from "lucide-react";
-import {
-  ordinal,
-  MONTHS,
-  parseTopics,
-} from "../../utils/counselorSession/sessionhelper";
+import { ordinal, MONTHS, parseTopics } from "../../utils/sessionHelper.js";
 
 const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
   if (!daySessions || daySessions.length === 0 || !dayInfo) return null;
 
   return (
-    <div className="mt-4 bg-white rounded-2xl border border-indigo-100 shadow-sm overflow-hidden">
-      <div className="bg-indigo-50 border-b border-indigo-100 px-5 py-3 flex items-center justify-between">
-        <p className="text-sm font-black text-indigo-800">
-          {dayInfo.d}
-          {ordinal(dayInfo.d)} {MONTHS[dayInfo.m]} {dayInfo.y} —{" "}
-          {daySessions.length} session{daySessions.length > 1 ? "s" : ""}
+    <div className="mt-4 bg-white border border-[#DBEAFE] overflow-hidden">
+      <div className="px-6 py-4 flex items-center justify-between border-b border-[#F1F5F9]">
+        <p className="text-[14px] font-semibold text-[#111827]">
+          {dayInfo.d}{ordinal(dayInfo.d)} {MONTHS[dayInfo.m]} {dayInfo.y}
+          <span className="text-[#6B7280] font-medium ml-2">— {daySessions.length} session{daySessions.length > 1 ? "s" : ""}</span>
         </p>
         <button
           onClick={onClose}
-          className="w-6 h-6 rounded-lg bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center transition-colors"
+          className="w-7 h-7 hover:bg-[#F1F5F9] flex items-center justify-center transition"
         >
-          <X size={11} className="text-indigo-600" />
+          <X size={14} className="text-[#6B7280]" strokeWidth={2} />
         </button>
       </div>
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-[#F1F5F9]">
         {daySessions.map((s) => {
           const topics = parseTopics(s.reason);
 
-          let statusColor = "text-indigo-600 bg-indigo-50 border-indigo-200";
-          if (s.status === "Approved") {
-            statusColor = "text-emerald-600 bg-emerald-50 border-emerald-200";
-          } else if (s.status === "Missed") {
-            statusColor = "text-red-600 bg-red-50 border-red-200";
-          }
+          let statusPill = "text-[#2563EB] bg-blue-50 border-blue-200";
+          if (s.status === "Approved") statusPill = "text-emerald-700 bg-emerald-50 border-emerald-200";
+          else if (s.status === "Missed") statusPill = "text-red-600 bg-red-50 border-red-200";
 
           let studentInitial = "S";
           if (s.studentId && s.studentId.name && s.studentId.name.length > 0) {
@@ -41,52 +33,38 @@ const DayPanel = ({ daySessions, dayInfo, onClose, onOpen }) => {
           }
 
           let studentName = "Student";
-          if (s.studentId && s.studentId.name) {
-            studentName = s.studentId.name;
-          }
+          if (s.studentId && s.studentId.name) studentName = s.studentId.name;
 
           const visibleTopics = [];
-          for (let i = 0; i < topics.length && i < 2; i++) {
-            visibleTopics.push(topics[i]);
-          }
+          for (let i = 0; i < topics.length && i < 2; i++) visibleTopics.push(topics[i]);
 
           return (
             <div
               key={s._id}
               onClick={() => onOpen(s)}
-              className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors group"
+              className="flex items-center gap-4 px-6 py-4 hover:bg-[#F8FAFC] cursor-pointer transition group"
             >
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
+              <div className="w-9 h-9 bg-[#2563EB] text-white flex items-center justify-center font-bold text-[14px] flex-shrink-0">
                 {studentInitial}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-black text-gray-800 text-sm">
-                  {studentName}
-                </p>
+                <p className="text-[14px] font-semibold text-[#111827]">{studentName}</p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
-                    <Clock size={9} />
+                  <span className="text-[12px] text-[#6B7280] font-medium flex items-center gap-1">
+                    <Clock size={10} strokeWidth={2} />
                     {s.timeSlot}
                   </span>
                   {visibleTopics.map((t, i) => (
-                    <span
-                      key={i}
-                      className="text-[8px] font-black bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase"
-                    >
+                    <span key={i} className="text-[10px] font-semibold bg-[#F1F5F9] text-[#6B7280] px-2 py-0.5">
                       {t}
                     </span>
                   ))}
                 </div>
               </div>
-              <span
-                className={`text-[9px] font-black px-2.5 py-1 rounded-full border uppercase flex-shrink-0 ${statusColor}`}
-              >
+              <span className={`text-[11px] font-semibold px-3 py-1 border flex-shrink-0 ${statusPill}`}>
                 {s.status === "Missed" ? "Missed" : s.status}
               </span>
-              <ArrowRight
-                size={14}
-                className="text-gray-300 group-hover:text-indigo-500 transition-colors"
-              />
+              <ArrowRight size={14} className="text-[#CBD5E1] group-hover:text-[#2563EB] transition shrink-0" strokeWidth={2} />
             </div>
           );
         })}

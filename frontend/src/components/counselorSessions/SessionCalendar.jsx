@@ -1,10 +1,6 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  MONTHS,
-  DAYS,
-  parseDbDate,
-} from "../../utils/counselorSession/sessionhelper";
+import { parseDbDate, MONTHS, DAYS } from "../../utils/sessionHelper.js";
 
 const SessionCalendar = ({ sessions, onDateClick }) => {
   const [view, setView] = useState(new Date());
@@ -13,6 +9,7 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
   const y = view.getFullYear();
   const m = view.getMonth();
   const today = new Date();
+
   const calSessions = [];
   for (let i = 0; i < sessions.length; i++) {
     if (
@@ -71,59 +68,54 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
   };
 
   const leadingBlanks = [];
-  for (let i = 0; i < firstDay; i++) {
-    leadingBlanks.push(i);
-  }
+  for (let i = 0; i < firstDay; i++) leadingBlanks.push(i);
 
   const dayNumbers = [];
-  for (let i = 1; i <= daysInMonth; i++) {
-    dayNumbers.push(i);
-  }
+  for (let i = 1; i <= daysInMonth; i++) dayNumbers.push(i);
 
   const trailingBlanksArr = [];
-  for (let i = 0; i < trailingBlanks; i++) {
-    trailingBlanksArr.push(i);
-  }
+  for (let i = 0; i < trailingBlanks; i++) trailingBlanksArr.push(i);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="bg-indigo-600 px-6 py-4 flex items-center justify-between">
+    <div className="bg-white border border-[#DBEAFE] overflow-hidden">
+      <div className="px-8 pt-6 pb-5 flex items-center justify-between border-b border-[#E5E9F2]">
         <div>
-          <p className="text-indigo-200 text-[10px] font-black uppercase tracking-widest">Schedule</p>
-          <h3 className="text-white text-xl font-black">{MONTHS[m]} {y}</h3>
+          <p className="text-[19px] font-bold text-[#111827]">{MONTHS[m]} {y}</p>
+          <p className="text-[14px] text-[#6B7280] mt-1">Your session schedule</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-2 text-[12px] font-medium text-[#6B7280]">
+              <span className="w-2 h-2 bg-emerald-500 inline-block" />
               Upcoming
             </span>
-            <span className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-200">
-              <span className="w-2 h-2 rounded-full bg-indigo-300 inline-block" />
+            <span className="flex items-center gap-2 text-[12px] font-medium text-[#6B7280]">
+              <span className="w-2 h-2 bg-[#2563EB] inline-block" />
               Completed
             </span>
-            <span className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-200">
-              <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+            <span className="flex items-center gap-2 text-[12px] font-medium text-[#6B7280]">
+              <span className="w-2 h-2 bg-red-400 inline-block" />
               Missed
             </span>
           </div>
           <div className="flex gap-1">
-            <button onClick={prevMonth} className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
-              <ChevronLeft size={15} />
+            <button onClick={prevMonth} className="w-8 h-8 border border-[#E5E9F2] hover:bg-[#E5E9F2] flex items-center justify-center text-[#6B7280] transition">
+              <ChevronLeft size={14} strokeWidth={2} />
             </button>
-            <button onClick={nextMonth} className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
-              <ChevronRight size={15} />
+            <button onClick={nextMonth} className="w-8 h-8 border border-[#E5E9F2] hover:bg-[#E5E9F2] flex items-center justify-center text-[#6B7280] transition">
+              <ChevronRight size={14} strokeWidth={2} />
             </button>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 border-b border-gray-100">
+      <div className="grid grid-cols-7 border-b border-[#E5E9F2]">
         {DAYS.map((d, i) => (
           <div
             key={d}
-            className={`py-3 text-center text-[10px] font-black uppercase tracking-wider border-r border-gray-100 last:border-r-0
-            ${i === 0 || i === 6 ? "text-gray-300" : "text-gray-400"}`}
+            className={`py-3 text-center text-[11px] font-semibold uppercase tracking-wider border-r border-[#E5E9F2] last:border-r-0 ${
+              i === 0 || i === 6 ? "text-[#6B7280]" : "text-[#111827]"
+            }`}
           >
             {d}
           </div>
@@ -132,7 +124,7 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
 
       <div className="grid grid-cols-7">
         {leadingBlanks.map((i) => (
-          <div key={`b-${i}`} className="h-[72px] border-r border-b border-gray-100" />
+          <div key={`b-${i}`} className="h-[72px] border-r border-b border-[#E5E9F2]" />
         ))}
 
         {dayNumbers.map((day) => {
@@ -145,74 +137,64 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
           const isLastInRow = (firstDay + day - 1) % 7 === 6;
 
           const visibleSessions = [];
-          for (let i = 0; i < ds.length && i < 2; i++) {
-            visibleSessions.push(ds[i]);
-          }
-          const extraCount = ds.length - 2 > 0 ? ds.length - 2 : 0;
+          for (let i = 0; i < ds.length && i < 2; i++) visibleSessions.push(ds[i]);
+
+          let extraCount = 0;
+          if (ds.length - 2 > 0) extraCount = ds.length - 2;
 
           let dayBg = "";
-          if (!isWeekend && isSel) dayBg = "bg-indigo-600";
-          else if (!isWeekend && isToday) dayBg = "bg-indigo-50";
-          else if (!isWeekend && ds.length > 0) dayBg = "hover:bg-gray-50";
+          if (!isWeekend && isSel) dayBg = "bg-[#2563EB]";
+          else if (!isWeekend && isToday) dayBg = "bg-[#EFF6FF]";
+          else if (!isWeekend && ds.length > 0) dayBg = "hover:bg-[#F8FAFC]";
 
           let dayCursor = "cursor-default";
           if (!isWeekend && ds.length > 0) dayCursor = "cursor-pointer";
 
-          let dayBgFull = isWeekend ? "bg-gray-50/60 cursor-default" : `${dayCursor} ${dayBg}`;
+          let dayBgFull = isWeekend ? "bg-[#F8FAFC] cursor-default" : `${dayCursor} ${dayBg}`;
 
-          let numClass = "text-gray-700";
-          if (isWeekend) numClass = "text-gray-300";
-          else if (isSel) numClass = "bg-white text-indigo-600";
-          else if (isToday) numClass = "bg-indigo-600 text-white";
+          let numClass = "text-[#374151]";
+          if (isWeekend) numClass = "text-[#CBD5E1]";
+          else if (isSel) numClass = "bg-white text-[#2563EB]";
+          else if (isToday) numClass = "bg-[#2563EB] text-white";
 
           return (
             <div
               key={day}
               onClick={() => handleDayClick(day)}
-              className={`h-[72px] border-b border-gray-100 p-2 flex flex-col transition-all ${!isLastInRow ? "border-r" : ""} ${dayBgFull}`}
+              className={`h-[72px] border-b border-[#E5E9F2] p-2 flex flex-col transition-all ${!isLastInRow ? "border-r" : ""} ${dayBgFull}`}
             >
-              <span className={`text-sm font-black w-7 h-7 flex items-center justify-center rounded-full self-start ${numClass}`}>
+              <span className={`text-[13px] font-bold w-7 h-7 flex items-center justify-center self-start ${numClass}`}>
                 {day}
               </span>
 
               {!isWeekend && visibleSessions.map((s, i) => {
                 let sessionBg = "bg-white/20 text-white";
                 if (!isSel) {
-                  if (s.status === "Approved") {
-                    sessionBg = "bg-emerald-50 text-emerald-700";
-                  } else if (s.status === "Missed") {
-                    sessionBg = "bg-red-50 text-red-700";
-                  } else {
-                    sessionBg = "bg-indigo-50 text-indigo-700";
-                  }
+                  if (s.status === "Approved") sessionBg = "bg-emerald-50 text-emerald-700";
+                  else if (s.status === "Missed") sessionBg = "bg-red-50 text-red-700";
+                  else sessionBg = "bg-blue-50 text-[#2563EB]";
                 }
 
                 let dotColor = "bg-white";
                 if (!isSel) {
-                  if (s.status === "Approved") {
-                    dotColor = "bg-emerald-500";
-                  } else if (s.status === "Missed") {
-                    dotColor = "bg-red-500";
-                  } else {
-                    dotColor = "bg-indigo-500";
-                  }
+                  if (s.status === "Approved") dotColor = "bg-emerald-500";
+                  else if (s.status === "Missed") dotColor = "bg-red-500";
+                  else dotColor = "bg-[#2563EB]";
                 }
 
                 let firstName = "Session";
-                if (s.studentId && s.studentId.name) {
-                  firstName = s.studentId.name.split(" ")[0];
-                }
+                if (s.studentId && s.studentId.name) firstName = s.studentId.name.split(" ")[0];
 
                 return (
-                  <div key={i} className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black truncate mt-0.5 ${sessionBg}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`} />
+                  <div key={i} className={`flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold truncate mt-0.5 ${sessionBg}`}>
+                    <span className={`w-1.5 h-1.5 flex-shrink-0 ${dotColor}`} />
                     <span className="truncate">{firstName}</span>
                   </div>
                 );
               })}
 
               {!isWeekend && extraCount > 0 && (
-                <span className={`text-[7px] font-black pl-1 ${isSel ? "text-indigo-200" : "text-gray-400"}`}>
+                <span className={`text-[9px] font-semibold pl-1 ${isSel ? "text-blue-100" : "text-[#94A3B8]"}`}>
                   +{extraCount} more
                 </span>
               )}
@@ -221,7 +203,7 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
         })}
 
         {trailingBlanksArr.map((i) => (
-          <div key={`t-${i}`} className={`h-[72px] border-b border-gray-100 ${i < trailingBlanks - 1 ? "border-r" : ""}`} />
+          <div key={`t-${i}`} className={`h-[72px] border-b border-[#E5E9F2] ${i < trailingBlanks - 1 ? "border-r" : ""}`} />
         ))}
       </div>
     </div>

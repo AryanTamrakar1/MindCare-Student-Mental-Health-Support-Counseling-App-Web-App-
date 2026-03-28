@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  parseDbDate,
-  MONTHS,
-  DAYS,
-} from "../../utils/studentSessions/sessionhelper";
+import { parseDbDate, MONTHS, DAYS } from "../../utils/sessionHelper.js";
+import { useStudentSessions } from "../../hooks/studentSessions/useStudentSessions";
 
-const SessionCalendar = ({ sessions, onDateClick }) => {
+const SessionCalendar = () => {
+  const { sessions, setDayData } = useStudentSessions();
   const [view, setView] = useState(new Date());
   const [selectedKey, setSelectedKey] = useState(null);
+
+  const onDateClick = (ds, di) => setDayData(ds ? { sessions: ds, dayInfo: di } : null);
 
   const y = view.getFullYear();
   const m = view.getMonth();
@@ -16,11 +16,8 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
 
   const calSessions = [];
   for (let i = 0; i < sessions.length; i++) {
-    if (
-      sessions[i].status === "Approved" ||
-      sessions[i].status === "Completed" ||
-      sessions[i].status === "Missed"
-    ) {
+    const status = sessions[i].status;
+    if (status === "Approved" || status === "Completed" || status === "Missed") {
       calSessions.push(sessions[i]);
     }
   }
@@ -72,69 +69,61 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
   };
 
   const leadingBlanks = [];
-  for (let i = 0; i < firstDay; i++) {
-    leadingBlanks.push(i);
-  }
+  for (let i = 0; i < firstDay; i++) leadingBlanks.push(i);
 
   const dayNumbers = [];
-  for (let i = 1; i <= daysInMonth; i++) {
-    dayNumbers.push(i);
-  }
+  for (let i = 1; i <= daysInMonth; i++) dayNumbers.push(i);
 
   const trailingBlanksArr = [];
-  for (let i = 0; i < trailingBlanks; i++) {
-    trailingBlanksArr.push(i);
-  }
+  for (let i = 0; i < trailingBlanks; i++) trailingBlanksArr.push(i);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="bg-indigo-600 px-6 py-4 flex items-center justify-between">
+    <div className="bg-white border border-[#DBEAFE] overflow-hidden">
+
+      <div className="px-8 pt-6 pb-5 flex items-center justify-between border-b border-[#F1F5F9]">
         <div>
-          <p className="text-indigo-200 text-[10px] font-black uppercase tracking-widest">
-            Schedule
-          </p>
-          <h3 className="text-white text-xl font-black">
-            {MONTHS[m]} {y}
-          </h3>
+          <p className="text-[19px] font-bold text-[#111827]">{MONTHS[m]} {y}</p>
+          <p className="text-[14px] text-[#6B7280] mt-1">Your session schedule</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-2 text-[12px] font-medium text-[#6B7280]">
+              <span className="w-2 h-2 bg-emerald-500 inline-block" />
               Upcoming
             </span>
-            <span className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-200">
-              <span className="w-2 h-2 rounded-full bg-indigo-300 inline-block" />
+            <span className="flex items-center gap-2 text-[12px] font-medium text-[#6B7280]">
+              <span className="w-2 h-2 bg-[#2563EB] inline-block" />
               Completed
             </span>
-            <span className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-200">
-              <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+            <span className="flex items-center gap-2 text-[12px] font-medium text-[#6B7280]">
+              <span className="w-2 h-2 bg-red-400 inline-block" />
               Missed
             </span>
           </div>
           <div className="flex gap-1">
             <button
               onClick={prevMonth}
-              className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+              className="w-8 h-8 border border-[#E2E8F0] hover:bg-[#F1F5F9] flex items-center justify-center text-[#6B7280] transition"
             >
-              <ChevronLeft size={15} />
+              <ChevronLeft size={14} strokeWidth={2} />
             </button>
             <button
               onClick={nextMonth}
-              className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+              className="w-8 h-8 border border-[#E2E8F0] hover:bg-[#F1F5F9] flex items-center justify-center text-[#6B7280] transition"
             >
-              <ChevronRight size={15} />
+              <ChevronRight size={14} strokeWidth={2} />
             </button>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 border-b border-gray-100">
+      <div className="grid grid-cols-7 border-b border-[#F1F5F9]">
         {DAYS.map((d, i) => (
           <div
             key={d}
-            className={`py-3 text-center text-[10px] font-black uppercase tracking-wider border-r border-gray-100 last:border-r-0
-            ${i === 0 || i === 6 ? "text-gray-300" : "text-gray-400"}`}
+            className={`py-3 text-center text-[11px] font-semibold uppercase tracking-wider border-r border-[#F1F5F9] last:border-r-0 ${
+              i === 0 || i === 6 ? "text-[#6B7280]" : "text-[#111827]"
+            }`}
           >
             {d}
           </div>
@@ -143,10 +132,7 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
 
       <div className="grid grid-cols-7">
         {leadingBlanks.map((i) => (
-          <div
-            key={`b-${i}`}
-            className="h-[72px] border-r border-b border-gray-100"
-          />
+          <div key={`b-${i}`} className="h-[72px] border-r border-b border-[#F1F5F9]" />
         ))}
 
         {dayNumbers.map((day) => {
@@ -154,10 +140,7 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
           const ds = smap[k] ? smap[k] : [];
           const dow = new Date(y, m, day).getDay();
           const isWeekend = dow === 0 || dow === 6;
-          const isToday =
-            today.getDate() === day &&
-            today.getMonth() === m &&
-            today.getFullYear() === y;
+          const isToday = today.getDate() === day && today.getMonth() === m && today.getFullYear() === y;
           const isSel = selectedKey === k;
           const isLastInRow = (firstDay + day - 1) % 7 === 6;
 
@@ -165,24 +148,22 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
           const extraCount = ds.length - 1;
 
           let dayBg = "";
-          if (!isWeekend && isSel) dayBg = "bg-indigo-600";
-          else if (!isWeekend && isToday) dayBg = "bg-indigo-50";
-          else if (!isWeekend && ds.length > 0) dayBg = "hover:bg-gray-50";
+          if (!isWeekend && isSel) dayBg = "bg-[#2563EB]";
+          else if (!isWeekend && isToday) dayBg = "bg-[#EFF6FF]";
+          else if (!isWeekend && ds.length > 0) dayBg = "hover:bg-[#F8FAFC]";
 
           let dayCursor = "cursor-default";
           if (!isWeekend && ds.length > 0) dayCursor = "cursor-pointer";
 
-          let dayBgFull = isWeekend
-            ? "bg-gray-50/60 cursor-default"
-            : `${dayCursor} ${dayBg}`;
+          let dayBgFull = isWeekend ? "bg-[#F8FAFC] cursor-default" : `${dayCursor} ${dayBg}`;
 
-          let numClass = "text-gray-700";
-          if (isWeekend) numClass = "text-gray-300";
-          else if (isSel) numClass = "bg-white text-indigo-600";
-          else if (isToday) numClass = "bg-indigo-600 text-white";
+          let numClass = "text-[#374151]";
+          if (isWeekend) numClass = "text-[#CBD5E1]";
+          else if (isSel) numClass = "bg-white text-[#2563EB]";
+          else if (isToday) numClass = "bg-[#2563EB] text-white";
 
-          let topSessionBg = "bg-indigo-50 text-indigo-700";
-          let topSessionDot = "bg-indigo-500";
+          let topSessionBg = "bg-blue-50 text-[#2563EB]";
+          let topSessionDot = "bg-[#2563EB]";
 
           if (isSel) {
             topSessionBg = "bg-white/20 text-white";
@@ -191,16 +172,12 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
             topSessionBg = "bg-emerald-50 text-emerald-700";
             topSessionDot = "bg-emerald-500";
           } else if (topSession && topSession.status === "Missed") {
-            topSessionBg = "bg-red-50 text-red-700";
+            topSessionBg = "bg-red-50 text-red-600";
             topSessionDot = "bg-red-500";
           }
 
           let topSessionName = "Session";
-          if (
-            topSession &&
-            topSession.counselorId &&
-            topSession.counselorId.name
-          ) {
+          if (topSession && topSession.counselorId && topSession.counselorId.name) {
             topSessionName = topSession.counselorId.name.split(" ")[0];
           }
 
@@ -208,25 +185,16 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
             <div
               key={day}
               onClick={() => handleDayClick(day)}
-              className={`h-[72px] border-b border-gray-100 p-2 flex flex-col transition-all ${!isLastInRow ? "border-r" : ""} ${dayBgFull}`}
+              className={`h-[72px] border-b border-[#F1F5F9] p-2 flex flex-col transition-all ${!isLastInRow ? "border-r" : ""} ${dayBgFull}`}
             >
-              <span
-                className={`text-sm font-black w-7 h-7 flex items-center justify-center rounded-full self-start ${numClass}`}
-              >
+              <span className={`text-[13px] font-bold w-7 h-7 flex items-center justify-center self-start ${numClass}`}>
                 {day}
               </span>
-
               {!isWeekend && topSession && (
-                <div
-                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black truncate mt-1 ${topSessionBg}`}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${topSessionDot}`}
-                  />
+                <div className={`flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold truncate mt-1 ${topSessionBg}`}>
+                  <span className={`w-1.5 h-1.5 flex-shrink-0 ${topSessionDot}`} />
                   <span className="truncate">{topSessionName}</span>
-                  {extraCount > 0 && (
-                    <span className="flex-shrink-0 ml-0.5">+{extraCount}</span>
-                  )}
+                  {extraCount > 0 && <span className="flex-shrink-0 ml-0.5">+{extraCount}</span>}
                 </div>
               )}
             </div>
@@ -234,10 +202,7 @@ const SessionCalendar = ({ sessions, onDateClick }) => {
         })}
 
         {trailingBlanksArr.map((i) => (
-          <div
-            key={`t-${i}`}
-            className={`h-[72px] border-b border-gray-100 ${i < trailingBlanks - 1 ? "border-r" : ""}`}
-          />
+          <div key={`t-${i}`} className={`h-[72px] border-b border-[#F1F5F9] ${i < trailingBlanks - 1 ? "border-r" : ""}`} />
         ))}
       </div>
     </div>

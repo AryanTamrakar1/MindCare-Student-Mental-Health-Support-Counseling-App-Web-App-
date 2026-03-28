@@ -1,58 +1,19 @@
-import React, { useState, useEffect } from "react";
-import axios from "../../api/axios";
+import React from "react";
 import { PenLine, X, CheckCircle, FileText } from "lucide-react";
-import { fmtShort } from "../../utils/counselorSession/sessionhelper";
+import { fmtShort } from "../../utils/sessionHelper.js";
+import { SummaryModalProvider } from "../../context/counselorSessions/SummaryModalContext";
+import { useSummaryModal } from "../../hooks/counselorSessions/useSummaryModal";
 
-const SummaryModal = ({ session, onClose, onSaved }) => {
-  const [text, setText] = useState("");
-  const [existing, setExisting] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    if (!session) return;
-    const fetchExisting = async () => {
-      try {
-        const token = sessionStorage.getItem("token");
-        const res = await axios.get(`/sessions/summary/${session._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const s = res.data.summary ? res.data.summary : "";
-        setExisting(s);
-        setText(s);
-      } catch {
-        setExisting(null);
-        setText("");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchExisting();
-  }, [session]);
-
-  const handleSave = async () => {
-    if (!text.trim()) return;
-    setSaving(true);
-    try {
-      const token = sessionStorage.getItem("token");
-      await axios.post(
-        "/sessions/summary",
-        { appointmentId: session._id, summary: text.trim() },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      setSaved(true);
-      setExisting(text.trim());
-      if (onSaved) {
-        onSaved(session._id, text.trim());
-      }
-      setTimeout(() => setSaved(false), 2500);
-    } catch {
-      alert("Could not save summary.");
-    } finally {
-      setSaving(false);
-    }
-  };
+const SummaryModalInner = ({ session, onClose }) => {
+  const {
+    text,
+    existing,
+    loading,
+    saving,
+    saved,
+    handleSave,
+    handleTextChange,
+  } = useSummaryModal();
 
   if (!session) return null;
 
@@ -61,69 +22,81 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
     studentName = session.studentId.name;
   }
 
+  let modalTitle = "Write Summary";
+  if (existing) modalTitle = "Edit Summary";
+
+  let textareaLabel = "Write notes to help the student";
+  if (existing) textareaLabel = "Summary of the session for the student";
+
+  let saveButtonLabel = "Save Summary";
+  if (existing) saveButtonLabel = "Update Summary";
+
+  let saveButtonClass = "bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed border-[#E5E7EB]";
+  if (text.trim() && !saving) saveButtonClass = "bg-[#2563EB] text-white hover:bg-blue-700 border-[#2563EB] shadow-md shadow-blue-200";
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden"
+        className="relative bg-white shadow-2xl w-full max-w-4xl overflow-hidden border border-[#E2E8F0]"
       >
-        <div className="px-8 pt-7 pb-6 flex items-start justify-between border-b border-gray-100">
+
+        <div className="px-8 pt-7 pb-6 flex items-start justify-between border-b border-[#E2E8F0]">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center flex-shrink-0">
-              <PenLine size={26} className="text-indigo-600" />
+            <div className="w-14 h-14 bg-blue-50 border border-[#DBEAFE] flex items-center justify-center flex-shrink-0">
+              <PenLine size={26} className="text-[#2563EB]" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-gray-900">
-                {existing ? "Edit Summary" : "Write Summary"}
+              <h2 className="text-xl font-black text-[#111827]">
+                {modalTitle}
               </h2>
-              <p className="text-sm text-gray-400 font-medium mt-0.5">
+              <p className="text-sm text-[#6B7280] font-medium mt-0.5">
                 {studentName} · {fmtShort(session.date)} · {session.timeSlot}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors flex-shrink-0"
+            className="w-9 h-9 bg-[#F3F4F6] hover:bg-[#E5E7EB] flex items-center justify-center transition-colors flex-shrink-0 border border-[#E5E7EB]"
           >
-            <X size={16} className="text-gray-600" />
+            <X size={16} className="text-[#6B7280]" />
           </button>
         </div>
 
         <div className="px-8 py-8">
           {loading ? (
             <div className="flex items-center justify-center gap-3 py-16">
-              <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-gray-400 font-medium">Loading…</span>
+              <div className="w-6 h-6 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm text-[#6B7280] font-medium">Loading…</span>
             </div>
           ) : (
             <>
-              <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-4">
-                {existing
-                  ? "Summary of the session for the student"
-                  : "Write notes to help the student"}
+              <p className="text-[9px] font-black text-[#2563EB] uppercase tracking-widest mb-4">
+                {textareaLabel}
               </p>
               <textarea
                 value={text}
-                onChange={(e) => setText(e.target.value)}
-                rows={14}
+                onChange={handleTextChange}
                 placeholder="Write your session notes here..."
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-5 text-sm text-gray-700 font-medium leading-relaxed resize-y min-h-[260px] focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 transition-all placeholder:text-gray-300 text-justify"
+                style={{ height: "500px" }}
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] px-6 py-5 text-sm text-[#374151] font-medium leading-relaxed resize-none overflow-y-auto max-h-[600px] focus:outline-none focus:bg-white transition-all placeholder:text-[#9CA3AF] text-justify"
               />
-              <p className="text-[10px] text-gray-400 font-medium mt-2 text-right">
+              <p className="text-[10px] text-[#9CA3AF] font-medium mt-2 text-right">
                 {text.length} characters
               </p>
             </>
           )}
         </div>
 
-        <div className="px-8 py-5 bg-gray-50 border-t border-gray-100 flex items-center gap-3">
+        <div className="px-8 py-5 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center gap-3">
           {saved ? (
-            <div className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-50 border border-emerald-100">
+            <div className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-50 border border-emerald-200">
               <CheckCircle size={15} className="text-emerald-600" />
               <span className="text-emerald-700 font-black text-sm uppercase">
                 Summary Saved!
@@ -133,12 +106,7 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
             <button
               onClick={handleSave}
               disabled={!text.trim() || saving}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all
-                ${
-                  text.trim() && !saving
-                    ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-black uppercase tracking-wider transition-all border ${saveButtonClass}`}
             >
               {saving ? (
                 <>
@@ -148,20 +116,28 @@ const SummaryModal = ({ session, onClose, onSaved }) => {
               ) : (
                 <>
                   <FileText size={15} />
-                  {existing ? "Update Summary" : "Save Summary"}
+                  {saveButtonLabel}
                 </>
               )}
             </button>
           )}
           <button
             onClick={onClose}
-            className="px-6 py-3 rounded-xl text-xs font-black text-white bg-indigo-600 hover:bg-indigo-700 uppercase tracking-wider transition-colors shadow-sm flex-shrink-0"
+            className="px-6 py-3 text-xs font-black text-white bg-[#2563EB] hover:bg-blue-700 uppercase tracking-wider transition-colors shadow-sm flex-shrink-0 border border-[#2563EB]"
           >
             Close
           </button>
         </div>
       </div>
     </div>
+  );
+};
+
+const SummaryModal = ({ session, onClose, onSaved }) => {
+  return (
+    <SummaryModalProvider session={session} onClose={onClose} onSaved={onSaved}>
+      <SummaryModalInner session={session} onClose={onClose} />
+    </SummaryModalProvider>
   );
 };
 

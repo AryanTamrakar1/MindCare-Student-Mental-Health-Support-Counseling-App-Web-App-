@@ -1,33 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { X, Star, CheckCircle } from "lucide-react";
 import axios from "../../api/axios";
+import { useStudentSessions } from "../../hooks/studentSessions/useStudentSessions";
 
 const QUESTIONS = [
-  {
-    key: "professionalism",
-    label: "Professionalism",
-    description: "How professional was the counselor?",
-  },
-  {
-    key: "clarity",
-    label: "Clarity",
-    description: "How clearly did the counselor communicate?",
-  },
-  {
-    key: "empathy",
-    label: "Empathy",
-    description: "How empathetic did the counselor feel?",
-  },
-  {
-    key: "helpfulness",
-    label: "Helpfulness",
-    description: "How helpful was the session for your concern?",
-  },
-  {
-    key: "overallSatisfaction",
-    label: "Overall Satisfaction",
-    description: "Overall, how satisfied were you with this session?",
-  },
+  { key: "professionalism", label: "Professionalism", description: "How professional was the counselor?" },
+  { key: "clarity", label: "Clarity", description: "How clearly did the counselor communicate?" },
+  { key: "empathy", label: "Empathy", description: "How empathetic did the counselor feel?" },
+  { key: "helpfulness", label: "Helpfulness", description: "How helpful was the session for your concern?" },
+  { key: "overallSatisfaction", label: "Overall Satisfaction", description: "Overall, how satisfied were you with this session?" },
 ];
 
 const StarRating = ({ value, onChange, disabled }) => {
@@ -40,23 +21,15 @@ const StarRating = ({ value, onChange, disabled }) => {
           key={star}
           type="button"
           disabled={disabled}
-          onClick={() => {
-            if (!disabled) onChange(star);
-          }}
-          onMouseEnter={() => {
-            if (!disabled) setHovered(star);
-          }}
-          onMouseLeave={() => {
-            if (!disabled) setHovered(0);
-          }}
+          onClick={() => { if (!disabled) onChange(star); }}
+          onMouseEnter={() => { if (!disabled) setHovered(star); }}
+          onMouseLeave={() => { if (!disabled) setHovered(0); }}
           className={`transition-all ${disabled ? "cursor-default" : "cursor-pointer hover:scale-110"}`}
         >
           <Star
-            size={28}
+            size={26}
             className={`transition-colors ${
-              star <= (hovered || value)
-                ? "fill-yellow-400 text-yellow-400"
-                : "fill-gray-200 text-gray-200"
+              star <= (hovered || value) ? "fill-yellow-400 text-yellow-400" : "fill-[#F1F5F9] text-[#F1F5F9]"
             }`}
           />
         </button>
@@ -65,7 +38,11 @@ const StarRating = ({ value, onChange, disabled }) => {
   );
 };
 
-const RatingModal = ({ session, onClose, onRated }) => {
+const RatingModal = () => {
+  const { ratingSession: session, setRatingSession } = useStudentSessions();
+  const onClose = () => setRatingSession(null);
+  const onRated = () => setRatingSession(null);
+
   const [ratings, setRatings] = useState({
     professionalism: 0,
     clarity: 0,
@@ -107,11 +84,13 @@ const RatingModal = ({ session, onClose, onRated }) => {
   }, [session._id]);
 
   let allAnswered = true;
-  if (ratings.professionalism < 1) allAnswered = false;
-  if (ratings.clarity < 1) allAnswered = false;
-  if (ratings.empathy < 1) allAnswered = false;
-  if (ratings.helpfulness < 1) allAnswered = false;
-  if (ratings.overallSatisfaction < 1) allAnswered = false;
+  for (let i = 0; i < QUESTIONS.length; i++) {
+    const key = QUESTIONS[i].key;
+    if (ratings[key] < 1) {
+      allAnswered = false;
+      break;
+    }
+  }
 
   const handleSubmit = async () => {
     if (!allAnswered) {
@@ -166,124 +145,119 @@ const RatingModal = ({ session, onClose, onRated }) => {
     counselorName = session.counselorId.name;
   }
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-6"
-      onClick={onClose}
-    >
-      <div className="absolute inset-0 bg-black/60" />
+  let titleText = "Rate Your Session";
+  if (alreadyRated) {
+    titleText = "Your Rating";
+  }
 
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
-      >
-        <div className="px-7 pt-6 pb-5 flex items-start justify-between border-b border-gray-100">
+  let showLoading = false;
+  if (loading) {
+    showLoading = true;
+  }
+
+  let showAlreadyRated = false;
+  if (!loading && alreadyRated && !submitted) {
+    showAlreadyRated = true;
+  }
+
+  let showSubmitted = false;
+  if (submitted) {
+    showSubmitted = true;
+  }
+
+  let showRatingForm = false;
+  if (!loading && !alreadyRated && !submitted) {
+    showRatingForm = true;
+  }
+
+  let buttonBg = "bg-[#F1F5F9] text-[#94A3B8] cursor-not-allowed";
+  if (allAnswered && !submitting) {
+    buttonBg = "bg-[#2563EB] text-white hover:bg-blue-700";
+  }
+
+  let submitButtonText = "Submit Rating";
+  if (submitting) {
+    submitButtonText = "Submitting…";
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }} onClick={onClose}>
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+      <div onClick={(e) => e.stopPropagation()} className="relative bg-white border border-[#E2E8F0] shadow-2xl w-full max-w-lg overflow-hidden">
+
+        <div className="px-7 pt-6 pb-5 flex items-start justify-between border-b border-[#F1F5F9]">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-yellow-50 flex items-center justify-center flex-shrink-0 border border-yellow-100">
-              <Star size={22} className="text-yellow-500 fill-yellow-400" />
+            <div className="w-11 h-11 bg-yellow-50 border border-yellow-200 flex items-center justify-center flex-shrink-0">
+              <Star size={20} className="text-yellow-500 fill-yellow-400" strokeWidth={1.5} />
             </div>
             <div>
-              <h2 className="text-lg font-black text-gray-900">
-                {alreadyRated ? "Your Rating" : "Rate Your Session"}
+              <h2 className="text-[17px] font-bold text-[#111827]">
+                {titleText}
               </h2>
-              <p className="text-sm text-gray-400 font-medium mt-0.5">
+              <p className="text-[13px] text-[#6B7280] mt-0.5">
                 {counselorName} · {session.date}
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0"
-          >
-            <X size={14} className="text-gray-500" />
+          <button onClick={onClose} className="w-8 h-8 hover:bg-[#F1F5F9] flex items-center justify-center transition flex-shrink-0">
+            <X size={15} className="text-[#6B7280]" strokeWidth={2} />
           </button>
         </div>
 
         <div className="px-7 py-6">
-          {loading && (
+          {showLoading && (
             <div className="flex items-center justify-center gap-3 py-10">
-              <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-gray-400 font-medium">
-                Loading…
-              </span>
+              <div className="w-5 h-5 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+              <span className="text-[13px] text-[#94A3B8] font-medium">Loading…</span>
             </div>
           )}
 
-          {!loading && alreadyRated && !submitted && (
+          {showAlreadyRated && (
             <div className="mb-4">
-              <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-2xl px-4 py-3 mb-5">
-                <CheckCircle size={16} className="text-indigo-500" />
-                <p className="text-sm font-black text-indigo-700">
-                  You have already rated this session.
-                </p>
+              <div className="flex items-center gap-2.5 bg-blue-50 border border-[#DBEAFE] px-4 py-3 mb-5">
+                <CheckCircle size={15} className="text-[#2563EB]" strokeWidth={2} />
+                <p className="text-[13px] font-semibold text-[#2563EB]">You have already rated this session.</p>
               </div>
               <div className="flex flex-col gap-5">
                 {QUESTIONS.map((q) => (
-                  <div
-                    key={q.key}
-                    className="flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="text-sm font-black text-gray-700">
-                        {q.label}
-                      </p>
-                      <p className="text-[11px] text-gray-400 font-medium mt-0.5">
-                        {q.description}
-                      </p>
+                  <div key={q.key} className="flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-semibold text-[#111827]">{q.label}</p>
+                      <p className="text-[12px] text-[#94A3B8] mt-0.5">{q.description}</p>
                     </div>
-                    <StarRating
-                      value={ratings[q.key]}
-                      onChange={() => {}}
-                      disabled={true}
-                    />
+                    <StarRating value={ratings[q.key]} onChange={() => {}} disabled={true} />
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {submitted && (
+          {showSubmitted && (
             <div className="flex flex-col items-center justify-center py-10 gap-4">
-              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
-                <CheckCircle size={32} className="text-emerald-500" />
+              <div className="w-14 h-14 bg-emerald-50 border border-emerald-200 flex items-center justify-center">
+                <CheckCircle size={28} className="text-emerald-500" strokeWidth={2} />
               </div>
               <div className="text-center">
-                <p className="text-lg font-black text-gray-800">Thank you!</p>
-                <p className="text-sm text-gray-400 font-medium mt-1">
-                  Your rating has been recorded.
-                </p>
+                <p className="text-[16px] font-bold text-[#111827]">Thank you!</p>
+                <p className="text-[13px] text-[#6B7280] mt-1">Your rating has been recorded.</p>
               </div>
             </div>
           )}
 
-          {!loading && !alreadyRated && !submitted && (
+          {showRatingForm && (
             <div className="flex flex-col gap-5">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                Rate each area from 1 to 5 stars
-              </p>
+              <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest">Rate each area from 1 to 5 stars</p>
               {QUESTIONS.map((q) => (
-                <div
-                  key={q.key}
-                  className="flex items-center justify-between gap-4"
-                >
+                <div key={q.key} className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-gray-700">
-                      {q.label}
-                    </p>
-                    <p className="text-[11px] text-gray-400 font-medium mt-0.5">
-                      {q.description}
-                    </p>
+                    <p className="text-[14px] font-semibold text-[#111827]">{q.label}</p>
+                    <p className="text-[12px] text-[#94A3B8] mt-0.5">{q.description}</p>
                   </div>
-                  <StarRating
-                    value={ratings[q.key]}
-                    onChange={(val) => handleStarChange(q.key, val)}
-                    disabled={false}
-                  />
+                  <StarRating value={ratings[q.key]} onChange={(val) => handleStarChange(q.key, val)} disabled={false} />
                 </div>
               ))}
-
               {error && (
-                <p className="text-xs font-bold text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-2">
+                <p className="text-[12px] font-semibold text-red-500 bg-red-50 border border-red-100 px-4 py-2.5">
                   {error}
                 </p>
               )}
@@ -292,12 +266,9 @@ const RatingModal = ({ session, onClose, onRated }) => {
         </div>
 
         {!loading && (
-          <div className="px-7 py-4 bg-gray-50 border-t border-gray-100 flex items-center gap-3">
-            {submitted || alreadyRated ? (
-              <button
-                onClick={onClose}
-                className="flex-1 py-3 rounded-xl text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 uppercase tracking-wider transition-colors"
-              >
+          <div className="px-7 py-4 bg-[#F8FAFC] border-t border-[#F1F5F9] flex items-center gap-3">
+            {showSubmitted || showAlreadyRated ? (
+              <button onClick={onClose} className="flex-1 py-3 text-[13px] font-semibold text-white bg-[#2563EB] hover:bg-blue-700 transition">
                 Close
               </button>
             ) : (
@@ -305,25 +276,21 @@ const RatingModal = ({ session, onClose, onRated }) => {
                 <button
                   onClick={handleSubmit}
                   disabled={!allAnswered || submitting}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all
-                    ${allAnswered && !submitting ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-[13px] font-semibold transition ${buttonBg}`}
                 >
                   {submitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />
-                      Submitting…
+                      {submitButtonText}
                     </>
                   ) : (
                     <>
-                      <Star size={15} />
-                      Submit Rating
+                      <Star size={14} className="fill-white text-white" strokeWidth={0} />
+                      {submitButtonText}
                     </>
                   )}
                 </button>
-                <button
-                  onClick={onClose}
-                  className="px-5 py-3 rounded-xl text-xs font-black text-gray-400 hover:bg-gray-200 uppercase tracking-wider transition-colors flex-shrink-0"
-                >
+                <button onClick={onClose} className="px-5 py-3 text-[13px] font-semibold text-[#6B7280] hover:bg-[#F1F5F9] transition flex-shrink-0">
                   Skip
                 </button>
               </>

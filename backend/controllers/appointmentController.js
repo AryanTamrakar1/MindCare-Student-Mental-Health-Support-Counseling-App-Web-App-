@@ -357,7 +357,9 @@ exports.getPendingRequests = async (req, res) => {
     const pending = await Appointment.find({
       counselorId: counselorId,
       status: "Pending",
-    }).populate("studentId", "name email");
+    })
+    .sort({ createdAt: -1 })  
+    .populate("studentId", "name email verificationPhoto");
 
     res.status(200).json(pending);
   } catch (error) {
@@ -397,8 +399,8 @@ exports.getLiveStatus = async (req, res) => {
     const year = nepalTime.getUTCFullYear();
     const currentDate = `${day} ${month} ${year}`;
 
-    const currentHour = nepalTime.getUTCHours();
-    const currentMinutes = nepalTime.getUTCMinutes();
+    const currentHour = nepalTime.getHours();
+    const currentMinutes = nepalTime.getMinutes();
 
     const appointments = await Appointment.find({
       counselorId,

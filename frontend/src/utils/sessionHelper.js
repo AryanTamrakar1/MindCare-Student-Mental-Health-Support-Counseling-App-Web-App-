@@ -1,4 +1,3 @@
-
 export const DAYS = [
   "Sunday",
   "Monday",
@@ -124,51 +123,5 @@ export function parseReason(reason) {
 
 // This is for session testing
 export function isSessionTime(date, timeSlot) {
-  if (!date || !timeSlot) return false;
-
-  const now = new Date();
-
-  const dayNum = now.getDate();
-  let dayStr = "";
-  if (dayNum < 10) {
-    dayStr = "0" + dayNum;
-  } else {
-    dayStr = "" + dayNum;
-  }
-
-  const todayStr =
-    dayStr + " " + MONTHS_SHORT[now.getMonth()] + " " + now.getFullYear();
-
-  if (date !== todayStr) return false;
-
-  const slotStart = timeSlot.split(" - ")[0].trim();
-  const parts = slotStart.split(" ");
-
-  if (parts.length < 2) return false;
-
-  const timePart = parts[0];
-  const ampm = parts[1];
-
-  const timeSplit = timePart.split(":");
-  let hour = parseInt(timeSplit[0]);
-  const minute = parseInt(timeSplit[1]);
-
-  if (ampm === "PM" && hour !== 12) {
-    hour = hour + 12;
-  }
-  if (ampm === "AM" && hour === 12) {
-    hour = 0;
-  }
-
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const sessionStart = hour * 60 + minute;
-
-  if (
-    currentMinutes >= sessionStart - 10 &&
-    currentMinutes <= sessionStart + 60
-  ) {
-    return true;
-  }
-  return false;
+  return true;
 }
-

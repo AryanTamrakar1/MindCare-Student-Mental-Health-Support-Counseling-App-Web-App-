@@ -97,6 +97,17 @@ exports.endSession = async (req, res) => {
     appointment.status = "Completed";
     await appointment.save();
     await awardPoints(appointment.studentId.toString(), "session");
+    await createNotification(
+      appointment.studentId,
+      "Your Session is Complete!",
+      "Your session on " +
+        appointment.date +
+        " at " +
+        appointment.timeSlot +
+        " has ended. Check your summary soon.",
+      "general",
+      "/my-sessions",
+    );
 
     res.status(200).json({
       message: "Session Ended! Please write a summary for the student.",
@@ -151,6 +162,13 @@ exports.saveSummary = async (req, res) => {
 
     appointment.summary = summary;
     await appointment.save();
+    await createNotification(
+      appointment.studentId,
+      "Session Summary Available!",
+      "Your counselor has shared a summary of your session. Check it now.",
+      "general",
+      "/my-sessions",
+    );
 
     res.status(200).json({ message: "Summary saved.", summary });
   } catch (error) {

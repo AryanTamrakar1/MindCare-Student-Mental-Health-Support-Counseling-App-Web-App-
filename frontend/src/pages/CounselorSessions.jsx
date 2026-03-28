@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import axios from "../api/axios";
 import CounselorSidebar from "../components/Sidebars/CounselorSidebar";
 import Navbar from "../components/Navbar";
@@ -8,202 +8,109 @@ import DayPanel from "../components/counselorSessions/DayPanel";
 import DetailModal from "../components/counselorSessions/DetailModal";
 import SummaryModal from "../components/counselorSessions/SummaryModal";
 import SessionCard from "../components/counselorSessions/SessionCard";
+import { CounselorSessionsProvider } from "../context/counselorSessions/CounselorSessionsContext";
+import { useCounselorSessions } from "../hooks/counselorSessions/useCounselorSessions";
 
-const CounselorSessions = () => {
-  const [user, setUser] = useState(null);
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("Upcoming");
-  const [selectedSession, setSelectedSession] = useState(null);
-  const [summarySession, setSummarySession] = useState(null);
-  const [dayData, setDayData] = useState(null);
+const CounselorSessionsInner = () => {
+  const {
+    user,
+    sessions,
+    activeTab,
+    setActiveTab,
+    selectedSession,
+    setSelectedSession,
+    summarySession,
+    setSummarySession,
+    dayData,
+    setDayData,
+    handleStart,
+    handleEnd,
+    upcomingCount,
+    completedCount,
+    missedCount,
+    filtered,
+    emptyMessage,
+    tabs,
+  } = useCounselorSessions();
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const token = sessionStorage.getItem("token");
-        if (!token) return;
-
-        const ur = await axios.get("/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const sr = await axios.get("/appointments/my-sessions", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setUser(ur.data);
-        setSessions(sr.data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, []);
-
-  const handleStart = async (appointmentId, startLink) => {
-    try {
-      const token = sessionStorage.getItem("token");
-      await axios.post(
-        "/sessions/start",
-        { appointmentId },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      window.open(startLink, "_blank");
-    } catch (e) {
-      alert("Could not start session.");
-    }
-  };
-
-  const handleEnd = async (appointmentId) => {
-    if (!window.confirm("End this session? It will be marked as Completed."))
-      return;
-    try {
-      const token = sessionStorage.getItem("token");
-      await axios.post(
-        "/sessions/end",
-        { appointmentId },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      const sr = await axios.get("/appointments/my-sessions", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSessions(sr.data);
-
-      let ended = null;
-      for (let i = 0; i < sr.data.length; i++) {
-        if (sr.data[i]._id === appointmentId) {
-          ended = sr.data[i];
-          break;
-        }
-      }
-      if (ended) {
-        setTimeout(() => setSummarySession(ended), 300);
-      }
-    } catch (e) {
-      alert("Could not end session.");
-    }
-  };
-
-  const upcomingCount = sessions.filter((s) => s.status === "Approved").length;
-  const completedCount = sessions.filter(
-    (s) => s.status === "Completed",
-  ).length;
-  const missedCount = sessions.filter((s) => s.status === "Missed").length;
-
-  const getFiltered = () => {
-    if (activeTab === "Upcoming")
-      return sessions.filter((s) => s.status === "Approved");
-    if (activeTab === "Completed")
-      return sessions.filter((s) => s.status === "Completed");
-    if (activeTab === "Missed")
-      return sessions.filter((s) => s.status === "Missed");
-    if (activeTab === "Summary")
-      return sessions.filter((s) => s.status === "Completed");
-    return sessions;
-  };
-
-  const filtered = getFiltered();
-
-  let emptyMessage = "No sessions yet.";
-  if (activeTab === "Upcoming")
-    emptyMessage = "Students will book sessions with you from the directory.";
-  if (activeTab === "Missed") emptyMessage = "No missed sessions. Great work!";
-  if (activeTab === "Summary")
-    emptyMessage = "Summaries will appear here after sessions are completed.";
-
-  const tabs = [
-    { label: "Upcoming", count: upcomingCount },
-    { label: "Completed", count: completedCount },
-    { label: "Missed", count: missedCount },
-    { label: "Summary", count: completedCount },
-    { label: "See All", count: sessions.length },
-  ];
-
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex">
-        <CounselorSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-            Loading Sessions...
-          </p>
-        </main>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      className="min-h-screen bg-[#EFF6FF] flex"
+    >
+      <Navbar />
       <CounselorSidebar user={user} />
 
-      <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
-        <div className="mb-8 pb-6 border-b-2 border-slate-300 flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">My Sessions</h2>
-            <p className="text-gray-500 mt-0.5">
-              Check your upcoming and completed counseling sessions.
-            </p>
-          </div>
-          <Navbar />
-        </div>
-
-        <div className="grid grid-cols-4 gap-5 mb-6">
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Calendar size={20} className="text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-3xl font-black text-gray-800">
-                {upcomingCount}
-              </p>
-              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                Upcoming
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0">
-              <CheckCircle size={20} className="text-indigo-600" />
-            </div>
-            <div>
-              <p className="text-3xl font-black text-gray-800">
-                {completedCount}
-              </p>
-              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                Completed
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Clock size={20} className="text-orange-500" />
-            </div>
-            <div>
-              <p className="text-3xl font-black text-gray-800">{missedCount}</p>
-              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                Missed
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Users size={20} className="text-purple-600" />
-            </div>
-            <div>
-              <p className="text-3xl font-black text-gray-800">
-                {sessions.length}
-              </p>
-              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                Total Sessions
-              </p>
-            </div>
-          </div>
+      <main
+        className="flex-1 ml-[260px] overflow-y-auto"
+        style={{
+          paddingTop: "calc(72px + 2.5rem)",
+          paddingBottom: "2.5rem",
+          paddingLeft: "2.5rem",
+          paddingRight: "2.5rem",
+        }}
+      >
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          {[
+            {
+              count: upcomingCount,
+              label: "Upcoming",
+              icon: Calendar,
+              bg: "bg-emerald-50",
+              border: "border-emerald-200",
+              iconColor: "text-emerald-600",
+            },
+            {
+              count: completedCount,
+              label: "Completed",
+              icon: CheckCircle,
+              bg: "bg-blue-50",
+              border: "border-blue-200",
+              iconColor: "text-[#2563EB]",
+            },
+            {
+              count: missedCount,
+              label: "Missed",
+              icon: Clock,
+              bg: "bg-orange-50",
+              border: "border-orange-200",
+              iconColor: "text-orange-500",
+            },
+            {
+              count: sessions.length,
+              label: "Total Sessions",
+              icon: Users,
+              bg: "bg-purple-50",
+              border: "border-purple-200",
+              iconColor: "text-purple-600",
+            },
+          ].map((card) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.label}
+                className="bg-white border border-[#DBEAFE] px-6 py-5 flex items-center gap-5"
+              >
+                <div
+                  className={`w-12 h-12 ${card.bg} border ${card.border} flex items-center justify-center flex-shrink-0`}
+                >
+                  <Icon size={20} className={card.iconColor} strokeWidth={2} />
+                </div>
+                <div>
+                  <p className="text-[28px] font-bold text-[#111827] leading-none">
+                    {card.count}
+                  </p>
+                  <p className="text-[12px] font-semibold text-[#94A3B8] uppercase tracking-widest mt-1.5">
+                    {card.label}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <SessionCalendar
@@ -222,72 +129,79 @@ const CounselorSessions = () => {
           />
         )}
 
-        <div className="mt-10">
-          <div className="border-t-2 border-slate-300 pt-6 pb-6 border-b-2 flex justify-between items-start mb-5">
-            <div>
-              <h2 className="text-2xl font-black text-gray-800">
-                All Sessions
-              </h2>
-              <p className="text-gray-500 mt-0.5">
-                View all your upcoming and past sessions.
-              </p>
-            </div>
-
-            <div className="flex bg-white rounded-xl border border-gray-200 p-1 gap-1 shadow-sm">
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab.label;
-                return (
-                  <button
-                    key={tab.label}
-                    onClick={() => setActiveTab(tab.label)}
-                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
-                      isActive
-                        ? "bg-indigo-600 text-white shadow-sm"
-                        : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                    }`}
-                  >
-                    {tab.label}
-                    {tab.count > 0 && (
-                      <span
-                        className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${
-                          isActive
-                            ? "bg-white/20 text-white"
-                            : "bg-gray-200 text-gray-600"
-                        }`}
-                      >
-                        {tab.count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {filtered.length > 0 ? (
-              filtered.map((s) => (
-                <SessionCard
-                  key={s._id}
-                  session={s}
-                  onOpen={setSelectedSession}
-                  onWriteSummary={setSummarySession}
-                  showSummaryButton={
-                    activeTab === "Summary" || activeTab === "Completed"
-                  }
-                />
-              ))
-            ) : (
-              <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 py-16 flex flex-col items-center text-center">
-                <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-3">
-                  <Calendar size={22} className="text-indigo-300" />
-                </div>
-                <p className="font-black text-gray-600 mb-1">
-                  No {activeTab} Sessions
+        <div className="mt-6">
+          <div className="bg-white border border-[#DBEAFE] overflow-hidden">
+            <div className="px-8 pt-6 pb-5 flex items-center justify-between">
+              <div>
+                <p className="text-[19px] font-bold text-[#111827]">
+                  All Sessions
                 </p>
-                <p className="text-sm text-gray-400 max-w-xs">{emptyMessage}</p>
+                <p className="text-[14px] text-[#6B7280] mt-1">
+                  View all your upcoming and past sessions.
+                </p>
               </div>
-            )}
+              <div className="flex bg-[#F8FAFC] border border-[#E2E8F0] p-1 gap-0.5">
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab.label;
+                  return (
+                    <button
+                      key={tab.label}
+                      onClick={() => setActiveTab(tab.label)}
+                      className={`px-4 py-2 text-[12px] font-semibold transition-all flex items-center gap-1.5 ${
+                        isActive
+                          ? "bg-[#2563EB] text-white"
+                          : "text-[#6B7280] hover:text-[#111827] hover:bg-white"
+                      }`}
+                    >
+                      {tab.label}
+                      {tab.count > 0 && (
+                        <span
+                          className={`px-1.5 py-0.5 text-[10px] font-bold ${
+                            isActive
+                              ? "bg-white/20 text-white"
+                              : "bg-[#E2E8F0] text-[#6B7280]"
+                          }`}
+                        >
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="h-px w-full bg-[#F1F5F9]" />
+            <div className="px-8 py-5 flex flex-col gap-3">
+              {filtered.length > 0 ? (
+                filtered.map((s) => (
+                  <SessionCard
+                    key={s._id}
+                    session={s}
+                    onOpen={setSelectedSession}
+                    onWriteSummary={setSummarySession}
+                    showSummaryButton={
+                      activeTab === "Summary" || activeTab === "Completed"
+                    }
+                  />
+                ))
+              ) : (
+                <div className="border border-dashed border-[#DBEAFE] py-14 flex flex-col items-center text-center">
+                  <div className="w-11 h-11 bg-blue-50 border border-[#DBEAFE] flex items-center justify-center mb-3">
+                    <Calendar
+                      size={20}
+                      className="text-[#2563EB]"
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <p className="text-[14px] font-semibold text-[#374151] mb-1">
+                    No {activeTab} Sessions
+                  </p>
+                  <p className="text-[13px] text-[#6B7280] max-w-xs">
+                    {emptyMessage}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
@@ -309,6 +223,14 @@ const CounselorSessions = () => {
         />
       )}
     </div>
+  );
+};
+
+const CounselorSessions = () => {
+  return (
+    <CounselorSessionsProvider>
+      <CounselorSessionsInner />
+    </CounselorSessionsProvider>
   );
 };
 

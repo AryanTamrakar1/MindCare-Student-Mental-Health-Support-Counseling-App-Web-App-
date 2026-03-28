@@ -1,24 +1,32 @@
 import React, { useState } from "react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 function weekToDate(weekLabel) {
   const parts = weekLabel.split("-W");
   const year = parseInt(parts[0]);
   const week = parseInt(parts[1]);
   const jan4 = new Date(year, 0, 4);
-  const startOfWeek1 = new Date(jan4);
-  startOfWeek1.setDate(jan4.getDate() - jan4.getDay() + 1);
-  const d = new Date(startOfWeek1);
-  d.setDate(d.getDate() + (week - 1) * 7);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const day = jan4.getDay();
+  const diff = jan4.getDate() - day + (day === 0 ? -6 : 1);
+  const mondayWeek1 = new Date(year, 0, diff);
+  const monday = new Date(mondayWeek1);
+  monday.setDate(mondayWeek1.getDate() + (week - 1) * 7);
+  return monday.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 const MoodGraph = ({ history }) => {
   const [tooltip, setTooltip] = useState(null);
+  const [hoveredIdx, setHoveredIdx] = useState(null);
 
   if (!history || history.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-10 border border-black/10 text-center">
-        <p className="text-sm text-gray-400">No mood history yet. Complete your first quiz!</p>
+      <div
+        className="bg-white border border-[#DBEAFE] px-8 py-10 text-center"
+        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      >
+        <p className="text-[14px] text-[#94A3B8]">
+          No mood history yet. Complete your first quiz!
+        </p>
       </div>
     );
   }
@@ -35,7 +43,8 @@ const MoodGraph = ({ history }) => {
   const yLabels = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
   const getX = (i) =>
-    pl + (history.length === 1 ? chartW / 2 : (i / (history.length - 1)) * chartW);
+    pl +
+    (history.length === 1 ? chartW / 2 : (i / (history.length - 1)) * chartW);
   const getY = (score) => pt + chartH - (score / 100) * chartH;
 
   const points = history.map((entry, i) => ({
@@ -46,12 +55,12 @@ const MoodGraph = ({ history }) => {
     week: entry.weekLabel,
   }));
 
-  const uniquePoints = points.filter((p, i, arr) => i === 0 || p.week !== arr[i - 1].week);
-
-  const pathD = uniquePoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
-  const areaD = uniquePoints.length > 0
-    ? `${pathD} L ${uniquePoints[uniquePoints.length - 1].x} ${pt + chartH} L ${uniquePoints[0].x} ${pt + chartH} Z`
-    : "";
+  const uniquePoints = points.filter(
+    (p, i, arr) => i === 0 || p.week !== arr[i - 1].week,
+  );
+  const pathD = uniquePoints
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ");
 
   const maxLabels = 6;
   const labelStep = Math.max(1, Math.ceil(uniquePoints.length / maxLabels));
@@ -60,36 +69,120 @@ const MoodGraph = ({ history }) => {
   if (uniquePoints.length > 0) labelSet.add(uniquePoints.length - 1);
 
   function getScoreColor(score) {
-    if (score >= 80) return "#22c55e";
-    if (score >= 60) return "#3b82f6";
-    if (score >= 40) return "#f59e0b";
-    return "#ef4444";
+    if (score >= 90) return "#2563EB";
+    if (score >= 80) return "#2563EB";
+    if (score >= 70) return "#2563EB";
+    if (score >= 60) return "#2563EB";
+    if (score >= 40) return "#2563EB";
+    return "#2563EB";
+  }
+
+  function getScoreLabel(score) {
+    if (score >= 90) return "Feeling Great";
+    if (score >= 80) return "Feeling Good";
+    if (score >= 70) return "Doing Well";
+    if (score >= 60) return "Doing Okay";
+    if (score >= 40) return "Not Doing Okay";
+    return "Struggling";
   }
 
   const lastScore = uniquePoints[uniquePoints.length - 1]?.score;
-  const lineColor = getScoreColor(lastScore);
+
+  let totalScore = 0;
+  for (let i = 0; i < uniquePoints.length; i++) {
+    totalScore += uniquePoints[i].score;
+  }
+  const avgScore = uniquePoints.length > 0 ? Math.round(totalScore / uniquePoints.length) : 0;
+
+  let highScore = 0;
+  if (uniquePoints.length > 0) {
+    highScore = uniquePoints[0].score;
+    for (let i = 1; i < uniquePoints.length; i++) {
+      if (uniquePoints[i].score > highScore) {
+        highScore = uniquePoints[i].score;
+      }
+    }
+  }
+
+  const highScoreDateIdx = uniquePoints.length > 0 ? uniquePoints.findIndex(p => p.score === highScore) : -1;
+  const highScoreDate = highScoreDateIdx !== -1 ? uniquePoints[highScoreDateIdx].date : "";
+
+  const lineColor = "#2563EB";
 
   return (
-    <div className="bg-white rounded-2xl border border-black/10 overflow-hidden">
-      <div className="px-6 pt-5 pb-2 flex items-center justify-between">
-        <p className="text-xs text-gray-400 uppercase tracking-widest">Score trend</p>
-        {uniquePoints.length >= 2 && (
-          <div className="flex items-center gap-1 text-xs text-gray-400">
-            <span>Latest:</span>
-            <span className="font-bold" style={{ color: lineColor }}>{lastScore}%</span>
-          </div>
-        )}
+    <div
+      className="bg-white border border-[#DBEAFE] overflow-hidden"
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+    >
+      <div className="px-8 pt-7 pb-5">
+        <p className="text-[19px] font-bold text-[#111827]">Mood History</p>
+        <p className="text-[14px] text-[#6B7280] mt-1">
+          Your weekly mood score over time
+        </p>
       </div>
 
-      <div style={{ position: "relative" }}>
-        <svg viewBox={`0 0 ${w} ${h}`} className="w-full">
-          <defs>
-            <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={lineColor} stopOpacity="0.15" />
-              <stop offset="100%" stopColor={lineColor} stopOpacity="0.01" />
-            </linearGradient>
-          </defs>
+      <div className="grid grid-cols-3 border-t border-b border-[#F1F5F9] divide-x divide-[#F1F5F9]">
+        <div className="px-8 py-4">
+          <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest mb-1.5">
+            Latest
+          </p>
+          <div className="flex items-baseline gap-1.5">
+            <p
+              className="text-[22px] font-bold tabular-nums leading-none"
+              style={{ color: "#2563EB" }}
+            >
+              {lastScore}%
+            </p>
+            <span
+              className="text-[22px] font-bold leading-none"
+              style={{ color: "#2563EB" }}
+            >
+              -{getScoreLabel(lastScore)}
+            </span>
+          </div>
+        </div>
+        <div className="px-8 py-4">
+          <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest mb-1.5">
+            Average
+          </p>
+          <div className="flex items-baseline gap-1.5">
+            <p
+              className="text-[22px] font-bold tabular-nums leading-none"
+              style={{ color: "#2563EB" }}
+            >
+              {avgScore}%
+            </p>
+            <span
+              className="text-[22px] font-bold leading-none"
+              style={{ color: "#2563EB" }}
+            >
+              -{getScoreLabel(avgScore)}
+            </span>
+          </div>
+        </div>
+        <div className="px-8 py-4">
+          <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest mb-1.5">
+            Best Mood Week
+          </p>
+          <div className="flex items-baseline gap-1.5">
+            <p
+              className="text-[22px] font-bold tabular-nums leading-none"
+              style={{ color: "#2563EB" }}
+            >
+              {highScore}%
+            </p>
+            <span
+              className="text-[22px] font-bold leading-none"
+              style={{ color: "#2563EB" }}
+            >
+              - {highScoreDate}
+            </span>
+          </div>
+        </div>
+      </div>
 
+      <div style={{ position: "relative" }} className="px-4 pb-4 pt-2">
+        <svg viewBox={`0 0 ${w} ${h}`} className="w-full">
           {yLabels.map((label) => {
             const y = getY(label);
             return (
@@ -99,67 +192,75 @@ const MoodGraph = ({ history }) => {
                   y1={y}
                   x2={w - pr}
                   y2={y}
-                  stroke={label === 0 ? "#e5e7eb" : "#f3f4f6"}
+                  stroke={label === 0 ? "#CBD5E1" : "#F1F5F9"}
                   strokeWidth={label === 0 ? "1.5" : "1"}
                   strokeDasharray={label === 0 ? "0" : "4 3"}
                 />
-                <text x={pl - 6} y={y + 3} textAnchor="end" fontSize="8" fill="#9ca3af">
+                <text
+                  x={pl - 8}
+                  y={y + 4}
+                  textAnchor="end"
+                  fontSize="10"
+                  fill="#94A3B8"
+                  fontWeight="600"
+                >
                   {label}
                 </text>
               </g>
             );
           })}
-
-          <line x1={pl} y1={pt} x2={pl} y2={pt + chartH} stroke="#e5e7eb" strokeWidth="1.5" />
-          <line x1={pl} y1={pt + chartH} x2={w - pr} y2={pt + chartH} stroke="#e5e7eb" strokeWidth="1.5" />
-
-          <text
-            x={10}
-            y={pt + chartH / 2}
-            textAnchor="middle"
-            fontSize="8"
-            fill="#9ca3af"
-            transform={`rotate(-90, 10, ${pt + chartH / 2})`}
-          >
-            Mood Score (%)
+          <line x1={pl} y1={pt} x2={pl} y2={pt + chartH} stroke="#CBD5E1" strokeWidth="1.5" />
+          <line x1={pl} y1={pt + chartH} x2={w - pr} y2={pt + chartH} stroke="#CBD5E1" strokeWidth="1.5" />
+          <text x={10} y={pt + chartH / 2} textAnchor="middle" fontSize="10" fill="#CBD5E1" transform={`rotate(-90, 10, ${pt + chartH / 2})`}>
+            Score %
           </text>
-
-          <text x={pl + chartW / 2} y={h - 2} textAnchor="middle" fontSize="8" fill="#9ca3af">
+          <text x={pl + chartW / 2} y={h - 2} textAnchor="middle" fontSize="10" fill="#CBD5E1">
             Week
           </text>
-
-          {areaD && <path d={areaD} fill="url(#grad)" />}
-
+          {hoveredIdx !== null && uniquePoints[hoveredIdx] && (
+            <line
+              x1={uniquePoints[hoveredIdx].x}
+              y1={pt}
+              x2={uniquePoints[hoveredIdx].x}
+              y2={pt + chartH}
+              stroke="#E2E8F0"
+              strokeWidth="1"
+              strokeDasharray="4 3"
+              style={{ pointerEvents: "none" }}
+            />
+          )}
           <path
             d={pathD}
             fill="none"
             stroke={lineColor}
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-
-          {uniquePoints.map((p, i) => (
-            <g key={i}>
-              {labelSet.has(i) && (
-                <text x={p.x} y={pt + chartH + 14} textAnchor="middle" fontSize="8" fill="#9ca3af">
-                  {p.date}
-                </text>
-              )}
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r="10"
-                fill="transparent"
-                style={{ cursor: "pointer" }}
-                onMouseEnter={() => setTooltip(p)}
-                onMouseLeave={() => setTooltip(null)}
-              />
-              <circle cx={p.x} cy={p.y} r="3.5" fill="white" stroke={lineColor} strokeWidth="2" style={{ pointerEvents: "none" }} />
-            </g>
-          ))}
+          {uniquePoints.map((p, i) => {
+            const isHovered = hoveredIdx === i;
+            const dotColor = getScoreColor(p.score);
+            return (
+              <g key={i}>
+                {labelSet.has(i) && (
+                  <text x={p.x} y={pt + chartH + 18} textAnchor="middle" fontSize="10" fill="#94A3B8" fontWeight="500">
+                    {p.date}
+                  </text>
+                )}
+                {isHovered && (
+                  <circle cx={p.x} cy={p.y} r="9" fill="white" stroke={dotColor} strokeWidth="1.5" opacity="0.3" style={{ pointerEvents: "none" }} />
+                )}
+                <circle
+                  cx={p.x} cy={p.y} r="12" fill="transparent"
+                  style={{ cursor: "pointer" }}
+                  onMouseEnter={() => { setTooltip(p); setHoveredIdx(i); }}
+                  onMouseLeave={() => { setTooltip(null); setHoveredIdx(null); }}
+                />
+                <circle cx={p.x} cy={p.y} r={isHovered ? "5" : "3.5"} fill="white" stroke={dotColor} strokeWidth="2.5" style={{ pointerEvents: "none" }} />
+              </g>
+            );
+          })}
         </svg>
-
         {tooltip && (
           <div
             style={{
@@ -169,16 +270,20 @@ const MoodGraph = ({ history }) => {
               transform: "translate(-50%, -140%)",
               pointerEvents: "none",
             }}
-            className="bg-gray-900 text-white text-xs rounded-xl px-3 py-2 whitespace-nowrap shadow-xl"
+            className="bg-[#111827] text-white px-4 py-2.5 whitespace-nowrap shadow-xl"
           >
-            <p className="font-bold text-sm">{tooltip.score}%</p>
-            <p className="text-gray-400">{tooltip.date}</p>
-            <div style={{
-              position: "absolute", bottom: "-5px", left: "50%",
-              transform: "translateX(-50%)", width: 0, height: 0,
-              borderLeft: "5px solid transparent", borderRight: "5px solid transparent",
-              borderTop: "5px solid #111827",
-            }} />
+            <p className="text-[15px] font-bold tabular-nums" style={{ color: getScoreColor(tooltip.score) }}>
+              {tooltip.score}%
+            </p>
+            <p className="text-[12px] text-[#94A3B8] mt-0.5">{tooltip.date}</p>
+            <div
+              style={{
+                position: "absolute", bottom: "-5px", left: "50%",
+                transform: "translateX(-50%)", width: 0, height: 0,
+                borderLeft: "5px solid transparent", borderRight: "5px solid transparent",
+                borderTop: "5px solid #111827",
+              }}
+            />
           </div>
         )}
       </div>

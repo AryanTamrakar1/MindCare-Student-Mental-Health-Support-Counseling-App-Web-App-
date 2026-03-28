@@ -4,23 +4,37 @@ const { awardPoints } = require("./gamificationController");
 
 function getWeekLabel(date) {
   const d = new Date(date);
-  const startOfYear = new Date(d.getFullYear(), 0, 1);
-  const weekNumber = Math.ceil(
-    ((d - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7,
-  );
-  return `${d.getFullYear()}-W${String(weekNumber).padStart(2, "0")}`;
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+  const monday = new Date(d.setDate(diff));
+  
+  const year = monday.getFullYear();
+  const jan4 = new Date(year, 0, 4);
+  const msPerWeek = 604800000;
+  const weekNumber = Math.ceil(((monday - new Date(jan4.getFullYear(), 0, 4)) / msPerWeek) + 1);
+  
+  return year + "-W" + String(weekNumber).padStart(2, "0");
 }
 
+
 function calculateMood(answers) {
-  const total = answers.reduce((sum, a) => sum + a.score, 0);
+  let total = 0;
+  for (let i = 0; i < answers.length; i++) {
+    total = total + answers[i].score;
+  }
   const max = answers.length * 5;
   const percentage = Math.round((total / max) * 100);
 
   let label = "";
-  if (percentage <= 39) label = "Very Low";
-  else if (percentage <= 59) label = "Below Average";
-  else if (percentage <= 79) label = "Average";
-  else label = "Good";
+  if (percentage >= 80) {
+    label = "Great";
+  } else if (percentage >= 60) {
+    label = "Okay";
+  } else if (percentage >= 40) {
+    label = "Low";
+  } else {
+    label = "Very Low";
+  }
 
   return { moodScore: percentage, moodLabel: label };
 }

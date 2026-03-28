@@ -1,91 +1,97 @@
-import React, { useState, useEffect } from "react";
-import API from "../../api/axios";
+import React from "react";
+import { ThumbsDown, Frown, Meh, Smile, ThumbsUp } from "lucide-react";
+import { useDailyCheckIn } from "../../hooks/moodQuiz/useDailyCheckIn";
 
 const DailyCheckIn = () => {
-  const [selected, setSelected] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [alreadyDone, setAlreadyDone] = useState(false);
+  const { selected, setSelected, submitted, loading, alreadyDone, handleSubmit } = useDailyCheckIn();
 
   const emojis = [
-    { mood: 1, emoji: "😔", label: "Very Bad" },
-    { mood: 2, emoji: "😟", label: "Bad" },
-    { mood: 3, emoji: "😐", label: "Okay" },
-    { mood: 4, emoji: "🙂", label: "Good" },
-    { mood: 5, emoji: "😊", label: "Great" },
+    { mood: 1, icon: ThumbsDown, label: "Very Bad", activeColor: "text-red-500", activeBorder: "border-red-300", activeBg: "bg-red-50" },
+    { mood: 2, icon: Frown, label: "Bad", activeColor: "text-orange-500", activeBorder: "border-orange-300", activeBg: "bg-orange-50" },
+    { mood: 3, icon: Meh, label: "Okay", activeColor: "text-yellow-600", activeBorder: "border-yellow-300", activeBg: "bg-yellow-50" },
+    { mood: 4, icon: Smile, label: "Good", activeColor: "text-[#2563EB]", activeBorder: "border-blue-300", activeBg: "bg-blue-50" },
+    { mood: 5, icon: ThumbsUp, label: "Great", activeColor: "text-green-500", activeBorder: "border-green-300", activeBg: "bg-green-50" },
   ];
 
-  useEffect(() => {
-    const checkToday = async () => {
-      try {
-        const token = sessionStorage.getItem("token");
-        const res = await API.get("/quiz/checkin/history", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const today = new Date().toISOString().split("T")[0];
-        if (res.data.find((entry) => entry.date === today)) {
-          setAlreadyDone(true);
-          setSubmitted(true);
-        }
-      } catch (error) {
-        console.error("Error checking today's check-in", error);
-      }
-    };
-    checkToday();
-  }, []);
-
-  const handleSubmit = async () => {
-    if (selected === null) return;
-    setLoading(true);
-    try {
-      const token = sessionStorage.getItem("token");
-      await API.post("/quiz/checkin", { mood: selected }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSubmitted(true);
-    } catch (error) {
-      console.error("Check-in error", error);
-    }
-    setLoading(false);
-  };
-
   if (alreadyDone || submitted) {
+    let checkInStatusText = "Check-in saved!";
+    if (alreadyDone) checkInStatusText = "You already checked in today!";
+
     return (
-      <div className="bg-white rounded-2xl p-6 border border-black/10 text-center">
-        <p className="text-sm text-gray-500">
-          {alreadyDone ? "You already checked in today! See you tomorrow." : "Check-in saved! See you tomorrow."}
+      <div className="flex flex-col gap-2">
+        <p className="text-[13px] text-[#6B7280] mb-1">
+          {checkInStatusText}
         </p>
+        {emojis.map((item) => {
+          const Icon = item.icon;
+          const isSelected = selected === item.mood;
+          return (
+            <div
+              key={item.mood}
+              className={`flex items-center gap-3 px-4 py-3 border-2 transition-all ${
+                isSelected
+                  ? `${item.activeBorder} ${item.activeBg}`
+                  : "border-[#F1F5F9] bg-[#F8FAFC] opacity-40"
+              }`}
+            >
+              <Icon
+                size={17}
+                className={isSelected ? item.activeColor : "text-[#94A3B8]"}
+                strokeWidth={isSelected ? 2.5 : 1.8}
+              />
+              <span className={`text-[13px] font-medium ${isSelected ? item.activeColor : "text-[#94A3B8]"}`}>
+                {item.label}
+              </span>
+              {isSelected && (
+                <span className="ml-auto text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest">
+                  Today
+                </span>
+              )}
+            </div>
+          );
+        })}
+        <p className="text-[12px] text-[#94A3B8] text-center mt-2">See you tomorrow.</p>
       </div>
     );
   }
 
+  let submitButtonText = "Submit Check-In";
+  if (loading) submitButtonText = "Saving...";
+
   return (
-    <div className="bg-white rounded-2xl p-6 border border-black/10">
-      <p className="text-sm text-gray-500 mb-5">How are you feeling today?</p>
-      <div className="flex justify-between gap-3 mb-5">
-        {emojis.map((item) => (
-          <button
-            key={item.mood}
-            onClick={() => setSelected(item.mood)}
-            className={`flex flex-col items-center flex-1 py-4 rounded-2xl border-2 transition-all duration-200
-              ${selected === item.mood
-                ? "border-blue-500 bg-blue-50 scale-105"
-                : "border-gray-100 bg-gray-50 hover:border-blue-300 hover:bg-blue-50"
+    <div>
+      <p className="text-[13px] text-[#6B7280] mb-4">How are you feeling today?</p>
+      <div className="flex flex-col gap-2 mb-4">
+        {emojis.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.mood}
+              onClick={() => setSelected(item.mood)}
+              className={`flex items-center gap-3 w-full px-4 py-3 border-2 transition-all duration-200 text-left ${
+                selected === item.mood
+                  ? `${item.activeBorder} ${item.activeBg}`
+                  : "border-[#E2E8F0] bg-white hover:border-[#BFDBFE] hover:bg-[#EFF6FF]"
               }`}
-          >
-            <span className="text-3xl mb-2">{item.emoji}</span>
-            <span className={`text-xs ${selected === item.mood ? "text-blue-600 font-semibold" : "text-gray-400"}`}>
-              {item.label}
-            </span>
-          </button>
-        ))}
+            >
+              <Icon
+                size={17}
+                className={`shrink-0 ${selected === item.mood ? item.activeColor : "text-[#94A3B8]"}`}
+                strokeWidth={selected === item.mood ? 2.5 : 1.8}
+              />
+              <span className={`text-[13px] font-medium ${selected === item.mood ? item.activeColor : "text-[#374151]"}`}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
       <button
         onClick={handleSubmit}
         disabled={selected === null || loading}
-        className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full bg-[#2563EB] text-white py-2.5 text-[13px] font-semibold hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {loading ? "Saving..." : "Submit Check-In"}
+        {submitButtonText}
       </button>
     </div>
   );

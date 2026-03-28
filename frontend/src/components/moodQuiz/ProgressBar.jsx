@@ -6,14 +6,14 @@ const ProgressBar = ({ current, total }) => {
   return (
     <div className="mb-6">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-bold text-gray-500">
+        <span className="text-[13px] font-semibold text-[#6B7280]">
           Question {current} of {total}
         </span>
-        <span className="text-sm font-bold text-indigo-600">{percentage}%</span>
+        <span className="text-[13px] font-bold text-[#2563EB]">{percentage}%</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-3">
+      <div className="w-full bg-[#F1F5F9] h-1.5">
         <div
-          className="bg-indigo-600 h-3 rounded-full transition-all duration-500"
+          className="bg-[#2563EB] h-1.5 transition-all duration-500"
           style={{ width: `${percentage}%` }}
         ></div>
       </div>

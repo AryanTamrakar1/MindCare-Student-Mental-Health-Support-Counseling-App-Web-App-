@@ -1,0 +1,1 @@
+export { useMoodPredictionContext as useMoodPrediction } from "../../context/moodQuiz/MoodPredictionContext";

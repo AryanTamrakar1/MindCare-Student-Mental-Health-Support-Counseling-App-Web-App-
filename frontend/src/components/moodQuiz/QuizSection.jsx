@@ -1,166 +1,78 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import ProgressBar from "./ProgressBar";
 import QuestionCard from "./QuestionCard";
-import API from "../../api/axios";
+import { useQuizSection } from "../../hooks/moodQuiz/useQuizSection";
 
 function getScoreColor(score) {
-  if (score >= 80) return "text-green-600";
-  if (score >= 60) return "text-blue-600";
+  if (score >= 90) return "text-green-600";
+  if (score >= 80) return "text-green-500";
+  if (score >= 70) return "text-blue-600";
+  if (score >= 60) return "text-blue-500";
   if (score >= 40) return "text-yellow-600";
   return "text-red-600";
 }
 
 function getScoreBg(score) {
-  if (score >= 80) return "bg-green-50";
-  if (score >= 60) return "bg-blue-50";
-  if (score >= 40) return "bg-yellow-50";
-  return "bg-red-50";
+  if (score >= 90) return "bg-green-50 border border-green-200";
+  if (score >= 80) return "bg-green-100 border border-green-300";
+  if (score >= 70) return "bg-blue-50 border border-blue-200";
+  if (score >= 60) return "bg-blue-100 border border-blue-300";
+  if (score >= 40) return "bg-yellow-50 border border-yellow-200";
+  return "bg-red-50 border border-red-200";
+}
+
+function getMoodLabel(score) {
+  if (score >= 90) return "Feeling Great";
+  if (score >= 80) return "Feeling Good";
+  if (score >= 70) return "Doing Well";
+  if (score >= 60) return "Doing Okay";
+  if (score >= 40) return "Not Doing Okay";
+  return "Struggling";
 }
 
 const QuizSection = ({ onQuizComplete }) => {
-  const [questions, setQuestions] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState([]);
-  const [selectedScore, setSelectedScore] = useState(null);
-  const [selectedFollowUp, setSelectedFollowUp] = useState(null);
-  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [checking, setChecking] = useState(true);
-
-  useEffect(() => {
-    const checkAndLoad = async () => {
-      try {
-        const token = sessionStorage.getItem("token");
-
-        const checkRes = await API.get("/quiz/check", {
-          headers: { Authorization: "Bearer " + token },
-        });
-
-        if (checkRes.data.submitted) {
-          setAlreadySubmitted(true);
-          setResult({
-            moodScore: checkRes.data.moodScore,
-            moodLabel: checkRes.data.moodLabel,
-          });
-          setChecking(false);
-          return;
-        }
-
-        const quizRes = await API.get("/smart/smart-quiz", {
-          headers: { Authorization: "Bearer " + token },
-        });
-
-        setQuestions(quizRes.data.questions);
-      } catch (error) {
-        console.error("Error loading quiz", error);
-      }
-      setChecking(false);
-    };
-
-    checkAndLoad();
-  }, []);
-
-  function handleSelect(score, followUpAnswer) {
-    setSelectedScore(score);
-    if (followUpAnswer) {
-      setSelectedFollowUp(followUpAnswer);
-    }
-  }
-
-  function handleNext() {
-    const currentQuestion = questions[currentIndex];
-
-    let followUpQuestion = null;
-    let followUpAnswer = null;
-
-    if (selectedScore <= 2 && currentQuestion.followUp) {
-      followUpQuestion = currentQuestion.followUp.question;
-    }
-    if (selectedScore <= 2) {
-      followUpAnswer = selectedFollowUp;
-    }
-
-    const answerEntry = {
-      questionText: currentQuestion.text,
-      category: currentQuestion.category,
-      score: selectedScore,
-      followUpQuestion: followUpQuestion,
-      followUpAnswer: followUpAnswer,
-    };
-
-    const newAnswers = [];
-    for (let i = 0; i < answers.length; i++) {
-      newAnswers.push(answers[i]);
-    }
-    newAnswers.push(answerEntry);
-
-    setAnswers(newAnswers);
-    setSelectedScore(null);
-    setSelectedFollowUp(null);
-
-    if (currentIndex + 1 < questions.length) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      handleSubmit(newAnswers);
-    }
-  }
-
-  async function handleSubmit(finalAnswers) {
-    setLoading(true);
-    try {
-      const token = sessionStorage.getItem("token");
-      const res = await API.post(
-        "/quiz/submit",
-        { answers: finalAnswers },
-        {
-          headers: { Authorization: "Bearer " + token },
-        },
-      );
-      setResult({
-        moodScore: res.data.moodScore,
-        moodLabel: res.data.moodLabel,
-      });
-      setSubmitted(true);
-      if (onQuizComplete) {
-        onQuizComplete();
-      }
-    } catch (error) {
-      console.error("Submit error", error);
-    }
-    setLoading(false);
-  }
+  const {
+    questions,
+    currentIndex,
+    selectedScore,
+    alreadySubmitted,
+    submitted,
+    result,
+    loading,
+    checking,
+    handleSelect,
+    handleNext,
+  } = useQuizSection();
 
   if (checking || loading) {
     let loadingText = "Submitting your quiz...";
-    if (checking) {
-      loadingText = "Loading your quiz...";
-    }
+    if (checking) loadingText = "Loading your quiz...";
+
     return (
-      <div className="bg-white rounded-2xl p-8 border border-black/10 text-center">
-        <p className="text-sm text-gray-400">{loadingText}</p>
-      </div>
+      <p className="text-[13px] text-[#94A3B8] text-center py-2">
+        {loadingText}
+      </p>
     );
   }
 
   if (alreadySubmitted && !submitted) {
     return (
-      <div className="bg-white rounded-2xl p-8 border border-black/10 flex items-center justify-center gap-8">
-        <div className="text-center">
-          <p className="text-sm text-gray-600 mb-1">
+      <div className="flex items-center justify-between gap-8">
+        <div>
+          <p className="text-[14px] font-semibold text-[#374151] mb-1">
             You already completed this week's quiz.
           </p>
-          <p className="text-xs text-gray-400">
+          <p className="text-[13px] text-[#6B7280]">
             Come back next week for a new one.
           </p>
         </div>
         {result && (
-          <div className={"text-center rounded-2xl px-8 py-4 " + getScoreBg(result.moodScore)}>
-            <p className={"text-4xl font-black " + getScoreColor(result.moodScore)}>
-              {result.moodScore}%
-            </p>
-            <p className="text-sm text-gray-500 mt-1">{result.moodLabel}</p>
+          <div className={"text-center px-8 py-4 shrink-0 " + getScoreBg(result.moodScore)}>
+            <p className="text-[12px] font-semibold text-[#6B7280] mb-2">Your current mood this week</p>
+            <div className="flex items-baseline gap-1.5 justify-center">
+              <p className={`text-[28px] font-bold tabular-nums ${getScoreColor(result.moodScore)}`}>{result.moodScore}%</p>
+              <span className={`text-[28px] font-bold ${getScoreColor(result.moodScore)}`}>— {getMoodLabel(result.moodScore)}</span>
+            </div>
           </div>
         )}
       </div>
@@ -169,19 +81,20 @@ const QuizSection = ({ onQuizComplete }) => {
 
   if (submitted) {
     return (
-      <div className="bg-white rounded-2xl p-8 border border-black/10 flex items-center justify-center gap-8">
-        <div className="text-center">
-          <p className="text-sm text-gray-600 mb-1">
+      <div className="flex items-center justify-between gap-8">
+        <div>
+          <p className="text-[14px] font-semibold text-[#374151] mb-1">
             Quiz completed! Your response has been recorded.
           </p>
-          <p className="text-xs text-gray-400">See you next week.</p>
+          <p className="text-[13px] text-[#6B7280]">See you next week.</p>
         </div>
         {result && (
-          <div className={"text-center rounded-2xl px-8 py-4 " + getScoreBg(result.moodScore)}>
-            <p className={"text-4xl font-black " + getScoreColor(result.moodScore)}>
-              {result.moodScore}%
-            </p>
-            <p className="text-sm text-gray-500 mt-1">{result.moodLabel}</p>
+          <div className={"text-center px-8 py-4 shrink-0 " + getScoreBg(result.moodScore)}>
+            <p className="text-[12px] font-semibold text-[#6B7280] mb-2">Your current mood this week</p>
+            <div className="flex items-baseline gap-1.5 justify-center">
+              <p className={`text-[28px] font-bold tabular-nums ${getScoreColor(result.moodScore)}`}>{result.moodScore}%</p>
+              <span className={`text-[28px] font-bold ${getScoreColor(result.moodScore)}`}>— {getMoodLabel(result.moodScore)}</span>
+            </div>
           </div>
         )}
       </div>
@@ -190,19 +103,17 @@ const QuizSection = ({ onQuizComplete }) => {
 
   if (questions.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-8 border border-black/10 text-center">
-        <p className="text-sm text-gray-400">Could not load quiz questions.</p>
-      </div>
+      <p className="text-[13px] text-[#94A3B8] text-center py-2">
+        Could not load quiz questions.
+      </p>
     );
   }
 
   let buttonText = "Next Question";
-  if (currentIndex + 1 === questions.length) {
-    buttonText = "Submit Quiz";
-  }
+  if (currentIndex + 1 === questions.length) buttonText = "Submit Quiz";
 
   return (
-    <div className="bg-white rounded-2xl p-8 border border-black/10">
+    <div>
       <ProgressBar current={currentIndex + 1} total={questions.length} />
       <QuestionCard
         question={questions[currentIndex]}
@@ -212,7 +123,7 @@ const QuizSection = ({ onQuizComplete }) => {
       <button
         onClick={handleNext}
         disabled={selectedScore === null}
-        className="mt-6 w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-sm hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
+        className="mt-6 w-full bg-[#2563EB] text-white py-3 font-semibold text-[14px] hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {buttonText}
       </button>

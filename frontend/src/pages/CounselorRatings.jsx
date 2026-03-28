@@ -1,123 +1,58 @@
-import React, { useState, useEffect } from "react";
-import axios from "../api/axios";
+import React from "react";
 import CounselorSidebar from "../components/Sidebars/CounselorSidebar";
 import Navbar from "../components/Navbar";
 import { Star } from "lucide-react";
 import RatingStatsCards from "../components/counselorRatings/RatingStatsCards";
 import RatingBreakdown from "../components/counselorRatings/RatingBreakdown";
+import { CounselorRatingsProvider } from "../context/counselorRatings/CounselorRatingsContext";
+import { usecounselorRatings } from "../hooks/counselorRatings/useCounselorRatings";
 
-const QUESTIONS = [
-  { key: "professionalism", label: "Professionalism" },
-  { key: "clarity", label: "Clarity" },
-  { key: "empathy", label: "Empathy" },
-  { key: "helpfulness", label: "Helpfulness" },
-  { key: "overallSatisfaction", label: "Overall Satisfaction" },
-];
+const CounselorRatingsInner = () => {
+  const {
+    user,
+    hasRatings,
+    overall,
+    data,
+    strongestQ,
+    strongestVal,
+    weakestQ,
+    weakVal,
+  } = usecounselorRatings();
 
-function getAverage(averages, key) {
-  if (!averages) return 0;
-  if (averages[key]) return averages[key];
-  return 0;
-}
-
-const CounselorRatings = () => {
-  const [user, setUser] = useState(null);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const token = sessionStorage.getItem("token");
-        const ur = await axios.get("/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const rr = await axios.get("/ratings/my-ratings", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(ur.data);
-        setData(rr.data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, []);
-
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex">
-        <CounselorSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-            Loading Ratings...
-          </p>
-        </main>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
-
-  let hasRatings = false;
-  if (data && data.totalRatings && data.totalRatings > 0) {
-    hasRatings = true;
-  }
-
-  let overall = 0;
-  if (data && data.averages && data.averages.overall) {
-    overall = data.averages.overall;
-  }
-
-  let strongestQ = QUESTIONS[0];
-  for (let i = 1; i < QUESTIONS.length; i++) {
-    if (
-      getAverage(data.averages, QUESTIONS[i].key) >
-      getAverage(data.averages, strongestQ.key)
-    ) {
-      strongestQ = QUESTIONS[i];
-    }
-  }
-  const strongestVal = getAverage(data.averages, strongestQ.key);
-
-  let weakestQ = QUESTIONS[0];
-  for (let i = 1; i < QUESTIONS.length; i++) {
-    if (
-      getAverage(data.averages, QUESTIONS[i].key) <
-      getAverage(data.averages, weakestQ.key)
-    ) {
-      weakestQ = QUESTIONS[i];
-    }
-  }
-  const weakVal = getAverage(data.averages, weakestQ.key);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      className="min-h-screen bg-[#EFF6FF] flex"
+    >
+      <Navbar />
       <CounselorSidebar user={user} />
 
-      <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
-        <div className="mb-8 pb-6 border-b-2 border-slate-300 flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">
-              Session Ratings
-            </h2>
-            <p className="text-gray-500 mt-0.5">
-              See how students have rated your counseling sessions.
-            </p>
-          </div>
-          <Navbar />
-        </div>
-
+      <main
+        className="flex-1 ml-[260px] overflow-y-auto"
+        style={{
+          paddingTop: "calc(72px + 2.5rem)",
+          paddingBottom: "2.5rem",
+          paddingLeft: "2.5rem",
+          paddingRight: "2.5rem",
+        }}
+      >
         {!hasRatings && (
-          <div className="bg-white rounded-3xl border-2 border-dashed border-gray-200 py-24 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-yellow-50 rounded-2xl flex items-center justify-center mb-4 border border-yellow-100">
-              <Star size={28} className="text-yellow-400 fill-yellow-300" />
+          <div className="bg-white border border-dashed border-[#DBEAFE] py-24 flex flex-col items-center text-center">
+            <div className="w-12 h-12 bg-yellow-50 border border-yellow-200 flex items-center justify-center mb-4">
+              <Star
+                size={22}
+                className="text-yellow-400 fill-yellow-300"
+                strokeWidth={1.5}
+              />
             </div>
-            <p className="font-black text-gray-600 text-lg mb-2">
+            <p className="text-[17px] font-bold text-[#111827] mb-2">
               No Ratings Yet
             </p>
-            <p className="text-sm text-gray-400 max-w-xs">
+            <p className="text-[14px] text-[#6B7280] max-w-xs">
               Students can rate sessions after they are completed. Ratings will
               appear here once submitted.
             </p>
@@ -141,6 +76,14 @@ const CounselorRatings = () => {
         )}
       </main>
     </div>
+  );
+};
+
+const CounselorRatings = () => {
+  return (
+    <CounselorRatingsProvider>
+      <CounselorRatingsInner />
+    </CounselorRatingsProvider>
   );
 };
 

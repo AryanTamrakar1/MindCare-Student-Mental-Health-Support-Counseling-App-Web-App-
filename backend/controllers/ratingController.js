@@ -111,7 +111,7 @@ exports.checkRating = async (req, res) => {
   }
 };
 
-//  It allows a counselor to get a detailed breakdown of all their ratings and averages across the 5 questions.
+// It allows a counselor to get a detailed breakdown of all their ratings and averages across the 5 questions.
 exports.getCounselorRatings = async (req, res) => {
   try {
     const counselorId = req.user.id;
@@ -141,13 +141,13 @@ exports.getCounselorRatings = async (req, res) => {
       overallSatisfaction: 0,
     };
 
-    ratings.forEach((r) => {
-      sum.professionalism += r.professionalism;
-      sum.clarity += r.clarity;
-      sum.empathy += r.empathy;
-      sum.helpfulness += r.helpfulness;
-      sum.overallSatisfaction += r.overallSatisfaction;
-    });
+    for (let i = 0; i < ratings.length; i++) {
+      sum.professionalism = sum.professionalism + ratings[i].professionalism;
+      sum.clarity = sum.clarity + ratings[i].clarity;
+      sum.empathy = sum.empathy + ratings[i].empathy;
+      sum.helpfulness = sum.helpfulness + ratings[i].helpfulness;
+      sum.overallSatisfaction = sum.overallSatisfaction + ratings[i].overallSatisfaction;
+    }
 
     const count = ratings.length;
     const averages = {
@@ -179,7 +179,7 @@ exports.getCounselorRatings = async (req, res) => {
   }
 };
 
-//  It allows the students to see the counselor overall rating
+// It allows the students to see the counselor overall rating
 exports.getPublicCounselorRating = async (req, res) => {
   try {
     const { counselorId } = req.params;

@@ -1,6 +1,6 @@
-import { Star, Users, Award } from "lucide-react";
+import { Star, Users, Award, TrendingUp } from "lucide-react";
 
-const StarDisplay = ({ value, size = 16 }) => (
+const StarDisplay = ({ value, size = 15 }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((s) => (
       <Star
@@ -9,70 +9,81 @@ const StarDisplay = ({ value, size = 16 }) => (
         className={
           s <= Math.round(value)
             ? "fill-yellow-400 text-yellow-400"
-            : "fill-gray-200 text-gray-200"
+            : "fill-[#E2E8F0] text-[#E2E8F0]"
         }
       />
     ))}
   </div>
 );
 
-const RatingStatsCards = ({
-  overall,
-  totalRatings,
-  strongestLabel,
-  strongestVal,
-}) => {
+const RatingStatsCards = ({ overall, totalRatings, strongestLabel, strongestVal }) => {
+  let scoreLevel = "Needs Work";
+  if (overall >= 4.5) scoreLevel = "Excellent";
+  else if (overall >= 3.5) scoreLevel = "Good";
+  else if (overall >= 2.5) scoreLevel = "Average";
+
+  let scoreLevelColor = "text-red-500";
+  if (overall >= 4.5) scoreLevelColor = "text-green-600";
+  else if (overall >= 3.5) scoreLevelColor = "text-[#2563EB]";
+  else if (overall >= 2.5) scoreLevelColor = "text-yellow-600";
+
+  const cards = [
+    {
+      key: "overall",
+      icon: Star,
+      bg: "bg-yellow-50", border: "border-yellow-200", iconColor: "text-yellow-500",
+      value: overall.toFixed(1),
+      label: "Overall Rating",
+      sub: <StarDisplay value={overall} size={13} />,
+    },
+    {
+      key: "totalRatings",
+      icon: Users,
+      bg: "bg-[#EFF6FF]", border: "border-[#DBEAFE]", iconColor: "text-[#2563EB]",
+      value: totalRatings,
+      label: "Total Ratings",
+      sub: <span className="text-[13px] text-[#6B7280]">from students</span>,
+    },
+    {
+      key: "strongest",
+      icon: Award,
+      bg: "bg-emerald-50", border: "border-emerald-200", iconColor: "text-emerald-600",
+      value: strongestLabel,
+      label: "Strongest Area",
+      sub: <span className="text-[13px] text-[#6B7280]">{strongestVal.toFixed(2)} / 5 avg</span>,
+      smallValue: true,
+    },
+    {
+      key: "level",
+      icon: TrendingUp,
+      bg: "bg-[#EFF6FF]", border: "border-[#DBEAFE]", iconColor: "text-[#1D4ED8]",
+      value: scoreLevel,
+      label: "Score Level",
+      sub: <span className="text-[13px] text-[#6B7280]">{overall.toFixed(2)} weighted avg</span>,
+      smallValue: true,
+      valueColor: scoreLevelColor,
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-3 gap-5 mb-8">
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-5 col-span-1">
-        <div className="w-16 h-16 bg-yellow-50 rounded-2xl flex items-center justify-center flex-shrink-0 border border-yellow-100">
-          <Star size={28} className="text-yellow-400 fill-yellow-400" />
-        </div>
-        <div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-            Overall Rating
-          </p>
-          <p className="text-4xl font-black text-gray-800 leading-none">
-            {overall.toFixed(1)}
-            <span className="text-lg text-gray-400 font-bold"> /5</span>
-          </p>
-          <div className="mt-2">
-            <StarDisplay value={overall} size={16} />
+    <div className="grid grid-cols-4 gap-5 mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      {cards.map((card) => {
+        const Icon = card.icon;
+        return (
+          <div key={card.key} className="bg-white border border-[#DBEAFE] px-6 py-5 flex items-center gap-5">
+            <div className={`w-12 h-12 ${card.bg} border ${card.border} flex items-center justify-center flex-shrink-0`}>
+              <Icon size={22} className={card.iconColor} strokeWidth={2} />
+            </div>
+            <div className="min-w-0">
+              <p className={`font-bold leading-none ${card.smallValue ? "text-[20px]" : "text-[28px]"} ${card.valueColor || "text-[#111827]"} truncate`}>
+                {card.value}
+              </p>
+              <p className="text-[13px] font-medium text-[#6B7280] mt-1.5">{card.label}</p>
+              {card.sub && <div className="mt-1.5">{card.sub}</div>}
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-5">
-        <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center flex-shrink-0 border border-indigo-100">
-          <Users size={26} className="text-indigo-500" />
-        </div>
-        <div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-            Total Ratings
-          </p>
-          <p className="text-4xl font-black text-gray-800 leading-none">
-            {totalRatings}
-          </p>
-          <p className="text-xs text-gray-400 font-bold mt-1">from students</p>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-5">
-        <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center flex-shrink-0 border border-emerald-100">
-          <Award size={26} className="text-emerald-500" />
-        </div>
-        <div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-            Strongest Area
-          </p>
-          <p className="text-base font-black text-gray-800 leading-tight">
-            {strongestLabel}
-          </p>
-          <p className="text-xs text-gray-400 font-bold mt-1">
-            {strongestVal.toFixed(2)} / 5
-          </p>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 };

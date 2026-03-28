@@ -1,23 +1,66 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Trash2, Frown, CloudRain, Meh, Zap, Smile, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 
+function buildReplyTree(replies) {
+  const replyMap = {};
+  const rootReplies = [];
+
+  for (let i = 0; i < replies.length; i++) {
+    const reply = replies[i];
+    replyMap[reply._id.toString()] = {
+      _id: reply._id,
+      content: reply.content,
+      authorId: reply.authorId,
+      authorRole: reply.authorRole,
+      authorName: reply.authorName,
+      authorPhoto: reply.authorPhoto,
+      parentReplyId: reply.parentReplyId,
+      likes: reply.likes,
+      createdAt: reply.createdAt,
+      children: [],
+    };
+  }
+
+  for (let i = 0; i < replies.length; i++) {
+    const reply = replies[i];
+    if (reply.parentReplyId) {
+      const parentId = reply.parentReplyId.toString();
+      if (replyMap[parentId]) {
+        replyMap[parentId].children.push(replyMap[reply._id.toString()]);
+      }
+    } else {
+      rootReplies.push(replyMap[reply._id.toString()]);
+    }
+  }
+
+  return rootReplies;
+}
+
 const categoryColor = {
-  "Academic & Exam Pressure": "bg-blue-100 text-blue-700 border-blue-200",
-  "Skill Gap & Job Anxiety": "bg-indigo-100 text-indigo-700 border-indigo-200",
-  "Family & Social Pressure": "bg-yellow-100 text-yellow-700 border-yellow-200",
-  "Emotional & Personal Issues": "bg-pink-100 text-pink-700 border-pink-200",
-  "Sleep & Physical Wellbeing": "bg-green-100 text-green-700 border-green-200",
-  "General Mental Health": "bg-gray-100 text-gray-600 border-gray-200",
+  "Academic & Exam Pressure":   { bg: "#EFF6FF", text: "#2563EB", dot: "#3B82F6" },
+  "Skill Gap & Job Anxiety":    { bg: "#EEF2FF", text: "#4F46E5", dot: "#4F46E5" },
+  "Family & Social Pressure":   { bg: "#FFFBEB", text: "#D97706", dot: "#F59E0B" },
+  "Emotional & Personal Issues":{ bg: "#FDF2F8", text: "#DB2777", dot: "#EC4899" },
+  "Sleep & Physical Wellbeing": { bg: "#F0FDF4", text: "#059669", dot: "#10B981" },
+  "General Mental Health":      { bg: "#F9FAFB", text: "#6B7280", dot: "#9CA3AF" },
 };
 
-const moodEmoji = {
-  Overwhelmed: "😰",
-  Struggling: "😞",
-  Confused: "😕",
-  Frustrated: "😤",
-  Hopeful: "🙂",
+const moodIcon = {
+  Overwhelmed: Frown,
+  Struggling:  CloudRain,
+  Confused:    Meh,
+  Frustrated:  Zap,
+  Hopeful:     Smile,
+};
+
+const moodColor = {
+  Overwhelmed: "#EF4444",
+  Struggling:  "#F97316",
+  Confused:    "#F59E0B",
+  Frustrated:  "#F43F5E",
+  Hopeful:     "#10B981",
 };
 
 const timeAgo = (date) => {
@@ -30,6 +73,7 @@ const timeAgo = (date) => {
 
 const PostCard = ({ post, currentUser, onDelete }) => {
   const navigate = useNavigate();
+
   let alreadyClicked = false;
   if (currentUser && currentUser._id) {
     for (let i = 0; i < post.iFeelThis.length; i++) {
@@ -46,24 +90,14 @@ const PostCard = ({ post, currentUser, onDelete }) => {
 
   let isMyPost = false;
   if (post.authorId && currentUser && currentUser._id) {
-    if (post.authorId.toString() === currentUser._id.toString()) {
-      isMyPost = true;
-    }
+    if (post.authorId.toString() === currentUser._id.toString()) isMyPost = true;
   }
 
-  const topLevelReplies = [];
-  for (let i = 0; i < post.replies.length; i++) {
-    if (!post.replies[i].parentReplyId) {
-      topLevelReplies.push(post.replies[i]);
-    }
-  }
+  const topLevelReplies = buildReplyTree(post.replies);
 
   let canDelete = false;
-  if (currentUser && currentUser.role === "Admin") {
-    canDelete = true;
-  } else if (isMyPost) {
-    canDelete = true;
-  }
+  if (currentUser && currentUser.role === "Admin") canDelete = true;
+  else if (isMyPost) canDelete = true;
 
   const handleIFeelThis = async (e) => {
     e.stopPropagation();
@@ -92,33 +126,29 @@ const PostCard = ({ post, currentUser, onDelete }) => {
     setShowDeleteConfirm(false);
   };
 
+  const MoodIcon = moodIcon[post.moodTag] || Meh;
+  const moodC    = moodColor[post.moodTag] || "#9CA3AF";
+  const catStyle = categoryColor[post.category] || { bg: "#F9FAFB", text: "#6B7280", dot: "#9CA3AF" };
+
   return (
     <>
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl">
-            <h3 className="text-gray-800 font-black text-lg mb-2">
-              Delete Post?
-            </h3>
-            <p className="text-gray-500 text-sm mb-5">
-              This will permanently delete the post and all its replies.
-            </p>
+          <div
+            className="bg-white p-6 w-full max-w-sm mx-4 shadow-xl border border-[#E9F0FB]"
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          >
+            <h3 className="text-[#111827] font-black text-[18px] mb-2">Delete Post?</h3>
+            <p className="text-[#6B7280] text-[14px] mb-5">This will permanently delete the post and all its replies.</p>
             <div className="flex gap-3">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDeleteConfirm(false);
-                }}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-50"
-              >
-                Cancel
-              </button>
+                onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }}
+                className="flex-1 py-2.5 border border-[#E9F0FB] text-[#374151] font-semibold text-[14px] hover:bg-[#F9FAFB] transition"
+              >Cancel</button>
               <button
                 onClick={handleConfirmDelete}
-                className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-600"
-              >
-                Delete
-              </button>
+                className="flex-1 py-2.5 bg-red-500 text-white font-semibold text-[14px] hover:bg-red-600 transition"
+              >Delete</button>
             </div>
           </div>
         </div>
@@ -126,94 +156,84 @@ const PostCard = ({ post, currentUser, onDelete }) => {
 
       <div
         onClick={() => navigate(`/post/${post._id}`)}
-        className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all duration-200"
+        className="bg-white border border-[#E5E9F2] cursor-pointer hover:border-[#B8C7F0] hover:shadow-sm transition-all duration-200 group"
+        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
       >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="currentColor"
-                viewBox="0 0 24 24"
+        <div className="px-6 pt-5 pb-4">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5"
+                style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
               >
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-              </svg>
+                {post.category}
+              </span>
+              <span className="text-[11px] font-semibold bg-[#EEF2FF] text-[#2563EB] border border-[#C7D2FE] px-2 py-0.5">
+                Anonymous
+              </span>
+              {isMyPost && (
+                <span className="text-[11px] font-semibold bg-[#EEF2FF] text-[#2563EB] border border-[#C7D2FE] px-2 py-0.5">
+                  Your Post
+                </span>
+              )}
             </div>
-            <div>
-              <p className="text-sm font-bold text-gray-800">
-                Anonymous Student
-                {isMyPost && (
-                  <span className="ml-2 text-xs bg-indigo-100 text-indigo-600 font-black px-2 py-0.5 rounded-full border border-indigo-200">
-                    Your Post
-                  </span>
-                )}
-              </p>
-              <p className="text-xs text-gray-400">
-                {moodEmoji[post.moodTag]} {post.moodTag} ·{" "}
-                {timeAgo(post.createdAt)}
-              </p>
+            {canDelete && (
+              <button
+                onClick={handleDeleteClick}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] hover:bg-[#FECACA] transition-colors flex-shrink-0"
+              >
+                <Trash2 size={13} strokeWidth={2} />
+                Delete
+              </button>
+            )}
+          </div>
+
+          <h3 className="text-[17px] font-bold text-[#111827] mb-2 leading-snug group-hover:text-[#2563EB] transition-colors">
+            {post.title}
+          </h3>
+
+          <p
+            className="text-[14px] text-[#6B7280] leading-relaxed mb-4"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {post.content}
+          </p>
+
+          <div className="flex items-center gap-5 pt-3.5 border-t border-[#F3F4F6]">
+            <div className="flex items-center gap-3 text-[13px] text-[#9CA3AF]">
+              <div className="flex items-center gap-1" style={{ color: moodC }}>
+                <MoodIcon size={13} strokeWidth={2} />
+                <span className="font-medium">{post.moodTag}</span>
+              </div>
+              <span>·</span>
+              <span>{timeAgo(post.createdAt)}</span>
+            </div>
+
+            <div className="ml-auto flex items-center gap-4">
+              <button
+                onClick={handleIFeelThis}
+                className={`flex items-center gap-1.5 text-[13px] font-semibold transition-colors ${
+                  iClicked ? "text-[#2563EB]" : "text-[#9CA3AF] hover:text-[#2563EB]"
+                }`}
+              >
+                <Heart size={15} strokeWidth={2} className={iClicked ? "fill-[#2563EB]" : ""} />
+                {iFeelCount}
+              </button>
+
+              <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#9CA3AF]">
+                <MessageCircle size={15} strokeWidth={2} />
+                {topLevelReplies.length}
+              </div>
+
+              <ChevronRight size={15} className="text-[#C4C9D4] group-hover:text-[#2563EB] transition-colors" strokeWidth={2} />
             </div>
           </div>
-          <span
-            className={`text-xs font-black px-3 py-1.5 rounded-full border ${categoryColor[post.category]}`}
-          >
-            {post.category}
-          </span>
-        </div>
-
-        <h3 className="text-gray-900 font-black text-base mb-2">
-          {post.title}
-        </h3>
-
-        <p
-          className="text-gray-500 text-sm leading-relaxed mb-4"
-          style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-            textAlign: "justify",
-          }}
-        >
-          {post.content}
-        </p>
-
-        <div className="flex items-center gap-5 pt-3 border-t border-gray-100">
-          <button
-            onClick={handleIFeelThis}
-            className={`flex items-center gap-2 text-xs font-bold transition-all ${
-              iClicked
-                ? "text-indigo-600"
-                : "text-gray-400 hover:text-indigo-500"
-            }`}
-          >
-            <Heart
-              size={15}
-              className={iClicked ? "fill-indigo-600 text-indigo-600" : ""}
-            />
-            I feel this too ({iFeelCount})
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/post/${post._id}`);
-            }}
-            className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-indigo-500 transition"
-          >
-            <MessageCircle size={15} />
-            Replies ({topLevelReplies.length})
-          </button>
-
-          {canDelete && (
-            <button
-              onClick={handleDeleteClick}
-              className="ml-auto flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-600 transition"
-            >
-              <Trash2 size={15} />
-              Delete
-            </button>
-          )}
         </div>
       </div>
     </>

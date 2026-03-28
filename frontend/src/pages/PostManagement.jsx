@@ -1,241 +1,294 @@
-import { useState, useEffect, useContext } from "react";
+import { useContext } from "react";
+import { BookOpen } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import API from "../api/axios";
 import AdminSidebar from "../components/Sidebars/AdminSidebar";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
-import StatsCards from "../components/postManagement/StatsCards";
-import PostSearchBar from "../components/postManagement/PostSearchBar";
-import CategoryFilter from "../components/postManagement/CategoryFilter";
 import PostCard from "../components/postManagement/PostCard";
-import DeleteConfirmModal from "../components/postManagement/DeleteConfirmModal";
+import CategoryFilter from "../components/PostManagement/CategoryFilter";
+import PostSearchBar from "../components/PostManagement/PostSearchBar";
+import StatsCards from "../components/PostManagement/StatsCards";
+import { PostManagementProvider } from "../context/postManagement/PostManagementContext";
+import { usePostManagement } from "../hooks/postManagement/usePostManagement";
 
-const POSTS_PER_PAGE = 5;
+const forumRules = [
+  {
+    num: 1,
+    title: "Be Kind & Respectful",
+    desc: "Treat every member with empathy and understanding. This is a safe space — no judgment, no pressure.",
+  },
+  {
+    num: 2,
+    title: "Stay Anonymous",
+    desc: "All posts are anonymous. Never share personal information that could identify yourself or others.",
+  },
+  {
+    num: 3,
+    title: "No Hate Speech",
+    desc: "Personal attacks, discrimination, or hate speech will not be tolerated and will be removed.",
+  },
+  {
+    num: 4,
+    title: "Share Safely",
+    desc: "Only share what you are comfortable with. You are never obligated to disclose more than you want.",
+  },
+  {
+    num: 5,
+    title: "Seek Professional Help",
+    desc: "If you or someone else is in crisis, please reach out to a counselor through the MindCare platform.",
+  },
+];
 
-const SectionLabel = ({ text }) => (
-  <div className="flex items-center gap-3 mb-4">
-    <div className="w-1.5 h-5 rounded-full bg-indigo-500" />
-    <p className="text-sm font-black text-gray-700 uppercase tracking-widest">
-      {text}
-    </p>
-    <div className="flex-1 h-px bg-gray-200" />
-  </div>
-);
-
-const PostManagement = () => {
+const PostManagementInner = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const {
+    searchTerm,
+    setSearchTerm,
+    currentPage,
+    setCurrentPage,
+    selectedCategories,
+    selectedMoods,
+    sortBy,
+    filterCounselorReplied,
+    filterHasReplies,
+    appliedCategories,
+    appliedMoods,
+    appliedSort,
+    appliedCounselorReplied,
+    appliedHasReplies,
+    toggleCategory,
+    toggleMood,
+    setSortBy,
+    setFilterCounselorReplied,
+    setFilterHasReplies,
+    handleApplyFilter,
+    handleClearFilter,
+    handleDeletePost,
+    paginatedPosts,
+    pageNumbers,
+    totalPages,
+    totalReplies,
+    isFiltered,
+    posts,
+  } = usePostManagement();
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const fetchPosts = async () => {
-    try {
-      const token = sessionStorage.getItem("token");
-      const res = await API.get("/forum", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPosts(res.data);
-    } catch (error) {
-      console.log("Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeletePost = async (postId) => {
-    try {
-      const token = sessionStorage.getItem("token");
-      await API.delete(`/forum/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const updatedPosts = [];
-      for (let i = 0; i < posts.length; i++) {
-        if (posts[i]._id !== postId) {
-          updatedPosts.push(posts[i]);
-        }
-      }
-      setPosts(updatedPosts);
-      setShowDeleteConfirm(null);
-    } catch (error) {
-      console.log("Error:", error);
-    }
-  };
-
-  const handleClearSearch = () => {
-    setSearchTerm("");
-    setCurrentPage(1);
-  };
-
-  const handleSelectCategory = (cat) => {
-    setSelectedCategory(cat);
-    setCurrentPage(1);
-  };
-
-  const handleSearchChange = (value) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  };
-
-  const filteredPosts = [];
-  for (let i = 0; i < posts.length; i++) {
-    const p = posts[i];
-
-    let matchesCategory = false;
-    if (selectedCategory === "All") {
-      matchesCategory = true;
-    } else if (p.category === selectedCategory) {
-      matchesCategory = true;
-    }
-
-    let matchesSearch = false;
-    if (!searchTerm) {
-      matchesSearch = true;
-    } else {
-      const search = searchTerm.toLowerCase();
-      const content = p.content ? p.content.toLowerCase() : "";
-      const title = p.title ? p.title.toLowerCase() : "";
-      if (content.includes(search) || title.includes(search)) {
-        matchesSearch = true;
-      }
-    }
-
-    if (matchesCategory && matchesSearch) {
-      filteredPosts.push(p);
-    }
-  }
-
-  let totalReplies = 0;
-  for (let i = 0; i < posts.length; i++) {
-    totalReplies = totalReplies + posts[i].replies.length;
-  }
-
-  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
-  const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
-  const endIndex = startIndex + POSTS_PER_PAGE;
-  const paginatedPosts = [];
-  for (let i = startIndex; i < endIndex && i < filteredPosts.length; i++) {
-    paginatedPosts.push(filteredPosts[i]);
-  }
-
-  const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
-
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex">
-        <AdminSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-            Loading Posts...
-          </p>
-        </main>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] flex">
+    <div
+      style={{
+        backgroundColor: "#EFF4FB",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        height: "100vh",
+        overflow: "hidden",
+      }}
+    >
+      <Navbar />
       <AdminSidebar user={user} />
 
-      <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
-        <div className="mb-8 border-b-2 border-slate-200 pb-6 flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">
-              Post Management
-            </h2>
-            <p className="text-gray-500">
-              Monitor and moderate community forum posts.
+      <div
+        style={{
+          position: "fixed",
+          top: "72px",
+          left: "260px",
+          right: 0,
+          bottom: 0,
+          display: "grid",
+          gridTemplateColumns: "320px 1fr 272px",
+          gap: "20px",
+          padding: "24px",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          className="bg-white border border-[#E9F0FB]"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+            overflow: "hidden",
+          }}
+        >
+          <div className="px-6 py-5 border-b border-[#E9F0FB] flex-shrink-0">
+            <div className="flex items-center gap-2.5 mb-1">
+              <BookOpen
+                size={16}
+                className="text-[#2563EB]"
+                strokeWidth={2.5}
+              />
+              <p className="text-[16px] font-bold text-[#111827]">
+                Forum Rules
+              </p>
+            </div>
+            <p className="text-[13px] text-[#9CA3AF] font-medium">
+              Please read carefully before posting
             </p>
           </div>
-          <Navbar />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              overflow: "hidden",
+            }}
+          >
+            {forumRules.map((rule, idx) => (
+              <div
+                key={rule.num}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  gap: "16px",
+                  padding: "0 24px",
+                  alignItems: "center",
+                }}
+                className={
+                  idx < forumRules.length - 1 ? "border-b border-[#F3F7FF]" : ""
+                }
+              >
+                <div
+                  className="bg-[#EEF2FF] flex items-center justify-center flex-shrink-0"
+                  style={{ width: 36, height: 36 }}
+                >
+                  <span className="text-[14px] font-black text-[#2563EB]">
+                    {rule.num}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[14px] font-bold text-[#111827] mb-1.5">
+                    {rule.title}
+                  </p>
+                  <p className="text-[12.5px] text-[#6B7280] leading-[1.65]">
+                    {rule.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <StatsCards totalPosts={posts.length} totalReplies={totalReplies} />
+        <div
+          style={{
+            height: "100%",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: "14px",
+            paddingRight: "4px",
+          }}
+        >
+          <StatsCards totalPosts={posts.length} totalReplies={totalReplies} />
 
-        <PostSearchBar
-          searchTerm={searchTerm}
-          setSearchTerm={handleSearchChange}
-          onClear={handleClearSearch}
-        />
+          <PostSearchBar
+            searchTerm={searchTerm}
+            setSearchTerm={(term) => {
+              setSearchTerm(term);
+              setCurrentPage(1);
+            }}
+            onClear={() => {
+              setSearchTerm("");
+              setCurrentPage(1);
+            }}
+            isFiltered={isFiltered}
+          />
+
+          {paginatedPosts.length === 0 ? (
+            <div className="py-28 flex flex-col items-center justify-center bg-white border border-[#E5E9F2] gap-2 flex-shrink-0">
+              <p className="text-[17px] font-semibold text-[#374151]">
+                No discussions found.
+              </p>
+              <p className="text-[14px] text-[#9CA3AF]">
+                Try adjusting your search or filters.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {paginatedPosts.map((post) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  currentUser={user}
+                  onNavigate={() => navigate(`/post/${post._id}`)}
+                  onDelete={(id) => handleDeletePost(id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-2 pb-6 flex-shrink-0">
+              <p className="text-[13px] font-medium text-[#9CA3AF]">
+                Page {currentPage} of {totalPages}
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  Prev
+                </button>
+                {pageNumbers.map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => setCurrentPage(num)}
+                    className={`w-9 h-9 text-[13px] font-semibold border transition-colors ${
+                      currentPage === num
+                        ? "bg-[#2563EB] text-white border-[#2563EB]"
+                        : "bg-white text-[#374151] border-[#E5E9F2] hover:bg-[#F3F4F6]"
+                    }`}
+                  >
+                    {num}
+                  </button>
+                ))}
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <CategoryFilter
-          selectedCategory={selectedCategory}
-          onSelectCategory={handleSelectCategory}
+          selectedCategories={selectedCategories}
+          toggleCategory={toggleCategory}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          appliedCategories={appliedCategories}
+          selectedMoods={selectedMoods}
+          toggleMood={toggleMood}
+          filterCounselorReplied={filterCounselorReplied}
+          setFilterCounselorReplied={setFilterCounselorReplied}
+          filterHasReplies={filterHasReplies}
+          setFilterHasReplies={setFilterHasReplies}
+          onApply={handleApplyFilter}
+          onClear={handleClearFilter}
+          isFiltered={isFiltered}
+          appliedMoods={appliedMoods}
+          appliedSort={appliedSort}
+          appliedCounselorReplied={appliedCounselorReplied}
+          appliedHasReplies={appliedHasReplies}
         />
-
-        <SectionLabel text="Community Posts" />
-
-        {paginatedPosts.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-2xl border-2 border-dashed border-gray-200">
-            <p className="text-gray-400 font-bold text-lg">No posts found.</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {paginatedPosts.map((post) => (
-              <PostCard
-                key={post._id}
-                post={post}
-                onNavigate={(id) => navigate(`/post/${id}`)}
-                onDeleteClick={(id) => setShowDeleteConfirm(id)}
-              />
-            ))}
-          </div>
-        )}
-
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-8 pb-6">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
-            >
-              ← Prev
-            </button>
-
-            {pageNumbers.map((num) => (
-              <button
-                key={num}
-                onClick={() => setCurrentPage(num)}
-                className={`w-10 h-10 rounded-xl font-black text-sm transition-all duration-200 border ${
-                  currentPage === num
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
-                    : "bg-white text-gray-800 border-gray-200 hover:border-indigo-400 hover:text-indigo-600"
-                }`}
-              >
-                {num}
-              </button>
-            ))}
-
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-black text-gray-800 hover:border-indigo-400 hover:text-indigo-600 transition disabled:opacity-40 disabled:cursor-not-allowed bg-white"
-            >
-              Next →
-            </button>
-          </div>
-        )}
-      </main>
-
-      {showDeleteConfirm && (
-        <DeleteConfirmModal
-          onConfirm={() => handleDeletePost(showDeleteConfirm)}
-          onCancel={() => setShowDeleteConfirm(null)}
-        />
-      )}
+      </div>
     </div>
+  );
+};
+
+const PostManagement = () => {
+  return (
+    <PostManagementProvider>
+      <PostManagementInner />
+    </PostManagementProvider>
   );
 };
 

@@ -102,7 +102,7 @@ const addReply = async (req, res) => {
           "Someone replied to your reply",
           "Someone replied to your reply in the community forum.",
           "new_post_reply",
-          "/community-forum",
+          "/post/" + postId,
         );
       }
     } else {
@@ -112,7 +112,7 @@ const addReply = async (req, res) => {
           "Someone replied to your post",
           "Someone replied to your post in the community forum.",
           "new_post_reply",
-          "/community-forum",
+          "/post/" + postId,
         );
       }
     }
@@ -148,7 +148,7 @@ const editReply = async (req, res) => {
     }
 
     if (reply.authorId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized" });
+      return res.status(403).json({ message: "Not authorized to edit this reply" });
     }
 
     reply.content = content;
@@ -269,17 +269,23 @@ const deleteReply = async (req, res) => {
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
+    const reply = post.replies.id(replyId);
+    if (!reply) return res.status(404).json({ message: "Reply not found" });
+
+    const isAdmin = req.user.role === "Admin";
+    const isAuthor = reply.authorId.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isAuthor) {
+      return res.status(403).json({ message: "Not allowed" });
+    }
+
     const remainingReplies = [];
     for (let i = 0; i < post.replies.length; i++) {
-      const reply = post.replies[i];
-      const isTheDeletedReply = reply._id.toString() === replyId;
-      let isChildOfDeletedReply = false;
-      if (reply.parentReplyId) {
-        isChildOfDeletedReply = reply.parentReplyId.toString() === replyId;
-      }
-
+      const r = post.replies[i];
+      const isTheDeletedReply = r._id.toString() === replyId;
+      const isChildOfDeletedReply = r.parentReplyId?.toString() === replyId;
       if (!isTheDeletedReply && !isChildOfDeletedReply) {
-        remainingReplies.push(reply);
+        remainingReplies.push(r);
       }
     }
 
@@ -290,7 +296,6 @@ const deleteReply = async (req, res) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 };
-
 module.exports = {
   getAllPosts,
   getPostById,

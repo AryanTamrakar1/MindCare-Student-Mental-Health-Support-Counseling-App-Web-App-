@@ -1,0 +1,1 @@
+export { usePostManagementContext as usePostManagement } from "../../context/postManagement/PostManagementContext";

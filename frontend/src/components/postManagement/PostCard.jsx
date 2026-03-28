@@ -1,23 +1,30 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Heart, MessageCircle, Trash2, Frown, CloudRain, Meh, Zap, Smile, ChevronRight } from "lucide-react";
 import API from "../../api/axios";
 
 const categoryColor = {
-  "Academic & Exam Pressure": "bg-blue-100 text-blue-700 border-blue-200",
-  "Skill Gap & Job Anxiety": "bg-indigo-100 text-indigo-700 border-indigo-200",
-  "Family & Social Pressure": "bg-yellow-100 text-yellow-700 border-yellow-200",
-  "Emotional & Personal Issues": "bg-pink-100 text-pink-700 border-pink-200",
-  "Sleep & Physical Wellbeing": "bg-green-100 text-green-700 border-green-200",
-  "General Mental Health": "bg-gray-100 text-gray-600 border-gray-200",
+  "Academic & Exam Pressure":    { bg: "#EFF6FF", text: "#2563EB" },
+  "Skill Gap & Job Anxiety":     { bg: "#EEF2FF", text: "#4F46E5" },
+  "Family & Social Pressure":    { bg: "#FFFBEB", text: "#D97706" },
+  "Emotional & Personal Issues": { bg: "#FDF2F8", text: "#DB2777" },
+  "Sleep & Physical Wellbeing":  { bg: "#F0FDF4", text: "#059669" },
+  "General Mental Health":       { bg: "#F9FAFB", text: "#6B7280" },
 };
 
-const moodEmoji = {
-  Overwhelmed: "😰",
-  Struggling: "😞",
-  Confused: "😕",
-  Frustrated: "😤",
-  Hopeful: "🙂",
+const moodIcon = {
+  Overwhelmed: Frown,
+  Struggling:  CloudRain,
+  Confused:    Meh,
+  Frustrated:  Zap,
+  Hopeful:     Smile,
+};
+
+const moodColor = {
+  Overwhelmed: "#EF4444",
+  Struggling:  "#F97316",
+  Confused:    "#F59E0B",
+  Frustrated:  "#F43F5E",
+  Hopeful:     "#10B981",
 };
 
 const timeAgo = (date) => {
@@ -28,8 +35,7 @@ const timeAgo = (date) => {
   return `${Math.floor(seconds / 86400)}d ago`;
 };
 
-const PostCard = ({ post, currentUser, onDelete }) => {
-  const navigate = useNavigate();
+const PostCard = ({ post, currentUser, onNavigate, onDelete }) => {
   let alreadyClicked = false;
   if (currentUser && currentUser._id) {
     for (let i = 0; i < post.iFeelThis.length; i++) {
@@ -42,14 +48,6 @@ const PostCard = ({ post, currentUser, onDelete }) => {
 
   const [iFeelCount, setIFeelCount] = useState(post.iFeelThis.length);
   const [iClicked, setIClicked] = useState(alreadyClicked);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  let isMyPost = false;
-  if (post.authorId && currentUser && currentUser._id) {
-    if (post.authorId.toString() === currentUser._id.toString()) {
-      isMyPost = true;
-    }
-  }
 
   const topLevelReplies = [];
   for (let i = 0; i < post.replies.length; i++) {
@@ -61,8 +59,21 @@ const PostCard = ({ post, currentUser, onDelete }) => {
   let canDelete = false;
   if (currentUser && currentUser.role === "Admin") {
     canDelete = true;
-  } else if (isMyPost) {
-    canDelete = true;
+  }
+
+  let MoodIcon = Meh;
+  if (moodIcon[post.moodTag]) {
+    MoodIcon = moodIcon[post.moodTag];
+  }
+
+  let moodC = "#9CA3AF";
+  if (moodColor[post.moodTag]) {
+    moodC = moodColor[post.moodTag];
+  }
+
+  let catStyle = { bg: "#F9FAFB", text: "#6B7280" };
+  if (categoryColor[post.category]) {
+    catStyle = categoryColor[post.category];
   }
 
   const handleIFeelThis = async (e) => {
@@ -83,140 +94,102 @@ const PostCard = ({ post, currentUser, onDelete }) => {
 
   const handleDeleteClick = (e) => {
     e.stopPropagation();
-    setShowDeleteConfirm(true);
+    onDelete(post._id);
   };
 
-  const handleConfirmDelete = (e) => {
-    e.stopPropagation();
-    onDelete(post._id);
-    setShowDeleteConfirm(false);
-  };
+  let feelButtonClass = "text-[#9CA3AF] hover:text-[#2563EB]";
+  if (iClicked) {
+    feelButtonClass = "text-[#2563EB]";
+  }
+
+  let heartFillClass = "";
+  if (iClicked) {
+    heartFillClass = "fill-[#2563EB]";
+  }
 
   return (
-    <>
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl">
-            <h3 className="text-gray-800 font-black text-lg mb-2">
-              Delete Post?
-            </h3>
-            <p className="text-gray-500 text-sm mb-5">
-              This will permanently delete the post and all its replies.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDeleteConfirm(false);
-                }}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
+    <div
+      onClick={onNavigate}
+      className="bg-white border border-[#E5E9F2] cursor-pointer hover:border-[#B8C7F0] hover:shadow-sm transition-all duration-200 group"
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+    >
+      <div className="px-6 pt-5 pb-4">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5"
+              style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
+            >
+              {post.category}
+            </span>
+            {(post.category === "Academic & Exam Pressure" ||
+              post.category === "Skill Gap & Job Anxiety" ||
+              post.category === "Family & Social Pressure" ||
+              post.category === "Emotional & Personal Issues" ||
+              post.category === "Sleep & Physical Wellbeing" ||
+              post.category === "General Mental Health") && (
+              <span className="text-[11px] font-semibold bg-[#EEF2FF] text-[#2563EB] border border-[#C7D2FE] px-2 py-0.5">
+                Anonymous
+              </span>
+            )}
           </div>
-        </div>
-      )}
-
-      <div
-        onClick={() => navigate(`/post/${post._id}`)}
-        className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all duration-200"
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-800">
-                Anonymous Student
-                {isMyPost && (
-                  <span className="ml-2 text-xs bg-indigo-100 text-indigo-600 font-black px-2 py-0.5 rounded-full border border-indigo-200">
-                    Your Post
-                  </span>
-                )}
-              </p>
-              <p className="text-xs text-gray-400">
-                {moodEmoji[post.moodTag]} {post.moodTag} ·{" "}
-                {timeAgo(post.createdAt)}
-              </p>
-            </div>
-          </div>
-          <span
-            className={`text-xs font-black px-3 py-1.5 rounded-full border ${categoryColor[post.category]}`}
-          >
-            {post.category}
-          </span>
+          {canDelete && (
+            <button
+              onClick={handleDeleteClick}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] hover:bg-[#FECACA] transition-colors flex-shrink-0"
+            >
+              <Trash2 size={13} strokeWidth={2} />
+              Delete
+            </button>
+          )}
         </div>
 
-        <h3 className="text-gray-900 font-black text-base mb-2">
+        <h3 className="text-[17px] font-bold text-[#111827] mb-2 leading-snug group-hover:text-[#2563EB] transition-colors">
           {post.title}
         </h3>
+
         <p
-          className="text-gray-500 text-sm leading-relaxed mb-4"
+          className="text-[14px] text-[#6B7280] leading-relaxed mb-4"
           style={{
             display: "-webkit-box",
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
-            textAlign: "justify",
             whiteSpace: "pre-wrap",
           }}
         >
           {post.content}
         </p>
 
-        <div className="flex items-center gap-5 pt-3 border-t border-gray-100">
-          <button
-            onClick={handleIFeelThis}
-            className={`flex items-center gap-2 text-xs font-bold transition-all ${
-              iClicked
-                ? "text-indigo-600"
-                : "text-gray-400 hover:text-indigo-500"
-            }`}
-          >
-            <Heart
-              size={15}
-              className={iClicked ? "fill-indigo-600 text-indigo-600" : ""}
-            />
-            I feel this too ({iFeelCount})
-          </button>
+        <div className="flex items-center gap-5 pt-3.5 border-t border-[#F3F4F6]">
+          <div className="flex items-center gap-3 text-[13px] text-[#9CA3AF]">
+            <div className="flex items-center gap-1" style={{ color: moodC }}>
+              <MoodIcon size={13} strokeWidth={2} />
+              <span className="font-medium">{post.moodTag}</span>
+            </div>
+            <span>·</span>
+            <span>{timeAgo(post.createdAt)}</span>
+          </div>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/post/${post._id}`);
-            }}
-            className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-indigo-500 transition"
-          >
-            <MessageCircle size={15} />
-            Replies ({topLevelReplies.length})
-          </button>
-
-          {canDelete && (
+          <div className="ml-auto flex items-center gap-4">
             <button
-              onClick={handleDeleteClick}
-              className="ml-auto flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-600 transition"
+              onClick={handleIFeelThis}
+              className={`flex items-center gap-1.5 text-[13px] font-semibold transition-colors ${feelButtonClass}`}
             >
-              <Trash2 size={15} />
-              Delete
+              <Heart size={15} strokeWidth={2} className={heartFillClass} />
+              {iFeelCount}
             </button>
-          )}
+
+            <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#9CA3AF]">
+              <MessageCircle size={15} strokeWidth={2} />
+              {topLevelReplies.length}
+            </div>
+
+            <ChevronRight size={15} className="text-[#C4C9D4] group-hover:text-[#2563EB] transition-colors" strokeWidth={2} />
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

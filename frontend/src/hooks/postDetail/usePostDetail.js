@@ -1,0 +1,1 @@
+export { usePostDetailContext as usePostDetail } from "../../context/postDetail/PostDetailContext";

@@ -14,6 +14,10 @@ const {
   getCounselors,
   searchCounselors,
   editCounselorProfile,
+
+  forgotPassword,
+  resetPassword,
+  verifyResetToken,
   protect
 } = require('../controllers/authController');
 
@@ -37,5 +41,9 @@ router.put('/edit-counselor-profile', protect, editCounselorProfile);
 router.get('/me', protect, (req, res) => {
   res.json(req.user);
 });
+
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
+router.get("/verify-reset-token/:token", verifyResetToken);
 
 module.exports = router;

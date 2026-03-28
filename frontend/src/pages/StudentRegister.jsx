@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useStudentRegister } from "../hooks/studentRegister/useStudentRegister";
 import { StudentRegisterProvider } from "../context/studentRegister/StudentRegisterContext";
-import { GraduationCap, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, Eye, EyeOff, ChevronDown } from "lucide-react";
 
 const StudentRegisterInner = () => {
   const {
@@ -136,16 +136,19 @@ const StudentRegisterInner = () => {
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Gender</label>
-              <select
-                className="w-full bg-gray-50 border-none p-4 text-sm font-semibold focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none appearance-none"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
+              <div className="relative">
+                <select
+                  className="w-full bg-gray-50 border-none p-4 pr-10 text-sm font-semibold focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none appearance-none"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+              </div>
             </div>
           </div>
 

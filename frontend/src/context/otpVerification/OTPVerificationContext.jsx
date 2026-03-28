@@ -22,7 +22,7 @@ export const OTPVerificationProvider = ({ children }) => {
       const res = await API.post("/auth/verify-otp", { email, otp }); 
       alert("Verification Successful!");
       login(res.data.user, res.data.token); 
-      navigate("/student-dashboard");        
+      navigate("/student-dashboard");   
     } catch (err) {
       let message = "Invalid OTP code. Please try again.";
       if (err.response && err.response.data && err.response.data.message) {
@@ -35,7 +35,7 @@ export const OTPVerificationProvider = ({ children }) => {
   const handleResendCode = async () => {
     try {
       await API.post("/auth/resend-otp", { email });
-      alert("A new code has been sent to your email!"); 
+      alert("A new code has been sent to your email!"); // ✅ fixed message
     } catch (err) {
       alert("Error resending code. Please try again later.");
     }

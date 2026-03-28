@@ -601,6 +601,9 @@ const editCounselorProfile = async (req, res) => {
 
 // --- Forgot Password ---
 const forgotPassword = async (req, res) => {
+  if (!req.body.email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
   const email = normalizeEmail(req.body.email);
   try {
     const user = await User.findOne({ email });

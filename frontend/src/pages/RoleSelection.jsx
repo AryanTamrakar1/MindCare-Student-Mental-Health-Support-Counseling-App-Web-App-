@@ -1,92 +1,93 @@
-import React, { useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import API from "../api/axios";
+import React from "react";
+import { GraduationCap, Stethoscope } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { RoleSelectionProvider } from "../context/roleSelection/RoleSelectionContext";
+import { useRoleSelectionContext } from "../context/roleSelection/RoleSelectionContext";
 
-const RoleSelection = () => {
-  const { user } = useContext(AuthContext);
+const RoleSelectionInner = () => {
+  const { handleChoice } = useRoleSelectionContext();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleChoice = async (role) => {
-    if (role === "Student") {
-      try {
-        await API.put("/auth/update-role", {
-          email: user.email,
-          role: "Student",
-        });
-        alert("Welcome! You are now registered as a Student.");
-        navigate("/student-dashboard");
-      } catch (err) {
-        alert("Error updating role");
-      }
-    } else {
-      navigate("/register/counselor");
-    }
-  };
-
-  let userName = "";
-  if (user && user.name) {
-    userName = user.name;
-  }
+  const cameFromLogin = location.state?.from === "login";
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-100 rounded-full blur-3xl opacity-50"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-100 rounded-full blur-3xl opacity-50"></div>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 relative overflow-hidden">
+      <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-blue-100/50 blur-3xl" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-emerald-100/50 blur-3xl" />
 
-      <div className="relative bg-white p-12 rounded-[3rem] shadow-2xl max-w-lg w-full text-center border border-gray-100 animate-in fade-in zoom-in duration-500">
-        <h2 className="text-4xl font-black text-gray-900 mb-3 tracking-tight">
-          One Last Step!
-        </h2>
-        <p className="text-gray-500 mb-10 font-medium">
-          Hi <span className="text-indigo-600 font-bold">{userName}</span>, how
-          would you like to use MindCare?
-        </p>
-
-        <div className="grid grid-cols-1 gap-5">
+      <div className="relative flex flex-col w-full max-w-md">
+        <div className="mb-4">
           <button
-            onClick={() => handleChoice("Student")}
-            className="group p-6 border-2 border-indigo-50 rounded-[2rem] hover:border-indigo-500 hover:bg-indigo-50/50 transition-all text-left flex items-center space-x-5 shadow-sm hover:shadow-md"
+            onClick={() => navigate(cameFromLogin ? "/Login" : "/")}
+            className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 transition"
           >
-            <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform shadow-inner">
-              🎓
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-xl">
-                I am a Student
-              </h4>
-              <p className="text-sm text-gray-400 leading-tight">
-                I want to seek professional counseling support.
-              </p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => handleChoice("Counselor")}
-            className="group p-6 border-2 border-emerald-50 rounded-[2rem] hover:border-emerald-500 hover:bg-emerald-50/50 transition-all text-left flex items-center space-x-5 shadow-sm hover:shadow-md"
-          >
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform shadow-inner">
-              🩺
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-xl">
-                I am a Counselor
-              </h4>
-              <p className="text-sm text-gray-400 leading-tight">
-                I am a professional counselor.
-              </p>
-            </div>
+            {cameFromLogin ? "← Back to Login" : "← Back to Home"}
           </button>
         </div>
 
-        <button
-          onClick={() => navigate("/")}
-          className="mt-8 text-sm font-bold text-gray-300 hover:text-gray-500 transition"
-        >
-          Cancel and Logout
-        </button>
+        <div className="relative bg-white w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+          <div className="p-10 text-center">
+            <h3 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">
+              Join MindCare
+            </h3>
+            <p className="text-gray-500 mb-10 font-medium text-sm">
+              Select your account type to continue
+            </p>
+
+            <div className="space-y-4">
+              <button
+                onClick={() => handleChoice("Student")}
+                className="w-full group p-6 flex items-center gap-5 border-2 border-blue-50 hover:border-blue-200 hover:bg-blue-50/30 transition text-left"
+              >
+                <div className="w-14 h-14 bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <GraduationCap size={28} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 text-lg">Student</h4>
+                  <p className="text-xs text-gray-400 font-medium">
+                    I want to receive professional counseling.
+                  </p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => handleChoice("Counselor")}
+                className="w-full group p-6 flex items-center gap-5 border-2 border-emerald-50 hover:border-emerald-200 hover:bg-emerald-50/30 transition text-left"
+              >
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <Stethoscope size={28} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 text-lg">Counselor</h4>
+                  <p className="text-xs text-gray-400 font-medium">
+                    I am a professional counselor.
+                  </p>
+                </div>
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-500 font-medium mt-10">
+              Already have an account?{" "}
+              <button
+                onClick={() => navigate("/Login")}
+                className="text-blue-600 font-black hover:text-blue-700 transition"
+              >
+                Log In
+              </button>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
+  );
+};
+
+const RoleSelection = () => {
+  return (
+    <RoleSelectionProvider>
+      <RoleSelectionInner />
+    </RoleSelectionProvider>
   );
 };
 

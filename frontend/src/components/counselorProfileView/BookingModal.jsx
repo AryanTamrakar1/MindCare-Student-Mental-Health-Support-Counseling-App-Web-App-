@@ -1,116 +1,162 @@
-const BookingModal = ({
-  counselor,
-  topics,
-  bookingTopics,
-  handleTopicToggle,
-  bookingDate,
-  handleDateChange,
-  getTomorrowDate,
-  availableSlotsForDate,
-  bookedSlots,
-  isPastTimeSlot,
-  bookingTimeSlot,
-  setBookingTimeSlot,
-  bookingReason,
-  handleReasonChange,
-  handleBooking,
-  onClose,
-}) => {
+import React from "react";
+import { useBookingModal } from "../../hooks/counselorProfileView/useBookingModal";
+
+const BookingModal = ({ counselor, topics }) => {
+  const {
+    bookedSlots,
+    availableSlotsForDate,
+    bookingDate,
+    bookingTimeSlot,
+    setBookingTimeSlot,
+    bookingReason,
+    bookingTopics,
+    handleDateChange,
+    handleTopicToggle,
+    isPastTimeSlot,
+    handleReasonChange,
+    handleBooking,
+    handleClose,
+    getTomorrowDate,
+  } = useBookingModal();
+
+  const inputStyle = {
+    width: "100%", padding: "12px 14px",
+    border: "1px solid #e5e7eb",
+    fontSize: "14px", color: "#1a1d2e",
+    background: "#fafafa", outline: "none",
+    marginTop: "6px", boxSizing: "border-box",
+  };
+
+  const labelStyle = {
+    fontSize: "14px", color: "#111827",
+    fontWeight: "600", display: "block",
+  };
+
+  let selectOpacity = 1;
+  if (!bookingDate || availableSlotsForDate.length === 0) selectOpacity = 0.5;
+
+  let defaultOptionText = "Pick a date first";
+  if (bookingDate) defaultOptionText = "Select time";
+
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[1000] px-4">
-      <div className="bg-white w-full max-w-[900px] rounded-[32px] p-10 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto">
-        <div className="relative mb-6 text-center">
-          <h5 className="text-xl font-black text-gray-900">
-            Request a Session
-          </h5>
-          <p className="text-[15px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-            Book your session with {counselor.name}
-          </p>
+    <div
+      style={{
+        position: "fixed", inset: 0,
+        background: "rgba(26,29,46,0.5)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        zIndex: 1000, padding: "16px",
+      }}
+    >
+      <div
+        style={{
+          background: "#fff", width: "100%", maxWidth: "640px",
+          padding: "32px",
+          maxHeight: "90vh", overflowY: "auto",
+          boxSizing: "border-box", border: "1px solid #ebebeb",
+          boxShadow: "0 8px 40px rgba(0,0,0,0.12)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
+          <div>
+            <h5 style={{ fontSize: "18px", fontWeight: "700", color: "#1a1d2e", marginBottom: "4px" }}>
+              Request a session
+            </h5>
+            <p style={{ fontSize: "13px", color: "#8b8fa8" }}>
+              Book your session with {counselor.name}
+            </p>
+          </div>
           <button
-            onClick={onClose}
-            className="absolute -top-4 -right-4 text-gray-400 hover:text-red-500 font-black text-2xl p-2"
+            onClick={handleClose}
+            style={{
+              background: "none", border: "none",
+              fontSize: "22px", color: "#8b8fa8",
+              cursor: "pointer", lineHeight: 1, padding: "0",
+            }}
           >
             ×
           </button>
-          <div className="w-full h-px bg-indigo-50 mt-6"></div>
         </div>
 
-        <form onSubmit={handleBooking} className="space-y-6">
-          <div>
-            <label className="text-[10px] font-black text-indigo-600 uppercase ml-1">
-              Select Topics
-            </label>
-            <div className="grid grid-cols-2 gap-3 mt-3">
+        <div style={{ height: "1px", background: "#f0f0f0", margin: "0 -32px 24px -32px" }} />
+
+        <form onSubmit={handleBooking}>
+
+          <div style={{ marginBottom: "24px" }}>
+            <label style={labelStyle}>Select topics</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "10px" }}>
               {topics.map((topic, i) => {
-                const isSelected = bookingTopics.includes(topic);
+                let isSelected = false;
+                for (let j = 0; j < bookingTopics.length; j++) {
+                  if (bookingTopics[j] === topic) { isSelected = true; break; }
+                }
+
+                let topicBorder = "1px solid #e5e7eb";
+                let topicBg = "#fafafa";
+                let topicColor = "#5c6080";
+                if (isSelected) {
+                  topicBorder = "1px solid #2563EB";
+                  topicBg = "#EEF2FF";
+                  topicColor = "#2563EB";
+                }
+
                 return (
                   <label
                     key={i}
-                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                      isSelected
-                        ? "bg-indigo-50 border-indigo-300"
-                        : "bg-gray-50 border-gray-100 hover:border-indigo-200"
-                    }`}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "10px",
+                      padding: "10px 14px",
+                      border: topicBorder,
+                      background: topicBg,
+                      cursor: "pointer", transition: "all 0.15s",
+                    }}
                   >
                     <input
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleTopicToggle(topic)}
-                      className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      style={{ width: "15px", height: "15px", accentColor: "#2563EB", flexShrink: 0 }}
                     />
-                    <span
-                      className={`text-xs font-bold ${isSelected ? "text-indigo-900" : "text-gray-500"}`}
-                    >
+                    <span style={{ fontSize: "13px", color: topicColor, fontWeight: "500" }}>
                       {topic}
                     </span>
                   </label>
                 );
               })}
             </div>
-            <div className="w-full h-px bg-indigo-50 mt-8"></div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div style={{ height: "1px", background: "#f0f0f0", marginBottom: "24px" }} />
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
             <div>
-              <label className="text-[10px] font-black text-indigo-600 uppercase ml-1">
-                Preferred Date
-              </label>
+              <label style={labelStyle}>Preferred date</label>
               <input
-                type="date"
-                min={getTomorrowDate()}
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold mt-1 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                required
+                type="date" min={getTomorrowDate()} required
                 value={bookingDate}
-                onChange={handleDateChange}
+                onChange={(e) => handleDateChange(e, counselor)}
+                style={inputStyle}
               />
             </div>
             <div>
-              <label className="text-[10px] font-black text-indigo-600 uppercase ml-1">
-                Available Time Slot
-              </label>
+              <label style={labelStyle}>Available time slot</label>
               <select
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold mt-1 outline-none focus:bg-white focus:border-indigo-600 disabled:opacity-50"
                 required
                 disabled={!bookingDate || availableSlotsForDate.length === 0}
                 value={bookingTimeSlot}
                 onChange={(e) => setBookingTimeSlot(e.target.value)}
+                style={{ ...inputStyle, opacity: selectOpacity }}
               >
-                <option value="">
-                  {bookingDate ? "Select Time" : "Pick Date First"}
-                </option>
+                <option value="">{defaultOptionText}</option>
                 {availableSlotsForDate.map((slot, i) => {
                   const isBooked = bookedSlots.includes(slot.timeSlot);
                   const isPast = isPastTimeSlot(slot.timeSlot);
                   const disabled = isBooked || isPast;
-                  const label = isPast
-                    ? " (Passed)"
-                    : isBooked
-                      ? " (Booked)"
-                      : " (Available)";
+                  let label = " (Available)";
+                  if (isPast) label = " (Passed)";
+                  else if (isBooked) label = " (Booked)";
                   return (
                     <option key={i} value={slot.timeSlot} disabled={disabled}>
-                      {slot.timeSlot}
-                      {label}
+                      {slot.timeSlot}{label}
                     </option>
                   );
                 })}
@@ -118,36 +164,50 @@ const BookingModal = ({
             </div>
           </div>
 
-          <div>
-            <div className="w-full h-px bg-indigo-50 mb-6"></div>
-            <label className="text-[10px] font-black text-indigo-600 uppercase ml-1">
-              Reason for Session (Detailed)
-            </label>
+          <div style={{ height: "1px", background: "#f0f0f0", marginBottom: "24px" }} />
+
+          <div style={{ marginBottom: "24px" }}>
+            <label style={labelStyle}>Reason for session</label>
             <textarea
-              placeholder="Tell the counselor a bit about what you want to discuss..."
-              className="w-full p-5 bg-gray-50 border border-gray-100 rounded-[24px] text-sm font-medium mt-1 outline-none focus:bg-white focus:border-indigo-600 resize-none overflow-hidden transition-all shadow-inner"
+              placeholder="Tell the counselor what you would like to discuss..."
               required
-              style={{ minHeight: "160px" }}
               value={bookingReason}
               onChange={handleReasonChange}
+              style={{ ...inputStyle, minHeight: "120px", resize: "none", overflow: "hidden", lineHeight: 1.6 }}
             />
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div style={{ display: "flex", gap: "12px" }}>
             <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 bg-gray-100 py-4 rounded-2xl text-xs font-black text-gray-500 hover:bg-gray-200 transition-colors"
+              type="button" onClick={handleClose}
+              style={{
+                flex: 1, padding: "13px",
+                background: "#f4f5fb", color: "#5c6080",
+                border: "1px solid #e4e6f0",
+                fontSize: "14px", fontWeight: "600",
+                cursor: "pointer", transition: "background 0.15s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#e4e6f0"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#f4f5fb"; }}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-[2] bg-indigo-600 text-white py-4 rounded-2xl text-xs font-black shadow-xl shadow-indigo-100 hover:scale-[0.98] transition-all"
+              style={{
+                flex: 2, padding: "13px",
+                background: "#2563EB", color: "#fff",
+                border: "none",
+                fontSize: "14px", fontWeight: "600",
+                cursor: "pointer", transition: "background 0.15s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#1D4ED8"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#2563EB"; }}
             >
-              Send Request
+              Send request
             </button>
           </div>
+
         </form>
       </div>
     </div>

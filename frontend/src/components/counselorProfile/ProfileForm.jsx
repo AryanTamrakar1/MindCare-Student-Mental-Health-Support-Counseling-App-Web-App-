@@ -1,195 +1,172 @@
-const defaultSpecialties = [
-  "Stress & Anxiety",
-  "Academic Pressure",
-  "Depression",
-  "Relationship Issues",
-  "Self-Esteem",
-  "Career Guidance",
-];
+import React, { useState } from "react";
+import { useProfileForm } from "../../hooks/editCounselorProfile/useProfileForm";
 
-const ProfileForm = ({
-  profTitle,
-  setProfTitle,
-  experience,
-  setExperience,
-  bio,
-  setBio,
-  specializations,
-  setSpecializations,
-  education,
-  setEducation,
-  newSpecialty,
-  setNewSpecialty,
-  newEdu,
-  setNewEdu,
-}) => {
+const ProfileForm = () => {
+  const {
+    profTitle,
+    setProfTitle,
+    experience,
+    setExperience,
+    bio,
+    setBio,
+    specializations,
+    education,
+    handleBioChange,
+    addSpecialty,
+    addDefaultSpecialty,
+    removeSpecialty,
+    addEducation,
+    removeEducation,
+    defaultSpecialties,
+  } = useProfileForm();
 
-  const handleBioChange = (e) => {
-    setBio(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = e.target.scrollHeight + "px";
-  };
+  const [newSpecialty, setNewSpecialty] = useState("");
+  const [newEdu, setNewEdu] = useState("");
 
-  const addSpecialty = () => {
-    if (!newSpecialty) return;
-    if (specializations.includes(newSpecialty)) return;
-    setSpecializations([...specializations, newSpecialty]);
-    setNewSpecialty("");
-  };
-
-  const addDefaultSpecialty = (tag) => {
-    if (specializations.includes(tag)) return;
-    setSpecializations([...specializations, tag]);
-  };
-
-  const removeSpecialty = (specialty) => {
-    setSpecializations(specializations.filter((s) => s !== specialty));
-  };
-
-  const addEducation = () => {
-    if (!newEdu) return;
-    setEducation([...education, newEdu]);
-    setNewEdu("");
-  };
-
-  const removeEducation = (index) => {
-    setEducation(education.filter((_, i) => i !== index));
-  };
+  const input =
+    "w-full px-3 py-2.5 border border-[#E5E7EB] bg-[#FAFAFA] text-[15px] text-[#111827] placeholder-[#C4C9D4] outline-none focus:bg-white focus:border-[#9CA3AF] transition-colors";
 
   return (
-    <div className="col-span-7 flex flex-col gap-6">
-      <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-black text-gray-400 uppercase">
-              Professional Title
-            </label>
+    <div className="self-stretch flex flex-col">
+      <div className="bg-white border border-[#E5E7EB] flex flex-col flex-1 overflow-hidden">
+
+        <div className="px-5 py-4 border-b border-[#F3F4F6] flex-shrink-0">
+          <p className="text-[18px] font-semibold text-[#374151]">Profile information</p>
+        </div>
+
+        <div className="grid grid-cols-2 divide-x divide-[#F3F4F6] border-b border-[#F3F4F6] flex-shrink-0">
+          <div className="px-5 py-4">
+            <label className="block text-[16px] font-semibold text-[#111827] mb-2">Professional title</label>
             <input
               type="text"
               value={profTitle}
               onChange={(e) => setProfTitle(e.target.value)}
-              placeholder="e.g., Clinical Psychologist"
-              className="p-3 rounded-xl border border-gray-100 bg-gray-50 text-sm font-bold outline-none focus:bg-white"
+              placeholder="e.g. Clinical Psychologist"
+              className={input}
             />
           </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-black text-gray-400 uppercase">
-              Years of Experience
-            </label>
+          <div className="px-5 py-4">
+            <label className="block text-[16px] font-semibold text-[#111827] mb-2">Years of experience</label>
             <input
               type="number"
               value={experience}
               onChange={(e) => setExperience(e.target.value)}
-              className="p-3 rounded-xl border border-gray-100 bg-gray-50 text-sm font-bold outline-none focus:bg-white"
+              className={input}
             />
           </div>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] font-black text-gray-400 uppercase">
-            About Me (Bio)
-          </label>
+        <div className="px-5 py-4 border-b border-[#F3F4F6] flex flex-col flex-1 min-h-0">
+          <label className="block text-[16px] font-semibold text-[#111827] mb-2 flex-shrink-0">About me</label>
           <textarea
             value={bio}
             onChange={handleBioChange}
             placeholder="Write a brief description about yourself..."
-            className="p-3 rounded-xl border border-gray-100 bg-gray-50 text-sm font-normal outline-none focus:bg-white resize-none"
-            style={{ minHeight: "120px" }}
+            className={`${input} resize-none flex-1 min-h-0`}
+            style={{ overflowY: "auto", minHeight: "100px" }}
           />
         </div>
-      </section>
 
-      <div className="grid grid-cols-2 gap-4">
-        <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[260px] overflow-hidden flex flex-col">
-          <label className="block text-xs font-black text-indigo-600 mb-3 uppercase">
-            Specializations
-          </label>
+        <div className="grid grid-cols-2 divide-x divide-[#F3F4F6] flex-shrink-0">
 
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {defaultSpecialties.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => addDefaultSpecialty(tag)}
-                className="text-[9px] font-black px-2 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-indigo-100 hover:text-indigo-600"
-              >
-                + {tag}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              value={newSpecialty}
-              onChange={(e) => setNewSpecialty(e.target.value)}
-              placeholder="Add custom specialty..."
-              className="flex-1 p-3 rounded-xl border border-gray-100 bg-gray-50 text-xs font-bold"
-            />
-            <button
-              onClick={addSpecialty}
-              className="bg-indigo-600 text-white px-4 rounded-xl font-black"
-            >
-              +
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto pr-1 flex flex-wrap gap-2">
-            {specializations.map((s) => (
-              <span
-                key={s}
-                className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-[10px] font-black border border-indigo-100 flex items-center gap-2 h-fit"
-              >
-                {s}
+          <div className="flex flex-col border-b border-[#F3F4F6]">
+            <div className="px-5 pt-4 pb-3 border-b border-[#F3F4F6]">
+              <label className="block text-[16px] font-semibold text-[#111827]">Specializations</label>
+            </div>
+            <div className="px-5 py-3 flex flex-col gap-3">
+              <div className="flex flex-wrap gap-1.5">
+                {defaultSpecialties.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => addDefaultSpecialty(tag)}
+                    className="text-[12px] px-2.5 py-1 bg-[#EFF6FF] text-[#1D4ED8] border border-[#DBEAFE] hover:bg-[#DBEAFE] transition-colors"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newSpecialty}
+                  onChange={(e) => setNewSpecialty(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addSpecialty(newSpecialty, setNewSpecialty)}
+                  placeholder="Custom specialty..."
+                  className={input}
+                />
                 <button
-                  onClick={() => removeSpecialty(s)}
-                  className="text-red-400 hover:text-red-600"
+                  onClick={() => addSpecialty(newSpecialty, setNewSpecialty)}
+                  className="px-3 py-2 bg-[#F3F4F6] text-[#374151] text-[13px] hover:bg-[#E5E7EB] transition-colors flex-shrink-0"
                 >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-        </section>
-
-        <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[260px] overflow-hidden flex flex-col">
-          <label className="block text-xs font-black text-indigo-600 mb-3 uppercase">
-            Education
-          </label>
-
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              value={newEdu}
-              onChange={(e) => setNewEdu(e.target.value)}
-              placeholder="e.g., PhD in Psychology"
-              className="flex-1 p-3 rounded-xl border border-gray-100 bg-gray-50 text-xs font-bold"
-            />
-            <button
-              onClick={addEducation}
-              className="bg-indigo-600 text-white px-4 rounded-xl font-black"
-            >
-              +
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto pr-2 space-y-2">
-            {education.map((e, i) => (
-              <div
-                key={i}
-                className="bg-gray-50 p-3 rounded-xl text-[10px] font-black border border-gray-100 flex justify-between items-center shadow-sm"
-              >
-                <span className="truncate mr-2">{e}</span>
-                <button
-                  onClick={() => removeEducation(i)}
-                  className="text-red-400 hover:text-red-600"
-                >
-                  ×
+                  Add
                 </button>
               </div>
-            ))}
+              <div
+                className="flex flex-wrap gap-1.5 overflow-y-auto pr-1"
+                style={{ minHeight: "32px", maxHeight: "88px" }}
+              >
+                {specializations.map((s) => (
+                  <span
+                    key={s}
+                    className="inline-flex items-center gap-1 bg-[#EFF6FF] text-[#1D4ED8] border border-[#DBEAFE] px-2.5 py-1 text-[12px] h-fit"
+                  >
+                    {s}
+                    <button
+                      onClick={() => removeSpecialty(s)}
+                      className="text-[#93C5FD] hover:text-[#1D4ED8] text-[15px] leading-none"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
-        </section>
+
+          <div className="flex flex-col border-b border-[#F3F4F6]">
+            <div className="px-5 pt-4 pb-3 border-b border-[#F3F4F6]">
+              <label className="block text-[16px] font-semibold text-[#111827]">Education</label>
+            </div>
+            <div className="px-5 py-3 flex flex-col gap-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newEdu}
+                  onChange={(e) => setNewEdu(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addEducation(newEdu, setNewEdu)}
+                  placeholder="e.g. PhD in Psychology"
+                  className={input}
+                />
+                <button
+                  onClick={() => addEducation(newEdu, setNewEdu)}
+                  className="px-3 py-2 bg-[#F3F4F6] text-[#374151] text-[13px] hover:bg-[#E5E7EB] transition-colors flex-shrink-0"
+                >
+                  Add
+                </button>
+              </div>
+              <div
+                className="space-y-1.5 overflow-y-auto pr-1"
+                style={{ minHeight: "32px", maxHeight: "164px" }}
+              >
+                {education.map((e, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between px-3 py-2.5 bg-[#F0FDF4] border border-[#BBF7D0]"
+                  >
+                    <span className="text-[13px] text-[#15803D] font-medium truncate mr-2">{e}</span>
+                    <button
+                      onClick={() => removeEducation(i)}
+                      className="text-[#86EFAC] hover:text-[#15803D] text-[16px] leading-none flex-shrink-0"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );

@@ -12,101 +12,203 @@ const timeSlots = [
 const daysOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 const CounselorInfo = ({ counselor, scheduleMap, topics, qualifications }) => {
+  if (!counselor) {
+    return null;
+  }
+
+  const bioParagraphs = [];
+  if (counselor.bio) {
+    const lines = counselor.bio.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      if (trimmed) bioParagraphs.push(trimmed);
+    }
+  }
+
+  let bioContent;
+  if (counselor.bio) {
+    bioContent = (
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {bioParagraphs.map((para, i) => (
+          <p key={i} style={{ fontSize: "15px", color: "#374151", lineHeight: 1.7, margin: 0, textAlign: "justify" }}>
+            {para}
+          </p>
+        ))}
+      </div>
+    );
+  } else {
+    bioContent = (
+      <p style={{ fontSize: "15px", color: "#d1d5db", margin: 0 }}>No biography provided.</p>
+    );
+  }
+
   return (
-    <div className="p-10 px-12 space-y-10">
-      <div>
-        <h4 className="text-[11px] font-black text-indigo-600 uppercase mb-4 tracking-[0.2em]">
-          About Counselor
-        </h4>
-        <div className="bg-slate-50 p-7 rounded-3xl border border-slate-100 shadow-inner">
-          {counselor.bio ? (
-            counselor.bio
-              .split(/\n+/)
-              .filter((p) => p.trim())
-              .map((para, i) => (
-                <p
-                  key={i}
-                  className="text-slate-600 text-base leading-relaxed font-medium text-justify mb-4 last:mb-0"
-                >
-                  {para.trim()}
-                </p>
-              ))
-          ) : (
-            <p className="text-slate-600 text-base leading-relaxed font-medium text-justify">
-              No biography provided.
-            </p>
-          )}
+    <div style={{ padding: "32px" }}>
+
+      <div style={{ marginBottom: "0", paddingBottom: "32px" }}>
+        <div style={{
+          background: "#f9fafb",
+          border: "1px solid #e5e7eb",
+          borderBottom: "none",
+          padding: "10px 16px",
+        }}>
+          <p style={{ fontSize: "15px", color: "#111827", fontWeight: "700", margin: 0 }}>
+            About
+          </p>
+        </div>
+        <div style={{ border: "1px solid #e5e7eb", padding: "20px 16px" }}>
+          {bioContent}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-20">
-        <div>
-          <h4 className="text-[11px] font-black text-indigo-600 uppercase mb-4 tracking-[0.2em]">
-            Specialization
-          </h4>
-          <div className="flex flex-wrap gap-2.5">
+      <div
+        style={{
+          display: "grid", gridTemplateColumns: "1fr 1px 1fr",
+          marginLeft: "-32px", marginRight: "-32px",
+          borderTop: "1px solid #e5e7eb", borderBottom: "1px solid #e5e7eb",
+        }}
+      >
+        <div style={{ padding: "28px 32px" }}>
+          <div style={{
+            background: "#f9fafb",
+            border: "1px solid #e5e7eb",
+            borderBottom: "none",
+            padding: "10px 16px",
+          }}>
+            <p style={{ fontSize: "15px", color: "#111827", fontWeight: "700", margin: 0 }}>
+              Specialization
+            </p>
+          </div>
+          <div style={{ border: "1px solid #e5e7eb", padding: "16px", display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {topics.map((s, i) => (
               <span
                 key={i}
-                className="bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-xl text-xs font-bold border border-indigo-100"
+                style={{
+                  padding: "6px 14px",
+                  background: "#EEF2FF", color: "#2563EB",
+                  fontSize: "13px", fontWeight: "500",
+                  border: "1px solid #C7D7FD",
+                }}
               >
                 {s}
               </span>
             ))}
           </div>
         </div>
-        <div>
-          <h4 className="text-[11px] font-black text-indigo-600 uppercase mb-4 tracking-[0.2em]">
-            Education
-          </h4>
-          <div className="flex flex-wrap gap-2.5">
+
+        <div style={{ background: "#e5e7eb" }} />
+
+        <div style={{ padding: "28px 32px" }}>
+          <div style={{
+            background: "#f9fafb",
+            border: "1px solid #e5e7eb",
+            borderBottom: "none",
+            padding: "10px 16px",
+          }}>
+            <p style={{ fontSize: "15px", color: "#111827", fontWeight: "700", margin: 0 }}>
+              Education
+            </p>
+          </div>
+          <div style={{ border: "1px solid #e5e7eb", padding: "16px", display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {qualifications.map((q, i) => (
               <span
                 key={i}
-                className="bg-emerald-50 text-emerald-700 px-5 py-2.5 rounded-xl text-xs font-bold border border-emerald-100"
+                style={{
+                  padding: "6px 14px",
+                  background: "#f0fdf4", color: "#16a34a",
+                  fontSize: "13px", fontWeight: "500",
+                  border: "1px solid #bbf7d0",
+                }}
               >
-                ✓ {q}
+                {q}
               </span>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="pt-8 border-t border-slate-100 bg-[#f8fafc] -mx-12 px-12 pb-12">
-        <h4 className="text-[11px] font-black text-indigo-600 uppercase mb-8 tracking-[0.2em] pt-4 text-center">
-          Weekly Consultation Schedule
-        </h4>
-        <div className="grid grid-cols-5 gap-6">
-          {daysOrder.map((day) => (
-            <div
-              key={day}
-              className="rounded-3xl p-5 border bg-white border-slate-200 shadow-sm flex flex-col items-center"
-            >
-              <p className="text-[10px] font-black text-indigo-600 uppercase mb-5 text-center border-b-2 border-indigo-50 w-full pb-3">
-                {day}
-              </p>
-              <div className="space-y-3 w-full">
-                {timeSlots.map((slot, i) => {
-                  const hasSession = scheduleMap[day]?.includes(slot);
-                  return hasSession ? (
-                    <div
-                      key={i}
-                      className="bg-indigo-600 text-white text-[9px] font-black p-3 rounded-xl text-center shadow-md shadow-indigo-100 h-[42px] flex items-center justify-center"
-                    >
-                      {slot}
-                    </div>
-                  ) : (
-                    <div
-                      key={i}
-                      className="bg-slate-50 text-slate-300 text-[9px] font-black p-3 rounded-xl text-center border border-dashed border-slate-200 h-[42px] flex items-center justify-center"
-                    >
-                      No Session
-                    </div>
-                  );
-                })}
+      <div style={{
+        paddingTop: "28px",
+        marginLeft: "-32px", marginRight: "-32px",
+        paddingLeft: "32px", paddingRight: "32px",
+      }}>
+        <div style={{
+          background: "#f9fafb",
+          border: "1px solid #e5e7eb",
+          borderBottom: "none",
+          padding: "10px 16px",
+        }}>
+          <p style={{ fontSize: "15px", color: "#111827", fontWeight: "700", margin: 0 }}>
+            Weekly Consultation Schedule
+          </p>
+        </div>
+        <div style={{ border: "1px solid #e5e7eb", padding: "20px" }}>
+          <div className="grid grid-cols-5" style={{ gap: "12px" }}>
+            {daysOrder.map((day) => (
+              <div
+                key={day}
+                style={{
+                  border: "1px solid #e5e7eb",
+                  overflow: "hidden",
+                  background: "#fafafa",
+                }}
+              >
+                <div style={{
+                  padding: "12px 8px",
+                  borderBottom: "1px solid #e5e7eb",
+                  background: "#fff", textAlign: "center",
+                }}>
+                  <span style={{
+                    fontSize: "13px", fontWeight: "700",
+                    color: "#111827", textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}>
+                    {day}
+                  </span>
+                </div>
+                <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {timeSlots.map((slot, i) => {
+                    let hasSession = false;
+                    if (scheduleMap[day]) {
+                      hasSession = scheduleMap[day].includes(slot);
+                    }
+
+                    let slotContent;
+                    if (hasSession) {
+                      slotContent = (
+                        <div
+                          key={i}
+                          style={{
+                            background: "#2563EB", color: "#fff",
+                            fontSize: "11px", fontWeight: "600",
+                            padding: "9px 6px",
+                            textAlign: "center", lineHeight: 1.4,
+                          }}
+                        >
+                          {slot}
+                        </div>
+                      );
+                    } else {
+                      slotContent = (
+                        <div
+                          key={i}
+                          style={{
+                            background: "#fff", color: "#d1d5db",
+                            fontSize: "11px", padding: "9px 6px",
+                            textAlign: "center",
+                            border: "1px dashed #e5e7eb",
+                          }}
+                        >
+                          —
+                        </div>
+                      );
+                    }
+                    return slotContent;
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

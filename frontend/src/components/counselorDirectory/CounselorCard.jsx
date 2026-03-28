@@ -1,57 +1,80 @@
-import { Star, Users } from "lucide-react";
+import { Star, Users, Clock } from "lucide-react";
 
-const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const VISIBLE_TAG_COUNT = 3;
 
-const CounselorCard = ({
-  cslr,
-  stats,
-  liveStatuses,
-  expandedCards,
-  onToggleCardTags,
-  onViewProfile,
-}) => {
-  const getStatusStyle = (id) => {
-    const info = liveStatuses[id];
-    if (!info || info.status === "Green") return "bg-emerald-50 text-emerald-600 border-emerald-100";
-    if (info.status === "Yellow") return "bg-amber-50 text-amber-600 border-amber-100";
-    return "bg-rose-50 text-rose-600 border-rose-100";
-  };
+const avatarColors = [
+  "linear-gradient(135deg, #f97316, #ef4444)",
+  "linear-gradient(135deg, #6366f1, #8b5cf6)",
+  "linear-gradient(135deg, #0ea5e9, #22c55e)",
+  "linear-gradient(135deg, #ec4899, #f43f5e)",
+  "linear-gradient(135deg, #14b8a6, #0ea5e9)",
+  "linear-gradient(135deg, #f59e0b, #f97316)",
+];
 
-  const getStatusLabel = (id) => {
-    if (liveStatuses[id]) return liveStatuses[id].label;
-    return "Available";
-  };
+const DAY_KEYS = [
+  { key: "Monday",    label: "M" },
+  { key: "Tuesday",   label: "T" },
+  { key: "Wednesday", label: "W" },
+  { key: "Thursday",  label: "T" },
+  { key: "Friday",    label: "F" },
+];
+
+const CounselorCard = ({ cslr, stats, liveStatuses, expandedCards, onToggleCardTags, onViewProfile }) => {
+  const statusInfo = liveStatuses[cslr._id];
+
+  let statusLabel = "Available";
+  let statusBg = "#dcfce7";
+  let statusColor = "#16a34a";
+
+  if (statusInfo && statusInfo.status === "Yellow") {
+    statusLabel = statusInfo.label;
+    statusBg = "#fef9c3";
+    statusColor = "#ca8a04";
+  } else if (statusInfo && statusInfo.status === "Red") {
+    statusLabel = statusInfo.label;
+    statusBg = "#fee2e2";
+    statusColor = "#dc2626";
+  } else if (statusInfo) {
+    statusLabel = statusInfo.label;
+  }
 
   let allTags = [];
   if (cslr.specialization) {
-    allTags = cslr.specialization.split(",").map((t) => t.trim()).filter(Boolean);
+    const raw = cslr.specialization.split(",");
+    for (let i = 0; i < raw.length; i++) {
+      const t = raw[i].trim();
+      if (t) allTags.push(t);
+    }
+  }
+
+  const availableDays = [];
+  if (cslr.availability) {
+    for (let i = 0; i < cslr.availability.length; i++) {
+      const d = cslr.availability[i].day;
+      if (!availableDays.includes(d)) availableDays.push(d);
+    }
   }
 
   const isExpanded = expandedCards[cslr._id] || false;
   const hiddenCount = allTags.length - VISIBLE_TAG_COUNT;
 
-  let availableDays = [];
-  if (cslr.availability) {
-    availableDays = cslr.availability.map((s) => s.day);
+  let ratingValue = "—";
+  if (stats.overall > 0) ratingValue = stats.overall.toFixed(1);
+
+  let initials = "C";
+  if (cslr.name) {
+    const parts = cslr.name.split(" ");
+    let ini = "";
+    for (let i = 0; i < parts.length && i < 2; i++) {
+      if (parts[i][0]) ini += parts[i][0].toUpperCase();
+    }
+    initials = ini;
   }
 
-  const getDayClass = (day) => {
-    if (availableDays.includes(day)) return "flex-1 h-9 flex items-center justify-center rounded-lg text-[11px] font-black transition-all bg-indigo-600 text-white shadow-sm";
-    return "flex-1 h-9 flex items-center justify-center rounded-lg text-[11px] font-black transition-all bg-gray-100 text-gray-300 border border-gray-200";
-  };
+  const colorIndex = cslr.name ? cslr.name.charCodeAt(0) % avatarColors.length : 0;
 
-  const getRatingDisplay = () => {
-    if (stats.overall > 0) return stats.overall.toFixed(1);
-    return "0.0";
-  };
-
-  const getInitial = () => {
-    if (cslr.name && cslr.name.charAt(0)) return cslr.name.charAt(0);
-    return "C";
-  };
-
-  const tagClass = "text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-gray-200 uppercase tracking-tight bg-gray-50";
+  let experienceText = "—";
+  if (cslr.experience) experienceText = cslr.experience + " yrs";
 
   const renderAvatar = () => {
     if (cslr.verificationPhoto) {
@@ -59,128 +82,200 @@ const CounselorCard = ({
         <img
           src={`http://127.0.0.1:5050/uploads/verifications/${cslr.verificationPhoto}`}
           alt={cslr.name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.style.display = "none";
-            e.target.parentElement.innerHTML = `<span class="text-indigo-600 font-bold text-2xl">${getInitial()}</span>`;
-          }}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          onError={(e) => { e.target.style.display = "none"; }}
         />
       );
     }
-    return <span className="text-indigo-600 font-bold text-2xl">{getInitial()}</span>;
+    return (
+      <div
+        style={{
+          width: "100%", height: "100%",
+          background: avatarColors[colorIndex],
+          display: "flex", alignItems: "center", justifyContent: "center",
+          color: "#fff", fontSize: "32px", fontWeight: "900", letterSpacing: "-0.5px",
+        }}
+      >
+        {initials}
+      </div>
+    );
+  };
+
+  const tagStyle = {
+    padding: "5px 12px",
+    background: "#EEF2FF", color: "#2563EB",
+    fontSize: "12px", fontWeight: "500",
+    border: "1px solid #C7D7FD",
+    whiteSpace: "nowrap",
   };
 
   const renderTags = () => {
     if (allTags.length === 0) {
-      return <span className={tagClass}>General</span>;
+      return <span style={tagStyle}>General</span>;
     }
 
     if (isExpanded) {
-      return (
-        <div className="flex flex-wrap gap-2">
-          {allTags.map((tag, i) => (
-            <span key={i} className={tagClass}>{tag}</span>
-          ))}
-          <button
-            onClick={() => onToggleCardTags(cslr._id)}
-            className="bg-gray-100 text-gray-600 text-[10px] font-black px-3 py-1.5 rounded-lg border border-gray-200 uppercase tracking-tight hover:bg-gray-200"
-          >
-            Show less
-          </button>
-        </div>
+      const items = [];
+      for (let i = 0; i < allTags.length; i++) {
+        items.push(<span key={i} style={tagStyle}>{allTags[i]}</span>);
+      }
+      items.push(
+        <button key="less" onClick={() => onToggleCardTags(cslr._id)}
+          style={{ ...tagStyle, cursor: "pointer", background: "#f4f5fb", color: "#8b8fa8", border: "1px solid #e4e6f0" }}>
+          less
+        </button>
+      );
+      return <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>{items}</div>;
+    }
+
+    const visible = [];
+    const limit = allTags.length < VISIBLE_TAG_COUNT ? allTags.length : VISIBLE_TAG_COUNT;
+    for (let i = 0; i < limit; i++) {
+      visible.push(
+        <span key={i} title={allTags[i]}
+          style={{ ...tagStyle, overflow: "hidden", textOverflow: "ellipsis" }}>
+          {allTags[i]}
+        </span>
       );
     }
 
-    const firstTag = allTags[0];
-    const secondTag = allTags[1];
-    const thirdTag = allTags[2];
+    if (hiddenCount > 0) {
+      visible.push(
+        <button key="more" onClick={() => onToggleCardTags(cslr._id)}
+          style={{ ...tagStyle, cursor: "pointer", background: "#f4f5fb", color: "#8b8fa8", border: "1px solid #e4e6f0", flexShrink: 0 }}>
+          +{hiddenCount}
+        </button>
+      );
+    }
 
     return (
-      <div className="flex items-center gap-2" style={{ minWidth: 0 }}>
-        {firstTag && (
-          <span className={tagClass} style={{ whiteSpace: "nowrap", flexShrink: 0 }} title={firstTag}>
-            {firstTag}
-          </span>
-        )}
-        {secondTag && (
-          <span className={tagClass} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0 }} title={secondTag}>
-            {secondTag}
-          </span>
-        )}
-        {thirdTag && (
-          <span className={tagClass} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0 }} title={thirdTag}>
-            {thirdTag}
-          </span>
-        )}
-        {hiddenCount > 0 && (
-          <button
-            onClick={() => onToggleCardTags(cslr._id)}
-            className="bg-indigo-50 text-indigo-600 text-[10px] font-black px-3 py-1.5 rounded-lg border border-indigo-200 uppercase tracking-tight hover:bg-indigo-100 whitespace-nowrap flex-shrink-0"
-          >
-            +{hiddenCount} more
-          </button>
-        )}
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+        {visible}
       </div>
     );
   };
 
   return (
-    <div className="bg-white rounded-[24px] p-7 border border-gray-200 shadow-lg flex flex-col justify-between">
-      <div>
-        <div className="flex justify-between items-start mb-5">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-[20px] flex items-center justify-center flex-shrink-0 border border-indigo-100 overflow-hidden bg-indigo-50">
-              {renderAvatar()}
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900 text-lg leading-tight">{cslr.name}</h3>
-              <p className="text-sm font-medium text-gray-400">{cslr.profTitle || "Clinical Counselor"}</p>
-            </div>
-          </div>
-          <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider border flex-shrink-0 ${getStatusStyle(cslr._id)}`}>
-            ● {getStatusLabel(cslr._id)}
-          </span>
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #ebebeb",
+        padding: "20px",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+        transition: "box-shadow 0.2s",
+        boxSizing: "border-box",
+        display: "flex", flexDirection: "column",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.12)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.08)"; }}
+    >
+
+      <div style={{ display: "flex", gap: "16px", alignItems: "flex-start", marginBottom: "16px" }}>
+        <div style={{ flexShrink: 0, width: "120px", height: "120px", overflow: "hidden", borderRadius: "50%" }}>
+          {renderAvatar()}
         </div>
 
-        <div className="mb-5">
-          {renderTags()}
-        </div>
-
-        <div className="grid grid-cols-2 border-y-2 border-gray-300 mb-6" style={{ alignItems: "stretch" }}>
-          <div className="flex flex-col items-center justify-center border-r-2 border-gray-300 gap-1 py-5">
-            <div className="flex items-center gap-1.5">
-              <Star size={18} className="text-yellow-400 fill-yellow-400" />
-              <span className="text-xl font-black text-gray-900">{getRatingDisplay()}</span>
-            </div>
-            <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Rating</span>
+        <div style={{ flex: 1, minWidth: 0, paddingTop: "4px" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#1a1d2e", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {cslr.name}
+            </h3>
+            <span style={{
+              background: statusBg, color: statusColor,
+              fontSize: "12px", fontWeight: "600",
+              padding: "4px 10px",
+              whiteSpace: "nowrap", flexShrink: 0,
+            }}>
+              {statusLabel}
+            </span>
           </div>
-          <div className="flex flex-col items-center justify-center gap-1 py-5">
-            <div className="flex items-center gap-1.5">
-              <Users size={18} className="text-indigo-400" />
-              <span className="text-xl font-black text-gray-900">{stats.studentsHelped}</span>
-            </div>
-            <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest text-center">Students Helped</span>
-          </div>
-        </div>
 
-        <div className="mb-6">
-          <p className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-3">Weekly Availability</p>
-          <div className="flex justify-between gap-1">
-            {daysOfWeek.map((day) => (
-              <div key={day} className={getDayClass(day)}>
-                {day.charAt(0)}
-              </div>
-            ))}
+          <p style={{ fontSize: "14px", color: "#8b8fa8", marginBottom: "14px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {cslr.profTitle || "Clinical Counselor"}
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <Star size={14} style={{ color: "#f59e0b", fill: "#f59e0b", flexShrink: 0 }} />
+              <span style={{ fontSize: "13px", color: "#8b8fa8", flex: 1 }}>Rating</span>
+              <span style={{ fontSize: "13px", fontWeight: "600", color: "#1a1d2e" }}>{ratingValue}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <Users size={14} style={{ color: "#8b8fa8", flexShrink: 0 }} />
+              <span style={{ fontSize: "13px", color: "#8b8fa8", flex: 1 }}>Students helped</span>
+              <span style={{ fontSize: "13px", fontWeight: "600", color: "#1a1d2e" }}>{stats.studentsHelped.toLocaleString()}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <Clock size={14} style={{ color: "#8b8fa8", flexShrink: 0 }} />
+              <span style={{ fontSize: "13px", color: "#8b8fa8", flex: 1 }}>Experience</span>
+              <span style={{ fontSize: "13px", fontWeight: "600", color: "#1a1d2e" }}>{experienceText}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <button
-        onClick={() => onViewProfile(cslr._id)}
-        className="w-full py-4 bg-white border-2 border-gray-200 rounded-[18px] font-black text-xs uppercase tracking-widest text-gray-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all"
-      >
-        View Profile
-      </button>
+      <div style={{ height: "1px", background: "#f0f0f0", margin: "0 -20px 12px -20px" }} />
+
+      <div style={{ marginBottom: "12px" }}>
+        {renderTags()}
+      </div>
+
+      <div style={{ height: "1px", background: "#f0f0f0", margin: "0 -20px 12px -20px" }} />
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "15px", marginBottom: "14px" }}>
+        {DAY_KEYS.map(({ key, label }, idx) => {
+          const active = availableDays.includes(key);
+
+          let dayBg = "#f4f5fb";
+          let dayColor = "#c4c9d4";
+          let dayBorder = "1px solid #e4e6f0";
+          if (active) {
+            dayBg = "#2563EB";
+            dayColor = "#fff";
+            dayBorder = "1px solid #2563EB";
+          }
+
+          return (
+            <div key={idx} style={{
+              width: "32px", height: "32px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: dayBg,
+              color: dayColor,
+              fontSize: "12px", fontWeight: "700",
+              border: dayBorder,
+              flexShrink: 0,
+            }}>
+              {label}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ borderTop: "1px solid #f0f0f0", margin: "auto -20px 0 -20px", padding: "12px 20px 0 20px" }}>
+        <button
+          onClick={() => onViewProfile(cslr._id)}
+          style={{
+            width: "100%", padding: "11px",
+            background: "#fff", color: "#1a1d2e",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: "14px", fontWeight: "600",
+            border: "1.5px solid #dcdde6",
+            cursor: "pointer", transition: "all 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#2563EB";
+            e.currentTarget.style.color = "#fff";
+            e.currentTarget.style.borderColor = "#2563EB";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "#fff";
+            e.currentTarget.style.color = "#1a1d2e";
+            e.currentTarget.style.borderColor = "#dcdde6";
+          }}
+        >
+          View profile
+        </button>
+      </div>
     </div>
   );
 };

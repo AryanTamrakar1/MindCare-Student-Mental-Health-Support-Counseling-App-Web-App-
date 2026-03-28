@@ -1,280 +1,125 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "../api/axios";
 import StudentSidebar from "../components/Sidebars/StudentSidebar";
 import Navbar from "../components/Navbar";
-import SearchBar from "../components/counselorDirectory/SearchBar";
-import FilterSection from "../components/counselorDirectory/FilterSection";
-import CounselorCard from "../components/counselorDirectory/CounselorCard";
-import Pagination from "../components/counselorDirectory/Pagination";
+import SearchBar from "../components/CounselorDirectory/SearchBar";
+import FilterSection from "../components/CounselorDirectory/FilterSection";
+import CounselorCard from "../components/CounselorDirectory/CounselorCard";
+import Pagination from "../components/CounselorDirectory/Pagination";
+import { CounselorDirectoryProvider } from "../context/counselorDirectory/CounselorDirectoryContext";
+import { useCounselorDirectory } from "../hooks/counselorDirectory/useCounselorDirectory";
 
-const CounselorDirectory = () => {
+const CounselorDirectoryInner = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [counselors, setCounselors] = useState([]);
-  const [displayCounselors, setDisplayCounselors] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSpecialties, setSelectedSpecialties] = useState(["All"]);
-  const [availableTags, setAvailableTags] = useState([]);
-  const [liveStatuses, setLiveStatuses] = useState({});
-  const [counselorStats, setCounselorStats] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [expandedCards, setExpandedCards] = useState({});
+  const {
+    user,
+    displayCounselors,
+    searchTerm,
+    setSearchTerm,
+    availableTags,
+    liveStatuses,
+    counselorStats,
+    currentPage,
+    setCurrentPage,
+    expandedCards,
+    filterRating,
+    filterStudents,
+    filterAvailability,
+    filterSpecialty,
+    filterStatus,
+    handleSearch,
+    handleSearchClear,
+    handleApply,
+    handleClear,
+    toggleCardTags,
+    totalPages,
+    currentCards,
+  } = useCounselorDirectory();
 
-  const cardsPerPage = 3;
-
-  useEffect(() => {
-    loadPage();
-  }, []);
-
-  const loadPage = async () => {
-    try {
-      const token = sessionStorage.getItem("token");
-      const userRes = await axios.get("/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(userRes.data);
-      await loadCounselors();
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
-  };
-
-  const loadCounselors = async () => {
-    try {
-      const token = sessionStorage.getItem("token");
-      const res = await axios.get("/auth/counselors");
-      const data = res.data;
-
-      setCounselors(data);
-      setDisplayCounselors(data);
-
-      const tags = ["All"];
-      data.forEach((c) => {
-        if (c.specialization) {
-          c.specialization.split(",").forEach((tag) => {
-            const clean = tag.trim();
-            if (clean && !tags.includes(clean)) {
-              tags.push(clean);
-            }
-          });
-        }
-        loadStatus(c._id);
-      });
-      setAvailableTags(tags);
-
-      const statsMap = {};
-
-      await Promise.all(
-        data.map(async (c) => {
-          let overall = 0;
-          let totalRatings = 0;
-          let studentsHelped = 0;
-
-          await Promise.all([
-            axios
-              .get(`/ratings/counselor/${c._id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              })
-              .then((r) => {
-                overall = r.data.overall || 0;
-                totalRatings = r.data.totalRatings || 0;
-              })
-              .catch(() => {}),
-
-            axios
-              .get(`/appointments/completed-count/${c._id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              })
-              .then((r) => {
-                studentsHelped = r.data.count || 0;
-              })
-              .catch(() => {}),
-          ]);
-
-          statsMap[c._id] = { overall, totalRatings, studentsHelped };
-        }),
-      );
-
-      setCounselorStats(statsMap);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
-  };
-
-  const loadStatus = async (counselorId) => {
-    try {
-      const res = await axios.get(`/appointments/live-status/${counselorId}`);
-      setLiveStatuses((prev) => ({ ...prev, [counselorId]: res.data }));
-    } catch {}
-  };
-
-  useEffect(() => {
-    if (counselors.length === 0) return;
-    const interval = setInterval(() => {
-      counselors.forEach((c) => loadStatus(c._id));
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [counselors]);
-
-  const applyFilter = (term, specialties) => {
-    setCurrentPage(1);
-    const results = counselors.filter((c) => {
-      const matchesSearch =
-        !term ||
-        c.name.toLowerCase().includes(term.toLowerCase()) ||
-        (c.specialization &&
-          c.specialization.toLowerCase().includes(term.toLowerCase()));
-
-      const allSelected = specialties.includes("All");
-      const matchesTag =
-        allSelected ||
-        specialties.some(
-          (spec) =>
-            c.specialization &&
-            c.specialization
-              .split(",")
-              .map((s) => s.trim())
-              .includes(spec),
-        );
-
-      return matchesSearch && matchesTag;
-    });
-    setDisplayCounselors(results);
-  };
-
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    applyFilter(term, selectedSpecialties);
-  };
-
-  const handleToggleTag = (tag) => {
-    if (tag === "All") {
-      setSelectedSpecialties(["All"]);
-      applyFilter(searchTerm, ["All"]);
-      return;
-    }
-    let newList = selectedSpecialties.filter((t) => t !== "All");
-    if (newList.includes(tag)) {
-      newList = newList.filter((t) => t !== tag);
-    } else {
-      newList = [...newList, tag];
-    }
-    let finalList = newList;
-    if (newList.length === 0) {
-      finalList = ["All"];
-    }
-    setSelectedSpecialties(finalList);
-    applyFilter(searchTerm, finalList);
-  };
-
-  const handleApplyFilter = () => {
-    applyFilter(searchTerm, selectedSpecialties);
-  };
-
-  const handleClear = () => {
-    setSelectedSpecialties(["All"]);
-    setSearchTerm("");
-    setDisplayCounselors(counselors);
-    setCurrentPage(1);
-  };
-
-  const toggleCardTags = (id) => {
-    setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const totalPages = Math.ceil(displayCounselors.length / cardsPerPage);
-  const startIndex = (currentPage - 1) * cardsPerPage;
-  const currentCards = displayCounselors.slice(
-    startIndex,
-    startIndex + cardsPerPage,
-  );
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex">
-        <StudentSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-            Loading Directory...
-          </p>
-        </main>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] flex">
+    <div
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      className="min-h-screen bg-[#EFF6FF]"
+    >
+      <Navbar />
       <StudentSidebar user={user} />
-      <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
-        <div className="mb-8 border-b-2 border-slate-300 pb-6 flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">
-              Find Your Counselor
-            </h2>
-            <p className="text-gray-500">
-              Connect with professionals specialized in student well-being.
-            </p>
-          </div>
-          <Navbar />
-        </div>
+      <main className="ml-[260px] pt-[72px]">
+        <div className="px-7 py-7">
+          <SearchBar
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            onSearch={handleSearch}
+            onClear={handleSearchClear}
+            filterSlot={
+              <FilterSection
+                availableTags={availableTags}
+                filterRating={filterRating}
+                filterStudents={filterStudents}
+                filterAvailability={filterAvailability}
+                filterSpecialty={filterSpecialty}
+                filterStatus={filterStatus}
+                onApply={handleApply}
+                onClear={handleClear}
+              />
+            }
+          />
 
-        <SearchBar
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          onSearch={handleSearch}
-          onClear={handleClear}
-        />
-
-        <FilterSection
-          availableTags={availableTags}
-          selectedSpecialties={selectedSpecialties}
-          onToggleTag={handleToggleTag}
-          onApplyFilter={handleApplyFilter}
-          onClear={handleClear}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-          {currentCards.length === 0 && (
-            <div className="col-span-full text-center py-24 bg-white rounded-[32px] border-2 border-dashed border-gray-200">
-              <p className="text-gray-400 font-bold text-lg">
+          {currentCards.length === 0 ? (
+            <div className="text-center py-20 bg-white rounded-2xl border border-[#E5E7EB]">
+              <p className="text-[16px] text-[#9CA3AF]">
                 No counselors match your criteria.
               </p>
               <button
-                onClick={handleClear}
-                className="text-indigo-600 font-black text-xs uppercase mt-4 hover:underline"
+                onClick={() => {
+                  handleClear();
+                  handleSearchClear();
+                }}
+                className="mt-3 text-[14px] text-[#2563EB] hover:underline"
               >
-                Reset Filters
+                Reset all filters
               </button>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+              {currentCards.map((cslr) => (
+                <CounselorCard
+                  key={cslr._id}
+                  cslr={cslr}
+                  stats={
+                    counselorStats[cslr._id] || {
+                      overall: 0,
+                      studentsHelped: 0,
+                    }
+                  }
+                  liveStatuses={liveStatuses}
+                  expandedCards={expandedCards}
+                  onToggleCardTags={toggleCardTags}
+                  onViewProfile={(id) => navigate(`/counselor/${id}`)}
+                />
+              ))}
+            </div>
           )}
-          {currentCards.map((cslr) => (
-            <CounselorCard
-              key={cslr._id}
-              cslr={cslr}
-              stats={
-                counselorStats[cslr._id] || { overall: 0, studentsHelped: 0 }
-              }
-              liveStatuses={liveStatuses}
-              expandedCards={expandedCards}
-              onToggleCardTags={toggleCardTags}
-              onViewProfile={(id) => navigate(`/counselor/${id}`)}
-            />
-          ))}
-        </div>
 
-        <Pagination
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-        />
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       </main>
     </div>
+  );
+};
+
+const CounselorDirectory = () => {
+  return (
+    <CounselorDirectoryProvider>
+      <CounselorDirectoryInner />
+    </CounselorDirectoryProvider>
   );
 };
 

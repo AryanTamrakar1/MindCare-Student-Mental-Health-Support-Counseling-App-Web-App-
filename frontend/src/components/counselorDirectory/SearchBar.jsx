@@ -1,45 +1,55 @@
-import { Search, X } from "lucide-react";
-
-const SearchBar = ({ searchTerm, setSearchTerm, onSearch, onClear }) => {
-  const handleChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleSearch = () => {
-    onSearch(searchTerm);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") onSearch(searchTerm);
-  };
+const SearchBar = ({ searchTerm, setSearchTerm, onSearch, onClear, filterSlot }) => {
+  let paddingRight = "16px";
+  if (searchTerm) paddingRight = "40px";
 
   return (
-    <div className="flex items-center gap-3 mb-4">
-      <div className="flex items-center gap-2 flex-1 bg-white px-4 py-3 rounded-2xl border border-gray-200 shadow-sm">
-        <Search size={16} className="text-gray-400 shrink-0" />
+    <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+      <div style={{ position: "relative", flex: 1 }}>
         <input
           type="text"
-          placeholder="Search by name or keyword..."
-          className="flex-1 outline-none text-sm text-gray-600 font-medium"
+          placeholder="Search by name or specialty..."
           value={searchTerm}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && onSearch(searchTerm)}
+          style={{
+            width: "100%", height: "48px",
+            paddingLeft: "16px", paddingRight: paddingRight,
+            border: "1px solid #E5E7EB", background: "#fff",
+            fontSize: "15px", color: "#111827", outline: "none",
+            boxSizing: "border-box",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+          }}
         />
         {searchTerm && (
           <button
             onClick={onClear}
-            className="text-gray-400 hover:text-gray-600 transition shrink-0"
+            style={{
+              position: "absolute", right: "12px", top: 0, bottom: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: "none", border: "none", cursor: "pointer",
+              color: "#9CA3AF", fontSize: "20px", lineHeight: 1, padding: 0,
+            }}
           >
-            <X size={16} />
+            ×
           </button>
         )}
       </div>
       <button
-        onClick={handleSearch}
-        className="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-indigo-700 transition shrink-0"
+        onClick={() => onSearch(searchTerm)}
+        style={{
+          height: "48px", padding: "0 24px",
+          background: "#2563EB", color: "#fff",
+          fontSize: "14px", fontWeight: "600",
+          border: "none", cursor: "pointer",
+          transition: "background 0.15s", flexShrink: 0,
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "#1D4ED8"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "#2563EB"; }}
       >
         Search
       </button>
+      {filterSlot}
     </div>
   );
 };

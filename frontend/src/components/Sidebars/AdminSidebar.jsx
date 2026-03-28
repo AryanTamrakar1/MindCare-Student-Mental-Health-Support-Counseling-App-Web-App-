@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  Home,
+  LayoutDashboard,
   Users,
   UserCheck,
   FileText,
@@ -18,119 +18,77 @@ const AdminSidebar = ({ user }) => {
   const { logout } = useContext(AuthContext);
 
   function isActive(path) {
-    if (location.pathname === path) {
-      return true;
-    }
-    return false;
+    return location.pathname === path;
   }
 
   function menuNavigate(path) {
     navigate(path, { state: { user } });
   }
 
-  function getButtonClass(path) {
-    if (isActive(path)) {
-      return "flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold w-full whitespace-nowrap bg-[#1f2937] text-white";
-    }
-    return "flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold w-full whitespace-nowrap text-[#9ca3af] hover:bg-[#1f2937] hover:text-white";
-  }
+  const navItems = [
+    { path: "/admin-dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/user-management", label: "User Management", icon: Users },
+    { path: "/counselor-approvals", label: "Counselor Approvals", icon: UserCheck },
+    { path: "/post-management", label: "Post Management", icon: FileText },
+    { path: "/admin-analytics", label: "Platform Analytics", icon: BarChart3 },
+    { path: "/admin-resource-library", label: "Resource Library", icon: BookOpen },
+  ];
 
   return (
-    <aside className="w-[280px] min-w-[280px] max-w-[280px] bg-[#111827] text-white fixed h-screen flex flex-col justify-between p-[30px_20px] overflow-y-auto">
-      <div>
-        <div className="flex items-center justify-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-[#4f46e5] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">M</span>
-          </div>
-          <div className="text-2xl font-bold">
-            <span className="text-white">Mind</span>
-            <span className="text-[#818cf8]">CARE</span>
-          </div>
+    <aside
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      className="w-[260px] min-w-[260px] max-w-[260px] bg-white border-r border-[#F1F1F1] fixed top-[72px] bottom-0 left-0 flex flex-col justify-between overflow-y-auto"
+    >
+      <nav className="flex flex-col gap-2 px-3 pt-6">
+        {navItems.map(({ path, label, icon: Icon }) => {
+          const active = isActive(path);
+          return (
+            <button
+              key={path}
+              onClick={() => menuNavigate(path)}
+              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-[16px] w-full text-left transition-all duration-150 ${
+                active
+                  ? "bg-[#EEF2FF] text-[#2563EB] font-semibold"
+                  : "text-[#374151] hover:bg-[#F9FAFB] font-medium"
+              }`}
+            >
+              <Icon
+                size={20}
+                className={active ? "text-[#2563EB]" : "text-[#9CA3AF]"}
+                strokeWidth={active ? 2.5 : 2}
+              />
+              {label}
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="px-3 pb-7">
+        <div className="border-t border-[#F1F1F1] pt-4 flex flex-col gap-2">
+          <button
+            onClick={() => menuNavigate("/settings")}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-[16px] w-full text-left transition-all duration-150 font-medium ${
+              isActive("/settings")
+                ? "bg-[#EEF2FF] text-[#2563EB] font-semibold"
+                : "text-[#374151] hover:bg-[#F9FAFB]"
+            }`}
+          >
+            <Settings
+              size={20}
+              className={isActive("/settings") ? "text-[#2563EB]" : "text-[#9CA3AF]"}
+              strokeWidth={2}
+            />
+            Settings
+          </button>
+
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-[16px] font-medium text-[#374151] hover:bg-[#F9FAFB] w-full text-left transition-all duration-150"
+          >
+            <LogOut size={20} className="text-[#9CA3AF]" strokeWidth={2} />
+            Log out
+          </button>
         </div>
-
-        <nav className="flex flex-col gap-1">
-          <button
-            onClick={function () {
-              menuNavigate("/admin-dashboard");
-            }}
-            className={getButtonClass("/admin-dashboard")}
-          >
-            <Home size={20} className="flex-shrink-0" />
-            HOME
-          </button>
-
-          <button
-            onClick={function () {
-              menuNavigate("/user-management");
-            }}
-            className={getButtonClass("/user-management")}
-          >
-            <Users size={20} className="flex-shrink-0" />
-            USER MANAGEMENT
-          </button>
-
-          <button
-            onClick={function () {
-              menuNavigate("/counselor-approvals");
-            }}
-            className={getButtonClass("/counselor-approvals")}
-          >
-            <UserCheck size={20} className="flex-shrink-0" />
-            COUNSELOR APPROVALS
-          </button>
-
-          <button
-            onClick={function () {
-              menuNavigate("/post-management");
-            }}
-            className={getButtonClass("/post-management")}
-          >
-            <FileText size={20} className="flex-shrink-0" />
-            POST MANAGEMENT
-          </button>
-
-          <button
-            onClick={function () {
-              menuNavigate("/admin-analytics");
-            }}
-            className={getButtonClass("/admin-analytics")}
-          >
-            <BarChart3 size={20} className="flex-shrink-0" />
-            PLATFORM ANALYTICS
-          </button>
-
-          <button
-            onClick={function () {
-              menuNavigate("/admin-resource-library");
-            }}
-            className={getButtonClass("/admin-resource-library")}
-          >
-            <BookOpen size={20} className="flex-shrink-0" />
-            RESOURCE LIBRARY
-          </button>
-        </nav>
-      </div>
-
-      <div>
-        <div className="border-t border-[#374151] mb-3"></div>
-
-        <button
-          onClick={function () {
-            menuNavigate("/settings");
-          }}
-          className={getButtonClass("/settings")}
-        >
-          <Settings size={20} className="flex-shrink-0" />
-          SETTINGS
-        </button>
-
-        <button
-          onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-bold text-[#f87171] hover:bg-red-900 hover:bg-opacity-20 w-full mt-1 whitespace-nowrap"
-        >
-          <LogOut size={20} className="flex-shrink-0" />
-          LOGOUT
-        </button>
       </div>
     </aside>
   );

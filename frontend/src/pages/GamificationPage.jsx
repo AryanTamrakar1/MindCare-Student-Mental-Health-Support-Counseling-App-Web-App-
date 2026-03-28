@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import React from "react";
+import { ChevronLeft } from "lucide-react";
 import StudentSidebar from "../components/Sidebars/StudentSidebar";
 import Navbar from "../components/Navbar";
 import LevelBadge from "../components/gamification/LevelBadge";
@@ -7,120 +7,93 @@ import PointsDisplay from "../components/gamification/PointsDisplay";
 import BadgeCollection from "../components/gamification/BadgeCollection";
 import MilestoneLetters from "../components/gamification/MilestoneLetters";
 import RestDayIndicator from "../components/gamification/RestDayIndicator";
-import API from "../api/axios";
+import { GamificationProvider } from "../context/gamification/GamificationContext";
+import { useGamification } from "../hooks/gamification/useGamification";
 
-const GamificationPage = () => {
-  const { user } = useContext(AuthContext);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const GamificationPageInner = () => {
+  const { user, data, navigate, handleRestDayUsed } = useGamification();
 
-  useEffect(function () {
-    fetchGamificationData();
-  }, []);
-
-  async function fetchGamificationData() {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = sessionStorage.getItem("token");
-      const res = await API.get("/gamification/me", {
-        headers: { Authorization: "Bearer " + token },
-      });
-      setData(res.data);
-    } catch (err) {
-      setError("Failed to load your progress. Please try again.");
-    }
-    setLoading(false);
+  if (!user) {
+    return null;
   }
 
-  function handleRestDayUsed(newRemaining) {
-    const updatedData = {};
-    const keys = Object.keys(data);
-    for (let i = 0; i < keys.length; i++) {
-      updatedData[keys[i]] = data[keys[i]];
-    }
-    updatedData.restDaysRemaining = newRemaining;
-    updatedData.restDaysUsed = 2 - newRemaining;
-    updatedData.usedRestDayToday = true;
-    setData(updatedData);
-  }
-
-  if (loading || !user) {
+  if (!data) {
     return (
-      <div className="min-h-screen bg-slate-50 flex">
+      <div className="min-h-screen bg-[#EFF6FF]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         <StudentSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-            Loading Progress...
-          </p>
-        </main>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex">
-        <StudentSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex items-center justify-center">
-          <p className="text-red-400 font-bold text-sm">{error}</p>
+        <Navbar />
+        <main className="ml-[260px] pt-[72px] flex items-center justify-center min-h-screen">
+          <p className="text-[#9CA3AF] font-bold text-[14px]">No data available</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-[#EFF6FF]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <StudentSidebar user={user} />
+      <Navbar />
 
-      <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
-        <div className="mb-8 border-b-2 border-slate-300 pb-6 flex justify-between items-start">
+      <main className="ml-[260px] pt-[72px] overflow-y-auto">
+
+        <div className="px-8 pt-4 pb-2 bg-[#EFF6FF]">
+          <button
+            onClick={() => navigate("/student-dashboard")}
+            className="flex items-center gap-2 text-[13px] font-semibold text-[#6B7280] hover:text-[#2563EB] transition-colors"
+          >
+            <ChevronLeft size={16} strokeWidth={2.5} />
+            Back to Dashboard
+          </button>
+        </div>
+
+        <div className="px-8 pb-8 pt-4">
+
+          <div className="grid grid-cols-3 gap-6 mb-6 items-stretch">
+            <div className="col-span-2 flex flex-col">
+              <LevelBadge
+                level={data.level}
+                levelTitle={data.levelTitle}
+                points={data.points}
+                nextLevelPoints={data.nextLevelPoints}
+              />
+            </div>
+            <div className="flex flex-col">
+              <RestDayIndicator
+                restDaysUsed={data.restDaysUsed}
+                restDaysRemaining={data.restDaysRemaining}
+                onRestDayUsed={handleRestDayUsed}
+                usedRestDayToday={data.usedRestDayToday}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-6 mb-6 items-stretch">
+            <div className="flex flex-col">
+              <PointsDisplay
+                points={data.points}
+                currentStreak={data.currentStreak}
+              />
+            </div>
+            <div className="col-span-2 flex flex-col">
+              <BadgeCollection badges={data.badges} />
+            </div>
+          </div>
+
           <div>
-            <h2 className="text-2xl font-black text-gray-800">My Progress</h2>
-            <p className="text-gray-500">Your wellness journey, visualized.</p>
+            <MilestoneLetters letters={data.milestoneLetters} />
           </div>
-          <Navbar />
-        </div>
 
-        <div className="grid grid-cols-3 gap-6 mb-6 items-stretch">
-          <div className="col-span-2 flex flex-col">
-            <LevelBadge
-              level={data.level}
-              levelTitle={data.levelTitle}
-              points={data.points}
-              nextLevelPoints={data.nextLevelPoints}
-            />
-          </div>
-          <div className="flex flex-col">
-            <RestDayIndicator
-              restDaysUsed={data.restDaysUsed}
-              restDaysRemaining={data.restDaysRemaining}
-              onRestDayUsed={handleRestDayUsed}
-              usedRestDayToday={data.usedRestDayToday}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-6 mb-6 items-stretch">
-          <div className="flex flex-col">
-            <PointsDisplay
-              points={data.points}
-              currentStreak={data.currentStreak}
-              moodTrend={data.moodTrend}
-            />
-          </div>
-          <div className="col-span-2 flex flex-col">
-            <BadgeCollection badges={data.badges} />
-          </div>
-        </div>
-
-        <div>
-          <MilestoneLetters letters={data.milestoneLetters} />
         </div>
       </main>
     </div>
+  );
+};
+
+const GamificationPage = () => {
+  return (
+    <GamificationProvider>
+      <GamificationPageInner />
+    </GamificationProvider>
   );
 };
 

@@ -1,0 +1,1 @@
+export { useRestDayIndicatorContext as useRestDayIndicator } from "../../context/gamification/RestDayIndicatorContext";

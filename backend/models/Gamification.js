@@ -52,6 +52,7 @@ const gamificationSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+
     // --- Streak tracking ---
     currentStreak: {
       type: Number,
@@ -61,6 +62,30 @@ const gamificationSchema = new mongoose.Schema(
     lastActivityDate: {
       type: String,
       default: null,
+    },
+
+    // --- Forum Interactions Counter ---
+    forumInteractions: {
+      type: Number,
+      default: 0,
+    },
+
+    // --- Resources Bookmarked Counter ---
+    resourcesBookmarked: {
+      type: Number,
+      default: 0,
+    },
+
+    // --- Activity Tracking for "The MindCare Champion" Badge ---
+    activitiesCompleted: {
+      quiz: { type: Boolean, default: false },
+      session: { type: Boolean, default: false },
+      post: { type: Boolean, default: false },
+      reply: { type: Boolean, default: false },
+      helped: { type: Boolean, default: false },
+      like: { type: Boolean, default: false },
+      rating: { type: Boolean, default: false },
+      resource: { type: Boolean, default: false },
     },
   },
   { timestamps: true },

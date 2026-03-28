@@ -30,12 +30,12 @@ const ALL_BADGES = [
     description: "made 10 interactions in the community forum",
   },
   {
-    name: "The MindCare Champion",
-    description: "completed all activity types in one month",
-  },
-  {
     name: "The Resilient One",
     description: "showed up and engaged even when your mood was declining",
+  },
+  {
+    name: "The MindCare Champion",
+    description: "completed all activity types",
   },
 ];
 
@@ -69,28 +69,6 @@ function checkAndResetRestDays(gamification) {
   }
 }
 
-function checkAndResetMonthlyActivities(gamification) {
-  const now = new Date();
-  const lastReset = gamification.lastMonthlyActivityReset
-    ? new Date(gamification.lastMonthlyActivityReset)
-    : null;
-
-  if (
-    !lastReset ||
-    now.getMonth() !== lastReset.getMonth() ||
-    now.getFullYear() !== lastReset.getFullYear()
-  ) {
-    gamification.monthlyActivities = {
-      quiz: false,
-      session: false,
-      post: false,
-      resource: false,
-      rating: false,
-    };
-    gamification.lastMonthlyActivityReset = now;
-  }
-}
-
 function generateMilestoneLetter(badgeName, moodTrend) {
   const LETTER_TEMPLATES = {
     "First Step":
@@ -109,10 +87,10 @@ function generateMilestoneLetter(badgeName, moodTrend) {
       "Dear Student, you have explored five different resources in the library — that is a sign of someone who is actively investing in their own wellbeing. Your curiosity is one of your greatest strengths. Keep exploring.",
     "The Community Pillar":
       "Dear Student, you have made ten interactions in the community forum. You have become a steady presence in this space — someone others can see and feel supported by. Thank you for being part of it.",
-    "The MindCare Champion":
-      "Dear Student, this month you completed every type of activity MindCare offers — quizzes, sessions, forum, resources, and ratings. That is remarkable. You are living proof that small consistent actions create real change.",
     "The Resilient One":
       "Dear Student, your mood has been difficult recently — and yet you still showed up. You still engaged, still checked in, still kept going. That is not a small thing. That is resilience in its truest form.",
+    "The MindCare Champion":
+      "Dear Student, you have engaged with every aspect of MindCare — completing quizzes, attending sessions, joining the community, helping others, and exploring resources. You are a true champion of your own mental health. Your comprehensive commitment to your wellbeing is inspiring.",
   };
 
   let letter = LETTER_TEMPLATES[badgeName];
@@ -181,16 +159,10 @@ const awardPoints = async (studentId, activityType) => {
     }
 
     checkAndResetRestDays(gamification);
-    checkAndResetMonthlyActivities(gamification);
 
     let pointsToAdd = POINT_VALUES[activityType];
     if (!pointsToAdd) {
       pointsToAdd = 5;
-    }
-
-    const moodTrend = await getMoodTrend(studentId);
-    if (moodTrend === "Declining") {
-      pointsToAdd = pointsToAdd * 2;
     }
 
     const previousLevel = gamification.level;
@@ -206,25 +178,25 @@ const awardPoints = async (studentId, activityType) => {
       gamification.lastActivityDate = todayStr;
     }
 
-    if (!gamification.monthlyActivities) {
-      gamification.monthlyActivities = {
-        quiz: false,
-        session: false,
-        post: false,
-        resource: false,
-        rating: false,
-      };
-    }
-    if (activityType === "quiz") gamification.monthlyActivities.quiz = true;
-    if (activityType === "session") gamification.monthlyActivities.session = true;
-    if (activityType === "post") gamification.monthlyActivities.post = true;
-    if (activityType === "resource") gamification.monthlyActivities.resource = true;
-    if (activityType === "rating") gamification.monthlyActivities.rating = true;
-    gamification.markModified("monthlyActivities");
-
+    // Track forum interactions for "The Community Pillar" badge
     if (activityType === "post" || activityType === "reply") {
       gamification.forumInteractions = (gamification.forumInteractions || 0) + 1;
     }
+
+    // Track resource bookmarks for "The Resource Explorer" badge
+    if (activityType === "resource") {
+      gamification.resourcesBookmarked = (gamification.resourcesBookmarked || 0) + 1;
+    }
+
+    // Track activities for "The MindCare Champion" badge
+    if (activityType === "quiz") gamification.activitiesCompleted.quiz = true;
+    if (activityType === "session") gamification.activitiesCompleted.session = true;
+    if (activityType === "post") gamification.activitiesCompleted.post = true;
+    if (activityType === "reply") gamification.activitiesCompleted.reply = true;
+    if (activityType === "helped") gamification.activitiesCompleted.helped = true;
+    if (activityType === "like") gamification.activitiesCompleted.like = true;
+    if (activityType === "rating") gamification.activitiesCompleted.rating = true;
+    if (activityType === "resource") gamification.activitiesCompleted.resource = true;
 
     await gamification.save();
 
@@ -244,7 +216,7 @@ const awardPoints = async (studentId, activityType) => {
 
     await checkAndAwardBadges(studentId, activityType, gamification);
 
-    return { success: true, pointsAdded: pointsToAdd, moodTrend };
+    return { success: true, pointsAdded: pointsToAdd };
   } catch (error) {
     console.error("Award Points Error FULL:", error);
     return { success: false };
@@ -254,7 +226,9 @@ const awardPoints = async (studentId, activityType) => {
 const checkAndAwardBadges = async (studentId, activityType, gamification) => {
   try {
     const newBadgesToAward = [];
+    const moodTrend = await getMoodTrend(studentId);
 
+    // Badge: First Step (complete first quiz)
     if (
       activityType === "quiz" &&
       !hasBadge(gamification.badges, "First Step")
@@ -265,6 +239,7 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
       }
     }
 
+    // Badge: Session Starter (attend first session)
     if (
       activityType === "session" &&
       !hasBadge(gamification.badges, "Session Starter")
@@ -272,6 +247,7 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
       newBadgesToAward.push("Session Starter");
     }
 
+    // Badge: First Voice (make first post)
     if (
       activityType === "post" &&
       !hasBadge(gamification.badges, "First Voice")
@@ -279,6 +255,7 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
       newBadgesToAward.push("First Voice");
     }
 
+    // Badge: The Helper (someone likes your reply)
     if (
       activityType === "helped" &&
       !hasBadge(gamification.badges, "The Helper")
@@ -286,13 +263,7 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
       newBadgesToAward.push("The Helper");
     }
 
-    if (
-      activityType === "resource_5" &&
-      !hasBadge(gamification.badges, "The Resource Explorer")
-    ) {
-      newBadgesToAward.push("The Resource Explorer");
-    }
-
+    // Badge: The Consistent One (quiz streak of 3+)
     if (
       activityType === "quiz" &&
       !hasBadge(gamification.badges, "The Consistent One")
@@ -302,23 +273,33 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
       }
     }
 
-    const moodTrend = await getMoodTrend(studentId);
+    // Badge: The Comeback (return after being inactive for 2+ days)
     if (
-      moodTrend === "Declining" &&
-      !hasBadge(gamification.badges, "The Resilient One")
-    ) {
-      newBadgesToAward.push("The Resilient One");
-    }
-
-    if (
-      gamification.currentStreak === 1 &&
       !hasBadge(gamification.badges, "The Comeback")
     ) {
-      if (gamification.points > 20) {
-        newBadgesToAward.push("The Comeback");
+      if (gamification.lastActivityDate) {
+        const lastActivity = new Date(gamification.lastActivityDate);
+        const today = new Date();
+        const daysSinceActivity = Math.floor(
+          (today - lastActivity) / (1000 * 60 * 60 * 24)
+        );
+        
+        if (daysSinceActivity >= 2 && gamification.points > 20) {
+          newBadgesToAward.push("The Comeback");
+        }
       }
     }
 
+    // Badge: The Resource Explorer (bookmark 5 resources)
+    if (
+      !hasBadge(gamification.badges, "The Resource Explorer")
+    ) {
+      if ((gamification.resourcesBookmarked || 0) >= 5) {
+        newBadgesToAward.push("The Resource Explorer");
+      }
+    }
+
+    // Badge: The Community Pillar (10 forum interactions)
     if (
       (activityType === "post" || activityType === "reply") &&
       !hasBadge(gamification.badges, "The Community Pillar")
@@ -328,13 +309,32 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
       }
     }
 
+    // Badge: The Resilient One (engaged when mood declining)
+    if (
+      moodTrend === "Declining" &&
+      !hasBadge(gamification.badges, "The Resilient One")
+    ) {
+      newBadgesToAward.push("The Resilient One");
+    }
+
+    // Badge: The MindCare Champion (completed all 8 activity types)
     if (!hasBadge(gamification.badges, "The MindCare Champion")) {
-      const ma = gamification.monthlyActivities || {};
-      if (ma.quiz && ma.session && ma.post && ma.resource && ma.rating) {
+      const allActivitiesCompleted =
+        gamification.activitiesCompleted.quiz &&
+        gamification.activitiesCompleted.session &&
+        gamification.activitiesCompleted.post &&
+        gamification.activitiesCompleted.reply &&
+        gamification.activitiesCompleted.helped &&
+        gamification.activitiesCompleted.like &&
+        gamification.activitiesCompleted.rating &&
+        gamification.activitiesCompleted.resource;
+
+      if (allActivitiesCompleted) {
         newBadgesToAward.push("The MindCare Champion");
       }
     }
 
+    // Award all new badges
     for (let i = 0; i < newBadgesToAward.length; i++) {
       const badgeName = newBadgesToAward[i];
 
@@ -398,7 +398,6 @@ const getGamificationData = async (req, res) => {
     }
 
     checkAndResetRestDays(gamification);
-    checkAndResetMonthlyActivities(gamification);
     await gamification.save();
 
     let safeLevel = gamification.level;

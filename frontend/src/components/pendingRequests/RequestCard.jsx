@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 function parseTags(reason) {
   if (!reason) return [];
   if (reason.indexOf("]") === -1) return [];
@@ -11,9 +9,7 @@ function parseTags(reason) {
   const tags = [];
   for (let i = 0; i < rawTags.length; i++) {
     const trimmed = rawTags[i].trim();
-    if (trimmed) {
-      tags.push(trimmed);
-    }
+    if (trimmed) tags.push(trimmed);
   }
   return tags;
 }
@@ -34,149 +30,150 @@ function formatDate(dateString) {
   const suffix = (d) => {
     if (d > 3 && d < 21) return "th";
     switch (d % 10) {
-      case 1:
-        return "st";
-      case 2:
-        return "nd";
-      case 3:
-        return "rd";
-      default:
-        return "th";
+      case 1: return "st";
+      case 2: return "nd";
+      case 3: return "rd";
+      default: return "th";
     }
   };
   return `${day}${suffix(day)} ${month} ${year}`;
 }
 
-const RequestCard = ({ req, onAction }) => {
-  const [expanded, setExpanded] = useState(false);
+function getStudentPhotoUrl(studentId) {
+  if (studentId && studentId.verificationPhoto) {
+    return "http://127.0.0.1:5050/uploads/verifications/" + studentId.verificationPhoto;
+  }
+  let name = "Student";
+  if (studentId && studentId.name) {
+    name = studentId.name;
+  }
+  return "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=2563EB&color=fff&size=200";
+}
 
+const RequestCard = ({ req, onAction, expanded, onToggle }) => {
   const allTags = parseTags(req.reason);
   const reasonText = parseReasonText(req.reason);
-
-  let studentInitial = "S";
-  if (req.studentId && req.studentId.name && req.studentId.name.length > 0) {
-    studentInitial = req.studentId.name.charAt(0);
-  }
 
   let studentName = "Unknown Student";
   if (req.studentId && req.studentId.name) {
     studentName = req.studentId.name;
   }
 
-  const visibleTags = [];
-  for (let i = 0; i < allTags.length && i < 2; i++) {
-    visibleTags.push(allTags[i]);
-  }
-  const extraCount = allTags.length > 2 ? allTags.length - 2 : 0;
+  const visibleTags = allTags.slice(0, 2);
+
+  let extraCount = 0;
+  if (allTags.length > 2) extraCount = allTags.length - 2;
+
+  let toggleArrow = "▼";
+  if (expanded) toggleArrow = "▲";
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-300 p-6 shadow-sm hover:shadow-md transition-shadow w-full">
-      <div className="flex flex-row items-center justify-between gap-8">
-        <div className="flex items-center gap-5 w-1/4">
-          <div className="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl flex-shrink-0">
-            {studentInitial}
-          </div>
-          <div className="overflow-hidden">
-            <h3 className="font-bold text-black text-lg truncate">
+    <div
+      className="border-b border-[#E5E9F2] last:border-b-0"
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+    >
+      <div
+        className="grid items-center hover:bg-[#FAFBFE] transition-colors"
+        style={{ gridTemplateColumns: "2.5fr 1px 1.5fr 1px 1.5fr 1px 1.6fr" }}
+      >
+        <div className="flex items-center gap-4 px-8 py-6">
+          <img
+            src={getStudentPhotoUrl(req.studentId)}
+            alt={studentName}
+            className="border-2 border-[#E5E7EB] flex-shrink-0"
+            style={{ width: 52, height: 52, objectFit: "cover", borderRadius: "50%" }}
+          />
+          <div className="min-w-0">
+            <p className="text-[16px] font-semibold text-[#111827] truncate">
               {studentName}
-            </h3>
-            <div className="flex flex-wrap gap-1 mt-1 items-center">
-              {allTags.length > 0 ? (
-                <>
-                  {visibleTags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border border-indigo-200"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  {extraCount > 0 && (
-                    <span className="text-[9px] font-black text-slate-400 ml-1">
-                      +{extraCount} more
-                    </span>
-                  )}
-                </>
-              ) : (
-                <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border border-indigo-200">
+            </p>
+            <div className="flex gap-1.5 mt-1.5 flex-wrap">
+              {allTags.length === 0 && (
+                <span className="bg-[#EEF2FF] text-[#2563EB] px-2.5 py-1 text-[12px] font-semibold">
                   General
+                </span>
+              )}
+              {allTags.length > 0 && visibleTags.map((tag, i) => (
+                <span key={i} className="bg-[#EEF2FF] text-[#2563EB] px-2.5 py-1 text-[12px] font-semibold">
+                  {tag}
+                </span>
+              ))}
+              {extraCount > 0 && (
+                <span className="bg-[#E5E7EB] text-[#6B7280] px-2.5 py-1 text-[12px] font-semibold">
+                  +{extraCount}
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        <div className="flex flex-1 justify-around items-center border-l-2 border-r-2 border-slate-300 px-10">
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-              Date of Session
-            </span>
-            <span className="font-bold text-black text-base">
-              {formatDate(req.date)}
-            </span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-              Time Slot
-            </span>
-            <span className="font-bold text-black text-base">
-              {req.timeSlot}
-            </span>
-          </div>
+        <div className="self-stretch bg-[#E5E9F2]" />
+
+        <div className="px-8 py-6">
+          <span className="text-[16px] font-medium text-[#374151]">
+            {formatDate(req.date)}
+          </span>
         </div>
 
-        <div className="w-1/4 text-right">
+        <div className="self-stretch bg-[#E5E9F2]" />
+
+        <div className="px-8 py-6">
+          <span className="text-[16px] font-medium text-[#374151]">
+            {req.timeSlot}
+          </span>
+        </div>
+
+        <div className="self-stretch bg-[#E5E9F2]" />
+
+        <div className="px-8 py-6 flex items-center gap-3">
           <button
-            onClick={() => setExpanded(!expanded)}
-            className="bg-slate-50 text-indigo-700 border border-slate-300 px-8 py-3 rounded-xl font-bold text-xs hover:bg-indigo-600 hover:text-white transition-all"
+            onClick={() => onAction(req._id, "Approved")}
+            className="px-5 py-2.5 text-[14px] font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
           >
-            {expanded ? "CLOSE" : "VIEW DETAILS"}
+            Approve
+          </button>
+
+          <button
+            onClick={() => onAction(req._id, "Declined")}
+            className="px-5 py-2.5 text-[14px] font-semibold text-[#DC2626] bg-white border border-[#FCA5A5] hover:bg-[#FEF2F2] transition-colors"
+          >
+            Decline
+          </button>
+
+          <button
+            onClick={onToggle}
+            className="px-3 py-2.5 text-[14px] font-semibold text-[#6B7280] bg-[#F3F4F6] hover:bg-[#E5E7EB] transition-colors"
+          >
+            {toggleArrow}
           </button>
         </div>
       </div>
 
       {expanded && (
-        <div className="mt-6 pt-6 border-t-2 border-slate-300">
+        <div className="border-t border-[#E5E9F2] px-10 py-7 bg-[#FAFBFE]">
           {allTags.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-3 tracking-widest">
-                Selected Specializations
-              </h4>
+            <div className="mb-5">
+              <p className="text-[12px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-3">
+                Specializations
+              </p>
               <div className="flex flex-wrap gap-2">
-                {allTags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-indigo-200"
-                  >
+                {allTags.map((tag, i) => (
+                  <span key={i} className="bg-[#EEF2FF] text-[#2563EB] px-3.5 py-1.5 text-[13px] font-semibold">
                     {tag}
                   </span>
                 ))}
               </div>
             </div>
           )}
-
-          <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
-            <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-3 tracking-widest">
-              Reason for Session (Detailed)
-            </h4>
-            <p className="text-slate-700 font-medium leading-relaxed whitespace-pre-wrap text-justify">
-              {reasonText}
+          <div>
+            <p className="text-[12px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-3">
+              Full Reason
             </p>
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => onAction(req._id, "Declined")}
-              className="px-8 py-3 rounded-xl font-bold text-xs text-red-600 border border-red-300 hover:bg-red-50 transition-all uppercase"
-            >
-              Decline
-            </button>
-            <button
-              onClick={() => onAction(req._id, "Approved")}
-              className="px-12 py-3 rounded-xl font-bold text-xs bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all uppercase"
-            >
-              Approve Request
-            </button>
+            <div className="bg-white border border-[#E5E9F2] px-6 py-5">
+              <p className="text-[16px] text-[#374151] leading-relaxed">
+                {reasonText}
+              </p>
+            </div>
           </div>
         </div>
       )}

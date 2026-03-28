@@ -1,131 +1,88 @@
-import React, { useState, useEffect } from "react";
-import axios from "../api/axios";
+import React from "react";
 import CounselorSidebar from "../components/Sidebars/CounselorSidebar";
 import Navbar from "../components/Navbar";
 import RequestCard from "../components/pendingRequests/RequestCard";
+import { PendingRequestsProvider } from "../context/pendingRequests/PendingRequestsContext";
+import { usePendingRequests } from "../hooks/pendingRequests/usePendingRequests";
 
-const PendingRequests = () => {
-  const [user, setUser] = useState(null);
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+const PendingRequestsInner = () => {
+  const { user, requests, expandedId, setExpandedId, handleAction } =
+    usePendingRequests();
 
-  useEffect(() => {
-    const initializePage = async () => {
-      try {
-        setLoading(true);
-        const token = sessionStorage.getItem("token");
-        if (!token) {
-          setLoading(false);
-          return;
-        }
-        if (!user) {
-          const userRes = await axios.get("/auth/me", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setUser(userRes.data);
-        }
-        await fetchRequests();
-      } catch (error) {
-        console.error("Initialization error:", error);
-        setLoading(false);
-      }
-    };
-
-    initializePage();
-  }, []);
-
-  const fetchRequests = async () => {
-    try {
-      setLoading(true);
-      const token = sessionStorage.getItem("token");
-      const response = await axios.get("/appointments/pending", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setRequests(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching requests:", error);
-      setLoading(false);
-    }
-  };
-
-  const handleAction = async (appointmentId, status) => {
-    try {
-      const token = sessionStorage.getItem("token");
-      if (status === "Approved") {
-        await axios.post(
-          "/sessions/approve",
-          { appointmentId },
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-      } else {
-        await axios.put(
-          "/appointments/update-status",
-          { appointmentId, status },
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-      }
-      alert(`Session ${status} successfully!`);
-      fetchRequests();
-    } catch (error) {
-      console.error("Update error:", error);
-      alert("Failed to update status");
-    }
-  };
-
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex">
-        <CounselorSidebar user={user} />
-        <main className="flex-1 ml-[280px] p-10 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
-            Loading Requests...
-          </p>
-        </main>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div
+      className="min-h-screen flex"
+      style={{
+        backgroundColor: "#EFF4FB",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+      }}
+    >
+      <Navbar />
       <CounselorSidebar user={user} />
-      <main className="flex-1 ml-[280px] p-10 overflow-y-auto">
-        <div className="mb-8 border-b-2 border-slate-300 pb-6 flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-black text-gray-800">
-              Pending Session Requests
-            </h2>
-            <p className="text-gray-500">
-              You have{" "}
-              <span className="text-indigo-600 font-bold">
-                {requests.length} new
-              </span>{" "}
-              requests waiting for your approval.
-            </p>
-          </div>
-          <Navbar />
-        </div>
-
-        <div className="flex flex-col gap-4 w-full">
-          {requests.length > 0 ? (
-            requests.map((req) => (
-              <RequestCard key={req._id} req={req} onAction={handleAction} />
-            ))
-          ) : (
-            <div className="bg-white rounded-3xl border-2 border-dashed border-slate-300 py-32 px-10 flex flex-col items-center justify-center text-center w-full">
-              <h3 className="text-2xl font-bold text-slate-800 mb-3">
-                No pending requests.
-              </h3>
-              <p className="text-slate-400 max-w-sm leading-relaxed font-medium text-sm">
-                The list is currently empty. You will be notified here when a
-                student requests a consultation.
-              </p>
+      <main className="flex-1 ml-[260px] pt-[72px]">
+        <div className="p-10">
+          <div className="bg-white border border-[#E5E9F2] overflow-hidden">
+            <div
+              className="grid border-b border-[#E5E9F2] bg-[#F9FAFB]"
+              style={{
+                gridTemplateColumns: "2.5fr 1px 1.5fr 1px 1.5fr 1px 1.6fr",
+              }}
+            >
+              {[
+                { label: "Student", col: true },
+                { label: "Date", col: true },
+                { label: "Time Slot", col: true },
+                { label: "Action", col: false },
+              ].map(({ label, col }, i) => (
+                <React.Fragment key={`header-${i}`}>
+                  <div className="px-8 py-5">
+                    <span className="text-[13px] font-bold text-[#6B7280] uppercase tracking-widest">
+                      {label}
+                    </span>
+                  </div>
+                  {col && <div className="bg-[#E5E9F2]" />}
+                </React.Fragment>
+              ))}
             </div>
-          )}
+
+            {requests.length > 0 ? (
+              requests.map((req) => (
+                <RequestCard
+                  key={req._id}
+                  req={req}
+                  onAction={handleAction}
+                  expanded={expandedId === req._id}
+                  onToggle={() =>
+                    setExpandedId(expandedId === req._id ? null : req._id)
+                  }
+                />
+              ))
+            ) : (
+              <div className="py-32 flex flex-col items-center justify-center text-center">
+                <p className="text-[18px] font-semibold text-[#111827] mb-2">
+                  No pending requests
+                </p>
+                <p className="text-[15px] text-[#9CA3AF] max-w-xs leading-relaxed">
+                  You'll be notified here when a student requests a session.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
+  );
+};
+
+const PendingRequests = () => {
+  return (
+    <PendingRequestsProvider>
+      <PendingRequestsInner />
+    </PendingRequestsProvider>
   );
 };
 

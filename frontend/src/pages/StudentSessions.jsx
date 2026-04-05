@@ -48,7 +48,7 @@ const StudentSessionsInner = () => {
           paddingRight: "2.5rem",
         }}
       >
-        <div className="grid grid-cols-6 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           {statCards.map((card) => (
             <div
               key={card.label}

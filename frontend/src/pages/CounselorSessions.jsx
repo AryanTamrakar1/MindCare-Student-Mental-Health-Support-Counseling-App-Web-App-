@@ -3,7 +3,7 @@ import axios from "../api/axios";
 import CounselorSidebar from "../components/Sidebars/CounselorSidebar";
 import Navbar from "../components/Navbar";
 import { Calendar, CheckCircle, Users, Clock } from "lucide-react";
-import SessionCalendar from "../components/counselorSessions/sessionCalendar";
+import SessionCalendar from "../components/counselorSessions/SessionCalendar";
 import DayPanel from "../components/counselorSessions/DayPanel";
 import DetailModal from "../components/counselorSessions/DetailModal";
 import SummaryModal from "../components/counselorSessions/SummaryModal";

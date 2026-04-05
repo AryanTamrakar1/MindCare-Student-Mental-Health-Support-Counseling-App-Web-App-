@@ -1,9 +1,9 @@
 import React from "react";
 import CounselorSidebar from "../components/Sidebars/CounselorSidebar";
 import Navbar from "../components/Navbar";
-import ProfileForm from "../components/CounselorProfile/ProfileForm";
-import AvailabilitySection from "../components/CounselorProfile/AvailabilitySection";
-import ProfilePreview from "../components/CounselorProfile/ProfilePreview";
+import ProfileForm from "../components/counselorProfile/ProfileForm";
+import AvailabilitySection from "../components/counselorProfile/AvailabilitySection";
+import ProfilePreview from "../components/counselorProfile/ProfilePreview";
 import { EditCounselorProfileProvider } from "../context/editCounselorProfile/EditCounselorProfileContext";
 import { ProfileFormProvider } from "../context/editCounselorProfile/ProfileFormContext";
 import { useEditCounselorProfile } from "../hooks/editCounselorProfile/useEditCounselorProfile";

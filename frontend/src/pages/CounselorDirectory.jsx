@@ -2,10 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import StudentSidebar from "../components/Sidebars/StudentSidebar";
 import Navbar from "../components/Navbar";
-import SearchBar from "../components/CounselorDirectory/SearchBar";
-import FilterSection from "../components/CounselorDirectory/FilterSection";
-import CounselorCard from "../components/CounselorDirectory/CounselorCard";
-import Pagination from "../components/CounselorDirectory/Pagination";
+import SearchBar from "../components/counselorDirectory/SearchBar";
+import FilterSection from "../components/counselorDirectory/FilterSection";
+import CounselorCard from "../components/counselorDirectory/CounselorCard";
+import Pagination from "../components/counselorDirectory/Pagination";
 import { CounselorDirectoryProvider } from "../context/counselorDirectory/CounselorDirectoryContext";
 import { useCounselorDirectory } from "../hooks/counselorDirectory/useCounselorDirectory";
 

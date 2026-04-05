@@ -5,10 +5,10 @@ import API from "../api/axios";
 import AdminSidebar from "../components/Sidebars/AdminSidebar";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
-import PostCard from "../components/PostManagement/PostCard";
-import CategoryFilter from "../components/PostManagement/CategoryFilter";
-import PostSearchBar from "../components/PostManagement/PostSearchBar";
-import StatsCards from "../components/PostManagement/StatsCards";
+import PostCard from "../components/postManagement/PostCard";
+import CategoryFilter from "../components/postManagement/CategoryFilter";
+import PostSearchBar from "../components/postManagement/PostSearchBar";
+import StatsCards from "../components/postManagement/StatsCards";
 import { PostManagementProvider } from "../context/postManagement/PostManagementContext";
 import { usePostManagement } from "../hooks/postManagement/usePostManagement";
 

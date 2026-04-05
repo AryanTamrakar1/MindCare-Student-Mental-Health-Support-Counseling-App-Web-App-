@@ -21,7 +21,7 @@ const {
   protect
 } = require('../controllers/authController');
 
-const upload = require('./uploadMiddleware');
+const { upload } = require('./uploadMiddleware');
 
 router.post('/register', upload.single('verificationPhoto'), registerUser);
 

@@ -87,6 +87,9 @@ const registerUser = async (req, res) => {
       otp: otp,
       verificationPhoto: verificationPhoto,
       studentId: req.body.studentId,
+      phone: req.body.phone,
+      dob: req.body.dob,
+      gender: req.body.gender,
       licenseNo: req.body.licenseNo,
       profTitle: req.body.profTitle,
       specialization: req.body.specialization,
@@ -334,6 +337,9 @@ const updateRole = async (req, res) => {
       role: role,
       status: status,
       studentId: req.body.studentId,
+      phone: req.body.phone,
+      dob: req.body.dob,
+      gender: req.body.gender,
       licenseNo: req.body.licenseNo,
       profTitle: req.body.profTitle,
       specialization: req.body.specialization,
@@ -353,6 +359,9 @@ const updateRole = async (req, res) => {
     user.role = updateData.role;
     user.status = updateData.status;
     if (updateData.studentId) user.studentId = updateData.studentId;
+    if (updateData.phone) user.phone = updateData.phone;
+    if (updateData.dob) user.dob = updateData.dob;
+    if (updateData.gender) user.gender = updateData.gender;
     if (updateData.licenseNo) user.licenseNo = updateData.licenseNo;
     if (updateData.profTitle) user.profTitle = updateData.profTitle;
     if (updateData.specialization) user.specialization = updateData.specialization;

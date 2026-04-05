@@ -254,7 +254,7 @@ const MoodQuizInner = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-5 mt-5 items-stretch">
+        <div className="grid grid-cols-1 gap-5 mt-5 items-stretch">
           <div className="bg-white border border-[#DBEAFE] overflow-hidden flex flex-col h-full">
             <div className="px-6 pt-6 pb-4 shrink-0">
               <p className="text-[17px] font-bold text-[#111827]">
@@ -369,7 +369,7 @@ const MoodQuizInner = () => {
               <div className="h-px w-full bg-[#F1F5F9] mt-4 mb-3 shrink-0" />
               <div className="flex items-center gap-4 flex-wrap shrink-0">
                 <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">
-                  Key
+                  Key Details
                 </p>
                 {Object.entries(moodIconMap).map(([key, cfg]) => {
                   const Icon = cfg.icon;

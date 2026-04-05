@@ -31,7 +31,6 @@ const AccountOverview = ({ currentUser, onPhotoUpload, getProfilePhotoUrl }) => 
       icon: Mail,
       label: "Email",
       value: currentUser.email,
-      truncate: true,
     },
     {
       icon: Phone,

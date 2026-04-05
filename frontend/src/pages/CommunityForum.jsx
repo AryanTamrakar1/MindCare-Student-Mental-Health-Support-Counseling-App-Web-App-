@@ -61,6 +61,16 @@ const forumRules = [
     title: "Seek Professional Help",
     desc: "If you or someone else is in crisis, please reach out to a counselor through the MindCare platform.",
   },
+  {
+    num: 6,
+    title: "No Spam or Self-Promotion",
+    desc: "Do not post repetitive content, advertisements, or links unrelated to mental health support.",
+  },
+  {
+    num: 7,
+    title: "Support, Don't Diagnose",
+    desc: "You can offer support and share experiences, but avoid diagnosing others or giving medical advice.",
+  },
 ];
 
 const Checkbox = ({ checked, onChange, label, icon: Icon, iconColor }) => (
@@ -185,10 +195,11 @@ const CommunityForumInner = () => {
           right: 0,
           bottom: 0,
           display: "grid",
-          gridTemplateColumns: "320px 1fr 272px",
+          gridTemplateColumns: "320px minmax(500px, 1fr) 272px",
           gap: "20px",
           padding: "24px",
-          overflow: "hidden",
+          overflowX: "auto",
+          overflowY: "hidden",
         }}
       >
         <div
@@ -196,8 +207,8 @@ const CommunityForumInner = () => {
           style={{
             display: "flex",
             flexDirection: "column",
-            height: "100%",
-            overflow: "hidden",
+            flex: 1,
+            overflowY: "auto",
           }}
         >
           <div className="px-6 py-5 border-b border-[#E9F0FB] flex-shrink-0">
@@ -219,18 +230,16 @@ const CommunityForumInner = () => {
             style={{
               display: "flex",
               flexDirection: "column",
-              flex: 1,
-              overflow: "hidden",
+              overflowY: "auto",
             }}
           >
             {forumRules.map((rule, idx) => (
               <div
                 key={rule.num}
                 style={{
-                  flex: 1,
                   display: "flex",
                   gap: "16px",
-                  padding: "0 24px",
+                  padding: "16px 24px",
                   alignItems: "center",
                 }}
                 className={

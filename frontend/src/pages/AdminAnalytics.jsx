@@ -31,7 +31,7 @@ const AdminAnalyticsInner = () => {
         <div className="px-8 py-8 flex flex-col gap-6">
           {overview && <OverviewCards data={overview} />}
 
-          <div className="grid grid-cols-2 gap-6 items-stretch">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {sessionData && (
               <SessionChart
                 monthlyData={sessionData.monthlyData}
@@ -41,7 +41,7 @@ const AdminAnalyticsInner = () => {
             {userData && <MoodChart moodBreakdown={userData.moodBreakdown} />}
           </div>
 
-          <div className="grid grid-cols-2 gap-6 items-stretch">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {forumData && (
               <ForumChart
                 topicData={forumData.topicData}

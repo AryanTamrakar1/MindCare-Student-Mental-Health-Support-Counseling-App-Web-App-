@@ -76,7 +76,7 @@ const PersonalInfoForm = () => {
 
           <div>
             <label className="block text-[14px] font-semibold text-[#374151] mb-2.5">
-              Phone Number <span className="text-[#9CA3AF] text-[12px] font-normal">(Optional)</span>
+              Phone Number 
             </label>
             <input
               type="text"

@@ -103,7 +103,7 @@ const MoodTrendCard = () => {
           </ResponsiveContainer>
         </div>
 
-        <div style={{ marginLeft: "-24px", marginRight: "-24px", marginBottom: "-24px", marginTop: "20px" }} className="grid grid-cols-3 border-t border-[#F1F5F9] divide-x divide-[#F1F5F9]">
+        <div style={{ marginLeft: "-24px", marginRight: "-24px", marginBottom: "-24px", marginTop: "20px" }} className="grid grid-cols-1 border-t border-[#F1F5F9]">
           <div className="px-6 py-4">
             <p className="text-[12px] text-[#94A3B8] font-medium mb-1.5 uppercase tracking-wide">Latest</p>
             <div className="flex items-baseline gap-1.5">

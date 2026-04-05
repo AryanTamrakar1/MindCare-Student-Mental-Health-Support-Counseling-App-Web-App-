@@ -182,7 +182,7 @@ const SmartCounselorCard = () => {
   return (
     <div
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-      className="grid grid-cols-3 gap-4 items-start"
+      className="grid grid-cols-1 gap-4 items-start"
     >
       {data.suggestions.map(function (counselor, index) {
         const isBestMatch = index === 0;

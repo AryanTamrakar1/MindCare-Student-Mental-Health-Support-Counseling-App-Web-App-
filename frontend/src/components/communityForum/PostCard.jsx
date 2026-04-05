@@ -86,7 +86,6 @@ const PostCard = ({ post, currentUser, onDelete }) => {
 
   const [iFeelCount, setIFeelCount] = useState(post.iFeelThis.length);
   const [iClicked, setIClicked] = useState(alreadyClicked);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   let isMyPost = false;
   if (post.authorId && currentUser && currentUser._id) {
@@ -117,13 +116,11 @@ const PostCard = ({ post, currentUser, onDelete }) => {
 
   const handleDeleteClick = (e) => {
     e.stopPropagation();
-    setShowDeleteConfirm(true);
-  };
-
-  const handleConfirmDelete = (e) => {
-    e.stopPropagation();
-    onDelete(post._id);
-    setShowDeleteConfirm(false);
+    const confirmed = window.confirm("Are you sure you want to delete this post?");
+    if (confirmed) {
+      onDelete(post._id);
+      alert("Post deleted successfully!");
+    }
   };
 
   const MoodIcon = moodIcon[post.moodTag] || Meh;
@@ -131,112 +128,88 @@ const PostCard = ({ post, currentUser, onDelete }) => {
   const catStyle = categoryColor[post.category] || { bg: "#F9FAFB", text: "#6B7280", dot: "#9CA3AF" };
 
   return (
-    <>
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div
-            className="bg-white p-6 w-full max-w-sm mx-4 shadow-xl border border-[#E9F0FB]"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            <h3 className="text-[#111827] font-black text-[18px] mb-2">Delete Post?</h3>
-            <p className="text-[#6B7280] text-[14px] mb-5">This will permanently delete the post and all its replies.</p>
-            <div className="flex gap-3">
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }}
-                className="flex-1 py-2.5 border border-[#E9F0FB] text-[#374151] font-semibold text-[14px] hover:bg-[#F9FAFB] transition"
-              >Cancel</button>
-              <button
-                onClick={handleConfirmDelete}
-                className="flex-1 py-2.5 bg-red-500 text-white font-semibold text-[14px] hover:bg-red-600 transition"
-              >Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div
-        onClick={() => navigate(`/post/${post._id}`)}
-        className="bg-white border border-[#E5E9F2] cursor-pointer hover:border-[#B8C7F0] hover:shadow-sm transition-all duration-200 group"
-        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-      >
-        <div className="px-6 pt-5 pb-4">
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5"
-                style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
-              >
-                {post.category}
-              </span>
+    <div
+      onClick={() => navigate(`/post/${post._id}`)}
+      className="bg-white border border-[#E5E9F2] cursor-pointer hover:border-[#B8C7F0] hover:shadow-sm transition-all duration-200 group"
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+    >
+      <div className="px-6 pt-5 pb-4">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5"
+              style={{ backgroundColor: catStyle.bg, color: catStyle.text }}
+            >
+              {post.category}
+            </span>
+            <span className="text-[11px] font-semibold bg-[#EEF2FF] text-[#2563EB] border border-[#C7D2FE] px-2 py-0.5">
+              Anonymous
+            </span>
+            {isMyPost && (
               <span className="text-[11px] font-semibold bg-[#EEF2FF] text-[#2563EB] border border-[#C7D2FE] px-2 py-0.5">
-                Anonymous
+                Your Post
               </span>
-              {isMyPost && (
-                <span className="text-[11px] font-semibold bg-[#EEF2FF] text-[#2563EB] border border-[#C7D2FE] px-2 py-0.5">
-                  Your Post
-                </span>
-              )}
-            </div>
-            {canDelete && (
-              <button
-                onClick={handleDeleteClick}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] hover:bg-[#FECACA] transition-colors flex-shrink-0"
-              >
-                <Trash2 size={13} strokeWidth={2} />
-                Delete
-              </button>
             )}
           </div>
+          {canDelete && (
+            <button
+              onClick={handleDeleteClick}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] hover:bg-[#FECACA] transition-colors flex-shrink-0"
+            >
+              <Trash2 size={13} strokeWidth={2} />
+              Delete
+            </button>
+          )}
+        </div>
 
-          <h3 className="text-[17px] font-bold text-[#111827] mb-2 leading-snug group-hover:text-[#2563EB] transition-colors">
-            {post.title}
-          </h3>
+        <h3 className="text-[17px] font-bold text-[#111827] mb-2 leading-snug group-hover:text-[#2563EB] transition-colors">
+          {post.title}
+        </h3>
 
-          <p
-            className="text-[14px] text-[#6B7280] leading-relaxed mb-4"
-            style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {post.content}
-          </p>
+        <p
+          className="text-[14px] text-[#6B7280] leading-relaxed mb-4"
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          {post.content}
+        </p>
 
-          <div className="flex items-center gap-5 pt-3.5 border-t border-[#F3F4F6]">
-            <div className="flex items-center gap-3 text-[13px] text-[#9CA3AF]">
-              <div className="flex items-center gap-1" style={{ color: moodC }}>
-                <MoodIcon size={13} strokeWidth={2} />
-                <span className="font-medium">{post.moodTag}</span>
-              </div>
-              <span>·</span>
-              <span>{timeAgo(post.createdAt)}</span>
+        <div className="flex items-center gap-5 pt-3.5 border-t border-[#F3F4F6]">
+          <div className="flex items-center gap-3 text-[13px] text-[#9CA3AF]">
+            <div className="flex items-center gap-1" style={{ color: moodC }}>
+              <MoodIcon size={13} strokeWidth={2} />
+              <span className="font-medium">{post.moodTag}</span>
+            </div>
+            <span>·</span>
+            <span>{timeAgo(post.createdAt)}</span>
+          </div>
+
+          <div className="ml-auto flex items-center gap-4">
+            <button
+              onClick={handleIFeelThis}
+              className={`flex items-center gap-1.5 text-[13px] font-semibold transition-colors ${
+                iClicked ? "text-[#2563EB]" : "text-[#9CA3AF] hover:text-[#2563EB]"
+              }`}
+            >
+              <Heart size={15} strokeWidth={2} className={iClicked ? "fill-[#2563EB]" : ""} />
+              {iFeelCount}
+            </button>
+
+            <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#9CA3AF]">
+              <MessageCircle size={15} strokeWidth={2} />
+              {topLevelReplies.length}
             </div>
 
-            <div className="ml-auto flex items-center gap-4">
-              <button
-                onClick={handleIFeelThis}
-                className={`flex items-center gap-1.5 text-[13px] font-semibold transition-colors ${
-                  iClicked ? "text-[#2563EB]" : "text-[#9CA3AF] hover:text-[#2563EB]"
-                }`}
-              >
-                <Heart size={15} strokeWidth={2} className={iClicked ? "fill-[#2563EB]" : ""} />
-                {iFeelCount}
-              </button>
-
-              <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#9CA3AF]">
-                <MessageCircle size={15} strokeWidth={2} />
-                {topLevelReplies.length}
-              </div>
-
-              <ChevronRight size={15} className="text-[#C4C9D4] group-hover:text-[#2563EB] transition-colors" strokeWidth={2} />
-            </div>
+            <ChevronRight size={15} className="text-[#C4C9D4] group-hover:text-[#2563EB] transition-colors" strokeWidth={2} />
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

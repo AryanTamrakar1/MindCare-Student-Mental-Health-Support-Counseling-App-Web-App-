@@ -8,6 +8,7 @@ const PasswordReset = require("../models/PasswordReset");
 const crypto = require("crypto");
 const MoodQuiz = require("../models/MoodQuiz");
 const Notification = require("../models/Notification");
+const { uploadToCloudinary } = require("../routes/uploadMiddleware");
 
 // --- Normalize Email  ---
 const normalizeEmail = (email) => {
@@ -32,7 +33,10 @@ function getWeekLabel(date) {
 
 async function sendQuizNotificationIfNeeded(userId) {
   const weekLabel = getWeekLabel(new Date());
-  const alreadySubmitted = await MoodQuiz.findOne({ student: userId, weekLabel });
+  const alreadySubmitted = await MoodQuiz.findOne({
+    student: userId,
+    weekLabel,
+  });
   if (alreadySubmitted) return;
 
   const now = new Date();
@@ -72,7 +76,14 @@ const registerUser = async (req, res) => {
 
     let status = "Pending";
     let otp = null;
-    let verificationPhoto = req.file ? req.file.filename : null;
+    let verificationPhoto = null;
+    if (req.file) {
+      const result = await uploadToCloudinary(
+        req.file.buffer,
+        req.file.mimetype,
+      );
+      verificationPhoto = result.secure_url;
+    }
 
     if (role === "Student") {
       otp = Math.floor(1000 + Math.random() * 9000).toString();
@@ -226,7 +237,6 @@ const loginUser = async (req, res) => {
       return res.status(403).json({ message: blockMsg });
     }
 
-    // --- Track Last Login ---
     user.lastLogin = new Date();
     await user.save();
 
@@ -288,7 +298,6 @@ const googleLogin = async (req, res) => {
         },
       });
     } else {
-      // --- Track Last Login ---
       user.lastLogin = new Date();
       await user.save();
 
@@ -350,7 +359,8 @@ const updateRole = async (req, res) => {
     };
 
     if (req.file) {
-      updateData.verificationPhoto = req.file.filename;
+      const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
+      updateData.verificationPhoto = result.secure_url;
     }
 
     const user = await User.findOne({ email });
@@ -381,7 +391,17 @@ const updateRole = async (req, res) => {
 
 // --- Update Profile ---
 const updateProfile = async (req, res) => {
-  const { userId, name, phone, gender, dob, studentId, licenseNo, currentPassword, newPassword } = req.body;
+  const {
+    userId,
+    name,
+    phone,
+    gender,
+    dob,
+    studentId,
+    licenseNo,
+    currentPassword,
+    newPassword,
+  } = req.body;
 
   try {
     const user = await User.findById(userId);
@@ -438,7 +458,9 @@ const updateProfilePhoto = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "No photo uploaded" });
     }
-    user.verificationPhoto = req.file.filename;
+
+    const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
+    user.verificationPhoto = result.secure_url;
     await user.save();
 
     res.json({
@@ -473,7 +495,9 @@ const manageUserStatus = async (req, res) => {
     );
 
     const notificationTitle =
-      status === "Approved" ? "Application Approved! 🎉" : "Application Decision";
+      status === "Approved"
+        ? "Application Approved! 🎉"
+        : "Application Decision";
 
     const notificationMessage =
       status === "Approved"
@@ -581,11 +605,19 @@ const editCounselorProfile = async (req, res) => {
 
     if (req.user.role !== "Counselor") {
       return res.status(403).json({
-        message: "Access denied. Only counselors can update professional profiles.",
+        message:
+          "Access denied. Only counselors can update professional profiles.",
       });
     }
 
-    const { profTitle, specialization, bio, qualifications, experience, availability } = req.body;
+    const {
+      profTitle,
+      specialization,
+      bio,
+      qualifications,
+      experience,
+      availability,
+    } = req.body;
 
     const updatedCounselor = await User.findById(counselorId);
 
@@ -602,7 +634,10 @@ const editCounselorProfile = async (req, res) => {
 
     await updatedCounselor.save();
 
-    res.json({ message: "Professional profile updated!", user: updatedCounselor });
+    res.json({
+      message: "Professional profile updated!",
+      user: updatedCounselor,
+    });
   } catch (error) {
     res.status(500).json({ message: "Error updating counselor profile" });
   }
@@ -625,7 +660,7 @@ const forgotPassword = async (req, res) => {
 
     await PasswordReset.create({ email, token: resetToken, expiresAt });
 
-    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+    const resetLink = process.env.CLIENT_URL + "/reset-password/" + resetToken;
 
     await sendEmail(
       email,

@@ -35,7 +35,7 @@ export const OTPVerificationProvider = ({ children }) => {
   const handleResendCode = async () => {
     try {
       await API.post("/auth/resend-otp", { email });
-      alert("A new code has been sent to your email!"); // ✅ fixed message
+      alert("A new code has been sent to your email!"); 
     } catch (err) {
       alert("Error resending code. Please try again later.");
     }

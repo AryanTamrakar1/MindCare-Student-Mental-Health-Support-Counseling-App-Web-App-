@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import API from "../../api/axios";
+import { useMoodQuizContext } from "../../context/moodQuiz/MoodQuizContext";
 
 const DailyCheckInContext = createContext(null);
 
 export const DailyCheckInProvider = ({ children }) => {
+  const { fetchCheckIns } = useMoodQuizContext();
   const [selected, setSelected] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,6 +39,7 @@ export const DailyCheckInProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSubmitted(true);
+      await fetchCheckIns();
     } catch (error) {
       console.error("Check-in error", error);
     }

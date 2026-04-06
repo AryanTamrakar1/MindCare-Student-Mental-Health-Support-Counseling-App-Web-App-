@@ -78,6 +78,7 @@ export const MoodQuizProvider = ({ children }) => {
         handleQuizComplete,
         prevMonth,
         nextMonth,
+        fetchCheckIns: fetchHistory,
       }}
     >
       {children}

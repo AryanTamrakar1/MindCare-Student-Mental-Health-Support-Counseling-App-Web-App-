@@ -26,8 +26,8 @@ const CounselorApprovalsInner = () => {
     >
       <Navbar />
       <AdminSidebar user={user} />
-      <main className="flex-1 ml-[260px] pt-[72px]">
-        <div className="p-10">
+      <main className="flex-1 ml-[260px] pt-[72px] min-w-0">
+        <div className="p-10 overflow-x-auto">
           <ApplicantTable
             pendingUsers={pendingUsers}
             onViewApplication={(u) => setSelectedUser(u)}

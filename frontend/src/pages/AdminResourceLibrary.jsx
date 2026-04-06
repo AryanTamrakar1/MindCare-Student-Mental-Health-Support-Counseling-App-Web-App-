@@ -4,6 +4,7 @@ import AdminSidebar from "../components/Sidebars/AdminSidebar";
 import Navbar from "../components/Navbar";
 import AddResourceModal from "../components/adminResourceLibrary/AddResourceModal";
 import EditResourceModal from "../components/adminResourceLibrary/EditResourceModal";
+import Pagination from "../components/adminResourceLibrary/Pagination";
 import {
   Plus,
   Pencil,
@@ -37,9 +38,7 @@ const AdminResourceLibraryInner = () => {
     priorityCount,
     totalReactions,
     totalPages,
-    startIndex,
     currentRows,
-    pageNumbers,
     ROWS_PER_PAGE,
   } = useadminResourceLibrary();
 
@@ -63,7 +62,7 @@ const AdminResourceLibraryInner = () => {
         style={{ paddingTop: "calc(72px + 1rem)" }}
       >
         <div className="p-6">
-          <div className="grid grid-cols-3 gap-5 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
             {[
               {
                 label: "Total Resources",
@@ -267,50 +266,13 @@ const AdminResourceLibraryInner = () => {
                 </table>
 
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between px-7 py-4 border-t border-[#E5E9F2] bg-[#F9FAFB]">
-                    <p className="text-[13px] font-medium text-[#9CA3AF]">
-                      Showing {startIndex + 1}–
-                      {Math.min(startIndex + ROWS_PER_PAGE, resources.length)}{" "}
-                      of {resources.length}
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={function () {
-                          setCurrentPage(currentPage - 1);
-                        }}
-                        disabled={currentPage === 1}
-                        className="px-3.5 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                      >
-                        Prev
-                      </button>
-                      {pageNumbers.map(function (page) {
-                        return (
-                          <button
-                            key={page}
-                            onClick={function () {
-                              setCurrentPage(page);
-                            }}
-                            className={`w-9 h-9 text-[13px] font-semibold border transition-colors ${
-                              currentPage === page
-                                ? "bg-[#2563EB] text-white border-[#2563EB]"
-                                : "bg-white text-[#374151] border-[#E5E9F2] hover:bg-[#F3F4F6]"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        );
-                      })}
-                      <button
-                        onClick={function () {
-                          setCurrentPage(currentPage + 1);
-                        }}
-                        disabled={currentPage === totalPages}
-                        className="px-3.5 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </div>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    totalItems={resources.length}
+                    itemsPerPage={ROWS_PER_PAGE}
+                  />
                 )}
               </>
             )}

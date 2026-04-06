@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import {
   Search,
   Plus,
@@ -112,6 +112,120 @@ const Checkbox = ({ checked, onChange, label, icon: Icon, iconColor }) => (
   </label>
 );
 
+
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  const [showJump, setShowJump] = useState(false);
+  const [jumpInput, setJumpInput] = useState("");
+
+  const getPageNumbers = () => {
+    const pages = [];
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+
+      if (currentPage > 3) {
+        pages.push("...");
+      }
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push("...");
+      }
+
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
+  const handleJump = (e) => {
+    if (e.key === "Enter") {
+      const num = parseInt(jumpInput);
+      if (!isNaN(num) && num >= 1 && num <= totalPages) {
+        onPageChange(num);
+      }
+      setShowJump(false);
+      setJumpInput("");
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between pt-2 pb-6 flex-shrink-0">
+      <p className="text-[13px] font-medium text-[#9CA3AF]">
+        Page {currentPage} of {totalPages}
+      </p>
+      <div className="flex items-center gap-1.5">
+
+        <button
+          onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-4 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          Prev
+        </button>
+
+        {getPageNumbers().map((item, index) => {
+          if (item === "...") {
+            return showJump ? (
+              <input
+                key={index}
+                type="number"
+                value={jumpInput}
+                onChange={(e) => setJumpInput(e.target.value)}
+                onKeyDown={handleJump}
+                onBlur={() => { setShowJump(false); setJumpInput(""); }}
+                autoFocus
+                placeholder="Go to"
+                className="w-16 h-9 text-[13px] font-semibold border border-[#2563EB] text-center outline-none text-[#374151]"
+              />
+            ) : (
+              <button
+                key={index}
+                onClick={() => setShowJump(true)}
+                className="w-9 h-9 text-[13px] font-semibold border border-[#E5E9F2] bg-white text-[#9CA3AF] hover:bg-[#F3F4F6] transition-colors"
+              >
+                ...
+              </button>
+            );
+          }
+
+          return (
+            <button
+              key={index}
+              onClick={() => onPageChange(item)}
+              className={`w-9 h-9 text-[13px] font-semibold border transition-colors ${
+                currentPage === item
+                  ? "bg-[#2563EB] text-white border-[#2563EB]"
+                  : "bg-white text-[#374151] border-[#E5E9F2] hover:bg-[#F3F4F6]"
+              }`}
+            >
+              {item}
+            </button>
+          );
+        })}
+
+        <button
+          onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          Next
+        </button>
+
+      </div>
+    </div>
+  );
+};
+
 const CommunityForumInner = () => {
   const { user } = useContext(AuthContext);
   const {
@@ -162,10 +276,9 @@ const CommunityForumInner = () => {
 
   const getProfilePhoto = () => {
     if (user?.verificationPhoto)
-      return `http://127.0.0.1:5050/uploads/verifications/${user.verificationPhoto}`;
+      return user.verificationPhoto;
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=2563EB&color=fff&size=100`;
   };
-
   const myPostsCount = posts.filter(
     (p) => p.authorId?.toString() === user?._id?.toString(),
   ).length;
@@ -213,54 +326,29 @@ const CommunityForumInner = () => {
         >
           <div className="px-6 py-5 border-b border-[#E9F0FB] flex-shrink-0">
             <div className="flex items-center gap-2.5 mb-1">
-              <BookOpen
-                size={16}
-                className="text-[#2563EB]"
-                strokeWidth={2.5}
-              />
-              <p className="text-[16px] font-bold text-[#111827]">
-                Forum Rules
-              </p>
+              <BookOpen size={16} className="text-[#2563EB]" strokeWidth={2.5} />
+              <p className="text-[16px] font-bold text-[#111827]">Forum Rules</p>
             </div>
             <p className="text-[13px] text-[#9CA3AF] font-medium">
               Please read carefully before posting
             </p>
           </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              overflowY: "auto",
-            }}
-          >
+          <div style={{ display: "flex", flexDirection: "column", overflowY: "auto" }}>
             {forumRules.map((rule, idx) => (
               <div
                 key={rule.num}
-                style={{
-                  display: "flex",
-                  gap: "16px",
-                  padding: "16px 24px",
-                  alignItems: "center",
-                }}
-                className={
-                  idx < forumRules.length - 1 ? "border-b border-[#F3F7FF]" : ""
-                }
+                style={{ display: "flex", gap: "16px", padding: "16px 24px", alignItems: "center" }}
+                className={idx < forumRules.length - 1 ? "border-b border-[#F3F7FF]" : ""}
               >
                 <div
                   className="bg-[#EEF2FF] flex items-center justify-center flex-shrink-0"
                   style={{ width: 36, height: 36 }}
                 >
-                  <span className="text-[14px] font-black text-[#2563EB]">
-                    {rule.num}
-                  </span>
+                  <span className="text-[14px] font-black text-[#2563EB]">{rule.num}</span>
                 </div>
                 <div>
-                  <p className="text-[14px] font-bold text-[#111827] mb-1.5">
-                    {rule.title}
-                  </p>
-                  <p className="text-[12.5px] text-[#6B7280] leading-[1.65]">
-                    {rule.desc}
-                  </p>
+                  <p className="text-[14px] font-bold text-[#111827] mb-1.5">{rule.title}</p>
+                  <p className="text-[12.5px] text-[#6B7280] leading-[1.65]">{rule.desc}</p>
                 </div>
               </div>
             ))}
@@ -308,7 +396,7 @@ const CommunityForumInner = () => {
                 <img
                   src={getProfilePhoto()}
                   alt="You"
-                  className="w-9 h-9  border-2 border-[#E5E7EB] flex-shrink-0"
+                  className="w-9 h-9 border-2 border-[#E5E7EB] flex-shrink-0"
                 />
                 <span className="text-[14px] text-[#9CA3AF] font-medium flex-1">
                   Share your thoughts anonymously…
@@ -324,13 +412,10 @@ const CommunityForumInner = () => {
                   <div className="bg-[#EEF2FF] px-4 py-2.5 mb-4 flex items-center gap-2">
                     <Lock size={13} className="text-[#2563EB] flex-shrink-0" />
                     <p className="text-[#2563EB] text-[12px] font-semibold">
-                      Your post will be completely anonymous. No one will see
-                      your name.
+                      Your post will be completely anonymous. No one will see your name.
                     </p>
                   </div>
-                  <p className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-2">
-                    Post Title
-                  </p>
+                  <p className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-2">Post Title</p>
                   <input
                     type="text"
                     value={newTitle}
@@ -339,9 +424,7 @@ const CommunityForumInner = () => {
                     className="w-full border border-[#E9F0FB] px-4 py-3 text-[14px] text-[#374151] outline-none mb-4 focus:border-[#2563EB] transition"
                     style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                   />
-                  <p className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-2">
-                    What is your post about?
-                  </p>
+                  <p className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-2">What is your post about?</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {FILTER_CATEGORIES.map((cat) => (
                       <button
@@ -352,17 +435,13 @@ const CommunityForumInner = () => {
                             ? "bg-[#2563EB] text-white border-[#2563EB]"
                             : "bg-[#F8FAFF] text-[#6B7280] border-[#E5EDFF] hover:border-[#2563EB] hover:text-[#2563EB]"
                         }`}
-                        style={{
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}
+                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                       >
                         {cat}
                       </button>
                     ))}
                   </div>
-                  <p className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-2">
-                    How are you feeling?
-                  </p>
+                  <p className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-2">How are you feeling?</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {MOOD_TAGS.map(({ label, color }) => (
                       <button
@@ -373,17 +452,13 @@ const CommunityForumInner = () => {
                             ? "bg-[#2563EB] text-white border-[#2563EB]"
                             : "bg-[#F8FAFF] text-[#6B7280] border-[#E5EDFF] hover:border-[#2563EB] hover:text-[#2563EB]"
                         }`}
-                        style={{
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}
+                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                       >
                         {label}
                       </button>
                     ))}
                   </div>
-                  <p className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-2">
-                    Your Post
-                  </p>
+                  <p className="text-[11px] font-black text-[#9CA3AF] uppercase tracking-widest mb-2">Your Post</p>
                   <textarea
                     value={newContent}
                     onChange={handleTextareaInput}
@@ -410,9 +485,7 @@ const CommunityForumInner = () => {
 
           {paginatedPosts.length === 0 ? (
             <div className="text-center py-20 bg-white border-2 border-dashed border-[#E9F0FB] flex-shrink-0">
-              <p className="text-[#9CA3AF] font-bold text-[15px]">
-                No posts found.
-              </p>
+              <p className="text-[#9CA3AF] font-bold text-[15px]">No posts found.</p>
               {user?.role === "Student" && !searchTerm && (
                 <button
                   onClick={() => setIsExpanded(true)}
@@ -442,50 +515,13 @@ const CommunityForumInner = () => {
                   />
                 ))}
               </div>
+
               {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-2 pb-6 flex-shrink-0">
-                  <p className="text-[13px] font-medium text-[#9CA3AF]">
-                    Page {currentPage} of {totalPages}
-                  </p>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                      disabled={currentPage === 1}
-                      className="px-4 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                    >
-                      Prev
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (num) => (
-                        <button
-                          key={num}
-                          onClick={() => setCurrentPage(num)}
-                          className={`w-9 h-9 text-[13px] font-semibold border transition-colors ${
-                            currentPage === num
-                              ? "bg-[#2563EB] text-white border-[#2563EB]"
-                              : "bg-white text-[#374151] border-[#E5E9F2] hover:bg-[#F3F4F6]"
-                          }`}
-                          style={{
-                            fontFamily: "'Plus Jakarta Sans', sans-serif",
-                          }}
-                        >
-                          {num}
-                        </button>
-                      ),
-                    )}
-                    <button
-                      onClick={() =>
-                        setCurrentPage((p) => Math.min(p + 1, totalPages))
-                      }
-                      disabled={currentPage === totalPages}
-                      className="px-4 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               )}
             </>
           )}
@@ -493,28 +529,19 @@ const CommunityForumInner = () => {
 
         <div
           className="bg-white border border-[#E5E9F2]"
-          style={{
-            height: "100%",
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-          }}
+          style={{ height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}
         >
           <div className="px-5 py-4 border-b border-[#E5E9F2] flex items-center justify-between flex-shrink-0">
             <p className="text-[15px] font-bold text-[#111827]">Filter Posts</p>
             {isFiltered && (
-              <span className="text-[11px] font-bold text-white bg-[#2563EB] px-2.5 py-0.5">
-                Active
-              </span>
+              <span className="text-[11px] font-bold text-white bg-[#2563EB] px-2.5 py-0.5">Active</span>
             )}
           </div>
 
           <div style={{ flex: 1, overflowY: "auto" }}>
             {user?.role === "Student" && (
               <div className="px-4 pt-4 pb-4 border-b border-[#E5E9F2]">
-                <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2">
-                  View
-                </p>
+                <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2">View</p>
                 <div className="flex flex-col gap-0.5">
                   {[
                     { value: false, label: "All Posts", count: posts.length },
@@ -524,30 +551,20 @@ const CommunityForumInner = () => {
                       key={label}
                       onClick={() => setShowMyPosts(value)}
                       className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors group ${
-                        showMyPosts === value
-                          ? "bg-[#EEF2FF]"
-                          : "hover:bg-[#F5F9FF]"
+                        showMyPosts === value ? "bg-[#EEF2FF]" : "hover:bg-[#F5F9FF]"
                       }`}
                     >
                       <div
-                        className={`w-4 h-4 flex-shrink-0  border-2 flex items-center justify-center transition-colors ${
-                          showMyPosts === value
-                            ? "border-[#2563EB]"
-                            : "border-[#D1D5DB] group-hover:border-[#2563EB]"
+                        className={`w-4 h-4 flex-shrink-0 border-2 flex items-center justify-center transition-colors ${
+                          showMyPosts === value ? "border-[#2563EB]" : "border-[#D1D5DB] group-hover:border-[#2563EB]"
                         }`}
                       >
-                        {showMyPosts === value && (
-                          <div className="w-2 h-2  bg-[#2563EB]" />
-                        )}
+                        {showMyPosts === value && <div className="w-2 h-2 bg-[#2563EB]" />}
                       </div>
-                      <span
-                        className={`text-[13px] select-none flex-1 ${showMyPosts === value ? "font-semibold text-[#2563EB]" : "font-medium text-[#374151]"}`}
-                      >
+                      <span className={`text-[13px] select-none flex-1 ${showMyPosts === value ? "font-semibold text-[#2563EB]" : "font-medium text-[#374151]"}`}>
                         {label}
                       </span>
-                      <span
-                        className={`text-[11px] font-semibold ${showMyPosts === value ? "text-[#2563EB] opacity-70" : "text-[#9CA3AF]"}`}
-                      >
+                      <span className={`text-[11px] font-semibold ${showMyPosts === value ? "text-[#2563EB] opacity-70" : "text-[#9CA3AF]"}`}>
                         {count}
                       </span>
                     </label>
@@ -557,66 +574,32 @@ const CommunityForumInner = () => {
             )}
 
             <div className="px-4 pt-4 pb-4 border-b border-[#E5E9F2]">
-              <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2">
-                Topic
-              </p>
+              <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2">Topic</p>
               <div className="flex flex-col gap-0.5">
-                <Checkbox
-                  checked={selectedCategories.length === 0}
-                  onChange={() => setSelectedCategories([])}
-                  label="All"
-                />
+                <Checkbox checked={selectedCategories.length === 0} onChange={() => setSelectedCategories([])} label="All" />
                 {FILTER_CATEGORIES.map((cat) => (
-                  <Checkbox
-                    key={cat}
-                    checked={selectedCategories.includes(cat)}
-                    onChange={() => toggleCategory(cat)}
-                    label={cat}
-                  />
+                  <Checkbox key={cat} checked={selectedCategories.includes(cat)} onChange={() => toggleCategory(cat)} label={cat} />
                 ))}
               </div>
             </div>
 
             <div className="px-4 pt-4 pb-4 border-b border-[#E5E9F2]">
-              <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2">
-                Mood
-              </p>
+              <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2">Mood</p>
               <div className="flex flex-col gap-0.5">
-                <Checkbox
-                  checked={selectedMoods.length === 0}
-                  onChange={() => setSelectedMoods([])}
-                  label="All Moods"
-                />
+                <Checkbox checked={selectedMoods.length === 0} onChange={() => setSelectedMoods([])} label="All Moods" />
                 {MOOD_TAGS.map(({ label, color }) => (
-                  <Checkbox
-                    key={label}
-                    checked={selectedMoods.includes(label)}
-                    onChange={() => toggleMood(label)}
-                    label={label}
-                    icon={null}
-                    iconColor={color}
-                  />
+                  <Checkbox key={label} checked={selectedMoods.includes(label)} onChange={() => toggleMood(label)} label={label} icon={null} iconColor={color} />
                 ))}
               </div>
             </div>
 
             <div className="px-4 pt-4 pb-4 border-b border-[#E5E9F2]">
-              <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2">
-                Sort By
-              </p>
+              <p className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-2">Sort By</p>
               <div className="flex flex-col gap-0.5">
                 {[
                   { value: "none", label: "Default", icon: null },
-                  {
-                    value: "most-liked",
-                    label: "Most Liked",
-                    icon: TrendingUp,
-                  },
-                  {
-                    value: "most-commented",
-                    label: "Most Replied",
-                    icon: MessageCircle,
-                  },
+                  { value: "most-liked", label: "Most Liked", icon: TrendingUp },
+                  { value: "most-commented", label: "Most Replied", icon: MessageCircle },
                 ].map(({ value, label, icon: Icon }) => (
                   <label
                     key={value}
@@ -627,34 +610,14 @@ const CommunityForumInner = () => {
                   >
                     <div
                       className={`w-4 h-4 flex-shrink-0 border-2 flex items-center justify-center transition-colors ${
-                        sortBy === value
-                          ? "border-[#2563EB]"
-                          : "border-[#D1D5DB] group-hover:border-[#2563EB]"
+                        sortBy === value ? "border-[#2563EB]" : "border-[#D1D5DB] group-hover:border-[#2563EB]"
                       }`}
                     >
-                      {sortBy === value && (
-                        <div className="w-2 h-2  bg-[#2563EB]" />
-                      )}
+                      {sortBy === value && <div className="w-2 h-2 bg-[#2563EB]" />}
                     </div>
                     <div className="flex items-center gap-2">
-                      {Icon && (
-                        <Icon
-                          size={13}
-                          strokeWidth={2}
-                          className={
-                            sortBy === value
-                              ? "text-[#2563EB]"
-                              : "text-[#9CA3AF]"
-                          }
-                        />
-                      )}
-                      <span
-                        className={`text-[13px] select-none ${
-                          sortBy === value
-                            ? "font-semibold text-[#2563EB]"
-                            : "font-medium text-[#374151]"
-                        }`}
-                      >
+                      {Icon && <Icon size={13} strokeWidth={2} className={sortBy === value ? "text-[#2563EB]" : "text-[#9CA3AF]"} />}
+                      <span className={`text-[13px] select-none ${sortBy === value ? "font-semibold text-[#2563EB]" : "font-medium text-[#374151]"}`}>
                         {label}
                       </span>
                     </div>

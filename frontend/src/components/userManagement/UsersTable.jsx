@@ -1,19 +1,16 @@
 import React from "react";
 import { useState } from "react";
 import { useUserManagement } from "../../hooks/userManagement/useUserManagement";
+import Pagination from "./Pagination";
 
 const ROWS_PER_PAGE = 10;
 
 function getProfilePhotoUrl(u) {
-  if (u.verificationPhoto) {
-    return "http://127.0.0.1:5050/uploads/verifications/" + u.verificationPhoto;
+  if (!u.verificationPhoto) {
+    const name = u.name || "User";
+    return "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=2563EB&color=fff&size=200";
   }
-  const name = u.name || "User";
-  return (
-    "https://ui-avatars.com/api/?name=" +
-    encodeURIComponent(name) +
-    "&background=2563EB&color=fff&size=200"
-  );
+  return u.verificationPhoto;
 }
 
 function getStatusBadge(u) {
@@ -120,14 +117,14 @@ const UsersTable = () => {
     const matchesStatus =
       statusFilter === "All" ||
       getStatusValue(u) === statusFilter.toLowerCase();
-    
+
     if (matchesSearch && matchesRole && matchesStatus) {
       filtered.push(u);
     }
   }
 
   const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE);
-  
+
   const paginated = [];
   const startIndex = (page - 1) * ROWS_PER_PAGE;
   const endIndex = page * ROWS_PER_PAGE;
@@ -135,52 +132,36 @@ const UsersTable = () => {
     paginated.push(filtered[i]);
   }
 
+  function handlePageChange(newPage) {
+    setPage(newPage);
+  }
+
   function handleSearchChange(e) {
     setSearch(e.target.value);
     setPage(1);
   }
-  
+
   function clearSearch() {
     setSearch("");
     setPage(1);
   }
-  
+
   function handleRoleChange(e) {
     setRoleFilter(e.target.value);
     setPage(1);
   }
-  
+
   function handleStatusChange(e) {
     setStatusFilter(e.target.value);
     setPage(1);
   }
 
   const columns =
-    "50px 1px 2.2fr 1px 2fr 1px 1.2fr 1px 1.2fr 1px 1.4fr 1px 1.8fr";
-
-  let showSearchClear = false;
-  if (search.length > 0) {
-    showSearchClear = true;
-  }
-
-  let showEmpty = false;
-  if (paginated.length === 0) {
-    showEmpty = true;
-  }
-
-  let showPagination = false;
-  if (totalPages > 1) {
-    showPagination = true;
-  }
-
-  const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
+    "50px 1px minmax(160px, 2.2fr) 1px minmax(180px, 2fr) 1px minmax(100px, 1.2fr) 1px minmax(100px, 1.2fr) 1px minmax(130px, 1.4fr) 1px minmax(200px, 1.8fr)";
 
   return (
     <div
-      className="bg-white border border-[#E5E9F2] overflow-hidden"
+      className="bg-white border border-[#E5E9F2] min-w-[1050px]"
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
     >
       <div className="flex items-center gap-3 px-7 py-5 border-b border-[#E5E9F2]">
@@ -207,24 +188,13 @@ const UsersTable = () => {
             onChange={handleSearchChange}
             className="w-full pl-10 pr-9 py-2.5 text-[14px] font-medium text-[#111827] border border-[#E5E9F2] bg-[#F9FAFB] outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
           />
-          {showSearchClear && (
+          {search.length > 0 && (
             <button
               onClick={clearSearch}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#374151] transition-colors"
             >
-              <svg
-                width="14"
-                height="14"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           )}
@@ -259,31 +229,22 @@ const UsersTable = () => {
         style={{ gridTemplateColumns: columns }}
       >
         <div className="px-5 py-4 flex items-center">
-          <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-widest">
-            #
-          </span>
+          <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-widest">#</span>
         </div>
-        {["Name", "Email", "Status", "Role", "Joined", "Action"].map(
-          (label, i) => (
-            <React.Fragment key={`header-${i}`}>
-              <div className="bg-[#E5E9F2]" />
-              <div className="px-7 py-4">
-                <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-widest">
-                  {label}
-                </span>
-              </div>
-            </React.Fragment>
-          ),
-        )}
+        {["Name", "Email", "Status", "Role", "Joined", "Action"].map((label, i) => (
+          <React.Fragment key={`header-${i}`}>
+            <div className="bg-[#E5E9F2]" />
+            <div className="px-7 py-4">
+              <span className="text-[12px] font-bold text-[#6B7280] uppercase tracking-widest">{label}</span>
+            </div>
+          </React.Fragment>
+        ))}
       </div>
 
-      {!showEmpty && (
+      {paginated.length > 0 && (
         <>
           {paginated.map((u, i) => {
-            let showResetButton = false;
-            if (u.role === "Counselor" && u.status === "Rejected") {
-              showResetButton = true;
-            }
+            const showResetButton = u.role === "Counselor" && u.status === "Rejected";
 
             return (
               <div
@@ -298,53 +259,45 @@ const UsersTable = () => {
                 </div>
 
                 <div className="self-stretch bg-[#E5E9F2]" />
-                <div className="px-7 py-4 flex items-center gap-3">
+                <div className="px-7 py-4 flex items-center gap-3 overflow-hidden">
                   <img
                     src={getProfilePhotoUrl(u)}
                     alt={u.name}
                     className="rounded-full border-2 border-[#E5E7EB] flex-shrink-0"
                     style={{ width: 38, height: 38, objectFit: "cover" }}
                   />
-                  <p className="text-[15px] font-semibold text-[#111827] truncate">
-                    {u.name}
-                  </p>
+                  <p className="text-[15px] font-semibold text-[#111827] truncate">{u.name}</p>
                 </div>
 
                 <div className="self-stretch bg-[#E5E9F2]" />
-                <div className="px-7 py-4 flex items-center">
-                  <p className="text-[14px] font-medium text-[#374151]">
-                    {u.email}
-                  </p>
+                <div className="px-7 py-4 flex items-center overflow-hidden">
+                  <p className="text-[14px] font-medium text-[#374151] truncate">{u.email}</p>
                 </div>
 
                 <div className="self-stretch bg-[#E5E9F2]" />
-                <div className="px-7 py-4 flex items-center">
-                  {getStatusBadge(u)}
-                </div>
+                <div className="px-7 py-4 flex items-center">{getStatusBadge(u)}</div>
 
                 <div className="self-stretch bg-[#E5E9F2]" />
                 <div className="px-7 py-4 flex items-center">{getRoleBadge(u)}</div>
 
                 <div className="self-stretch bg-[#E5E9F2]" />
                 <div className="px-7 py-4 flex items-center">
-                  <p className="text-[14px] font-medium text-[#374151]">
-                    {formatDate(u.createdAt)}
-                  </p>
+                  <p className="text-[14px] font-medium text-[#374151] whitespace-nowrap">{formatDate(u.createdAt)}</p>
                 </div>
 
                 <div className="self-stretch bg-[#E5E9F2]" />
-                <div className="px-7 py-4 flex items-center gap-2 flex-wrap">
+                <div className="px-7 py-4 flex items-center gap-2">
                   {showResetButton && (
                     <button
                       onClick={() => onResetToPending(u._id)}
-                      className="px-4 py-2 text-[12px] font-semibold text-[#D97706] bg-[#FFFBEB] border border-[#FDE68A] hover:bg-[#FDE68A] transition-colors"
+                      className="px-4 py-2 text-[12px] font-semibold text-[#D97706] bg-[#FFFBEB] border border-[#FDE68A] hover:bg-[#FDE68A] transition-colors whitespace-nowrap"
                     >
                       Reset
                     </button>
                   )}
                   <button
                     onClick={() => onDelete(u._id)}
-                    className="px-4 py-2 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] hover:bg-[#FECACA] transition-colors"
+                    className="px-4 py-2 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] hover:bg-[#FECACA] transition-colors whitespace-nowrap"
                   >
                     Remove Account
                   </button>
@@ -355,54 +308,20 @@ const UsersTable = () => {
         </>
       )}
 
-      {showEmpty && (
+      {paginated.length === 0 && (
         <div className="py-32 flex items-center justify-center">
-          <p className="text-[15px] font-medium text-[#9CA3AF]">
-            No users found.
-          </p>
+          <p className="text-[15px] font-medium text-[#9CA3AF]">No users found.</p>
         </div>
       )}
 
-      {showPagination && (
-        <div className="flex items-center justify-between px-7 py-4 border-t border-[#E5E9F2] bg-[#F9FAFB]">
-          <p className="text-[13px] font-medium text-[#9CA3AF]">
-            Showing {(page - 1) * ROWS_PER_PAGE + 1}–
-            {Math.min(page * ROWS_PER_PAGE, filtered.length)} of{" "}
-            {filtered.length}
-          </p>
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => setPage(page - 1)}
-              disabled={page === 1}
-              className="px-3.5 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              Prev
-            </button>
-            {pageNumbers.map((p) => {
-              let buttonBg = "bg-white text-[#374151] border-[#E5E9F2] hover:bg-[#F3F4F6]";
-              if (p === page) {
-                buttonBg = "bg-[#2563EB] text-white border-[#2563EB]";
-              }
-
-              return (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`px-3.5 py-2 text-[13px] font-semibold border transition-colors ${buttonBg}`}
-                >
-                  {p}
-                </button>
-              );
-            })}
-            <button
-              onClick={() => setPage(page + 1)}
-              disabled={page === totalPages}
-              className="px-3.5 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={filtered.length}
+          itemsPerPage={ROWS_PER_PAGE}
+        />
       )}
     </div>
   );

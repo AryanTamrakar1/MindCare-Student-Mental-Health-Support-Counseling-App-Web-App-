@@ -43,10 +43,7 @@ const EditCounselorProfileInner = () => {
 
       <main className="flex-1 ml-[260px] pt-[88px] pb-8 px-8 overflow-x-hidden">
         <div className="flex flex-col gap-6">
-          <div
-            className="grid gap-6 items-start"
-            style={{ gridTemplateColumns: "3fr 2fr" }}
-          >
+          <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">
             <ProfileFormProvider>
               <ProfileForm />
             </ProfileFormProvider>

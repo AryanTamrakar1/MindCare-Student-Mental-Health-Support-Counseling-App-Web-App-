@@ -1,16 +1,18 @@
 const CounselorHeader = ({ counselor, liveStatus, onRequestSession }) => {
-  if (!counselor || !liveStatus) {
+  if (!counselor) {
     return null;
   }
 
+  const safeStatus = liveStatus || { status: "Green", label: "Available" };
+
   let statusBg = "#dcfce7";
   let statusColor = "#16a34a";
-  let statusLabel = liveStatus.label || "Available";
+  let statusLabel = safeStatus.label || "Available";
 
-  if (liveStatus.status === "Yellow") {
+  if (safeStatus.status === "Yellow") {
     statusBg = "#fef9c3";
     statusColor = "#ca8a04";
-  } else if (liveStatus.status === "Red") {
+  } else if (safeStatus.status === "Red") {
     statusBg = "#fee2e2";
     statusColor = "#dc2626";
   }
@@ -38,7 +40,7 @@ const CounselorHeader = ({ counselor, liveStatus, onRequestSession }) => {
   if (counselor.verificationPhoto) {
     avatarContent = (
       <img
-        src={`http://127.0.0.1:5050/uploads/verifications/${counselor.verificationPhoto}`}
+        src={counselor.verificationPhoto}
         alt={counselor.name}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
         onError={(e) => { e.target.style.display = "none"; }}

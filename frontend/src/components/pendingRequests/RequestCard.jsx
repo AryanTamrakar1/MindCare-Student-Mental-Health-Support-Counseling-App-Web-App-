@@ -41,7 +41,7 @@ function formatDate(dateString) {
 
 function getStudentPhotoUrl(studentId) {
   if (studentId && studentId.verificationPhoto) {
-    return "http://127.0.0.1:5050/uploads/verifications/" + studentId.verificationPhoto;
+    return studentId.verificationPhoto; 
   }
   let name = "Student";
   if (studentId && studentId.name) {
@@ -74,9 +74,9 @@ const RequestCard = ({ req, onAction, expanded, onToggle }) => {
     >
       <div
         className="grid items-center hover:bg-[#FAFBFE] transition-colors"
-        style={{ gridTemplateColumns: "2.5fr 1px 1.5fr 1px 1.5fr 1px 1.6fr" }}
+        style={{ gridTemplateColumns: "minmax(200px, 2.5fr) 1px minmax(130px, 1.5fr) 1px minmax(150px, 1.5fr) 1px minmax(320px, 2fr)" }}
       >
-        <div className="flex items-center gap-4 px-8 py-6">
+        <div className="flex items-center gap-4 px-8 py-6 overflow-hidden">
           <img
             src={getStudentPhotoUrl(req.studentId)}
             alt={studentName}
@@ -109,16 +109,16 @@ const RequestCard = ({ req, onAction, expanded, onToggle }) => {
 
         <div className="self-stretch bg-[#E5E9F2]" />
 
-        <div className="px-8 py-6">
-          <span className="text-[16px] font-medium text-[#374151]">
+        <div className="px-8 py-6 overflow-hidden">
+          <span className="text-[16px] font-medium text-[#374151] whitespace-nowrap">
             {formatDate(req.date)}
           </span>
         </div>
 
         <div className="self-stretch bg-[#E5E9F2]" />
 
-        <div className="px-8 py-6">
-          <span className="text-[16px] font-medium text-[#374151]">
+        <div className="px-8 py-6 overflow-hidden">
+          <span className="block text-[16px] font-medium text-[#374151] truncate">
             {req.timeSlot}
           </span>
         </div>
@@ -128,14 +128,14 @@ const RequestCard = ({ req, onAction, expanded, onToggle }) => {
         <div className="px-8 py-6 flex items-center gap-3">
           <button
             onClick={() => onAction(req._id, "Approved")}
-            className="px-5 py-2.5 text-[14px] font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+            className="px-5 py-2.5 text-[14px] font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors whitespace-nowrap"
           >
             Approve
           </button>
 
           <button
             onClick={() => onAction(req._id, "Declined")}
-            className="px-5 py-2.5 text-[14px] font-semibold text-[#DC2626] bg-white border border-[#FCA5A5] hover:bg-[#FEF2F2] transition-colors"
+            className="px-5 py-2.5 text-[14px] font-semibold text-[#DC2626] bg-white border border-[#FCA5A5] hover:bg-[#FEF2F2] transition-colors whitespace-nowrap"
           >
             Decline
           </button>

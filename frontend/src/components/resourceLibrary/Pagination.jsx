@@ -1,10 +1,8 @@
 import { useState } from "react";
 
-const Pagination = ({ totalPages, currentPage, onPageChange }) => {
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const [showInput, setShowInput] = useState(false);
   const [jumpValue, setJumpValue] = useState("");
-
-  if (totalPages <= 1) return null;
 
   const getPages = () => {
     if (totalPages <= 7) {
@@ -32,19 +30,30 @@ const Pagination = ({ totalPages, currentPage, onPageChange }) => {
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginTop: "28px", paddingBottom: "16px" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: "6px",
+        paddingBottom: "16px",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+      }}
+    >
       <button
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
         disabled={currentPage === 1}
         style={{
-          padding: "8px 16px", fontSize: "14px",
-          color: "#374151", background: "#fff",
-          border: "1px solid #E5E7EB", cursor: "pointer",
-          transition: "all 0.15s", opacity: currentPage === 1 ? 0.4 : 1,
+          padding: "8px 16px",
+          fontSize: "13px",
+          fontWeight: "600",
+          color: "#374151",
+          background: "#fff",
+          border: "1px solid #E5E9F2",
+          cursor: currentPage === 1 ? "not-allowed" : "pointer",
+          opacity: currentPage === 1 ? 0.4 : 1,
           fontFamily: "'Plus Jakarta Sans', sans-serif",
         }}
-        onMouseEnter={(e) => { if (currentPage !== 1) { e.currentTarget.style.borderColor = "#DBEAFE"; e.currentTarget.style.color = "#2563EB"; } }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E5E7EB"; e.currentTarget.style.color = "#374151"; }}
       >
         Prev
       </button>
@@ -62,9 +71,14 @@ const Pagination = ({ totalPages, currentPage, onPageChange }) => {
               autoFocus
               placeholder="Go to"
               style={{
-                width: "60px", height: "36px", fontSize: "13px",
-                fontWeight: "600", border: "1px solid #2563EB",
-                textAlign: "center", outline: "none", color: "#374151",
+                width: "60px",
+                height: "36px",
+                fontSize: "13px",
+                fontWeight: "600",
+                border: "1px solid #2563EB",
+                textAlign: "center",
+                outline: "none",
+                color: "#374151",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
             />
@@ -73,9 +87,14 @@ const Pagination = ({ totalPages, currentPage, onPageChange }) => {
               key={index}
               onClick={() => setShowInput(true)}
               style={{
-                width: "36px", height: "36px", fontSize: "14px",
-                background: "#fff", color: "#9CA3AF",
-                border: "1px solid #E5E7EB", cursor: "pointer",
+                width: "36px",
+                height: "36px",
+                fontSize: "13px",
+                fontWeight: "600",
+                background: "#fff",
+                color: "#9CA3AF",
+                border: "1px solid #E5E9F2",
+                cursor: "pointer",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
             >
@@ -89,11 +108,14 @@ const Pagination = ({ totalPages, currentPage, onPageChange }) => {
             key={index}
             onClick={() => onPageChange(item)}
             style={{
-              width: "36px", height: "36px", fontSize: "14px", fontWeight: "500",
+              width: "36px",
+              height: "36px",
+              fontSize: "13px",
+              fontWeight: "600",
               background: currentPage === item ? "#2563EB" : "#fff",
               color: currentPage === item ? "#fff" : "#374151",
-              border: currentPage === item ? "1px solid #2563EB" : "1px solid #E5E7EB",
-              cursor: "pointer", transition: "all 0.15s",
+              border: currentPage === item ? "1px solid #2563EB" : "1px solid #E5E9F2",
+              cursor: "pointer",
               fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}
           >
@@ -103,17 +125,19 @@ const Pagination = ({ totalPages, currentPage, onPageChange }) => {
       })}
 
       <button
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
         disabled={currentPage === totalPages}
         style={{
-          padding: "8px 16px", fontSize: "14px",
-          color: "#374151", background: "#fff",
-          border: "1px solid #E5E7EB", cursor: "pointer",
-          transition: "all 0.15s", opacity: currentPage === totalPages ? 0.4 : 1,
+          padding: "8px 16px",
+          fontSize: "13px",
+          fontWeight: "600",
+          color: "#374151",
+          background: "#fff",
+          border: "1px solid #E5E9F2",
+          cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+          opacity: currentPage === totalPages ? 0.4 : 1,
           fontFamily: "'Plus Jakarta Sans', sans-serif",
         }}
-        onMouseEnter={(e) => { if (currentPage !== totalPages) { e.currentTarget.style.borderColor = "#DBEAFE"; e.currentTarget.style.color = "#2563EB"; } }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#E5E7EB"; e.currentTarget.style.color = "#374151"; }}
       >
         Next
       </button>

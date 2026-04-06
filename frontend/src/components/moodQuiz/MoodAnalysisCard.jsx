@@ -98,7 +98,7 @@ const MoodAnalysisCard = () => {
   return (
     <div className="flex flex-col gap-4">
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         <div className="bg-white border border-[#DBEAFE] px-6 py-5 flex items-center gap-5">
           <div className={`w-12 h-12 ${averageColors.bg} border ${averageColors.border} flex items-center justify-center shrink-0`}>
@@ -106,9 +106,9 @@ const MoodAnalysisCard = () => {
           </div>
           <div>
             <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-widest">Your mood this month</p>
-            <div className="flex items-baseline gap-1.5 mt-1">
+            <div className="flex items-baseline gap-1.5 mt-1 flex-wrap">
               <p className={`text-[28px] font-bold leading-none ${averageColors.text}`}>{analysis.weightedAverage}%</p>
-              <span className={`text-[28px] font-bold ${averageColors.text}`}>— {getMoodLabel(analysis.weightedAverage)}</span>
+              <span className={`text-[18px] font-bold ${averageColors.text}`}>— {getMoodLabel(analysis.weightedAverage)}</span>
             </div>
             <p className="text-[12px] text-[#6B7280] mt-1.5">Based on your last {analysis.totalQuizzes} quizzes</p>
           </div>
@@ -152,7 +152,7 @@ const MoodAnalysisCard = () => {
 
       <div className="bg-white border border-[#DBEAFE] overflow-hidden">
         <div className="px-8 pt-6 pb-5">
-          <div className="flex justify-between items-start">
+          <div className="flex flex-wrap justify-between items-start gap-4">
             <div>
               <p className="text-[19px] font-bold text-[#111827]">Category Breakdown</p>
               <p className="text-[14px] text-[#6B7280] mt-1">Your average score per wellness category</p>
@@ -179,7 +179,7 @@ const MoodAnalysisCard = () => {
         </div>
         <div className="h-px w-full bg-[#F1F5F9]" />
         <div className="px-8 py-5">
-          <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-4">
             {categoryNames.map((name) => {
               const score = analysis.categoryAverages[name];
               const scoreColors = getScoreColors(score);
@@ -193,7 +193,7 @@ const MoodAnalysisCard = () => {
               return (
                 <div key={name} className="flex flex-col gap-1.5">
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-[14px] font-semibold text-[#374151]">{name} [{scoreLabel}]</p>
                       {isWeakest && (
                         <span className="text-[11px] bg-red-50 text-red-500 border border-red-100 px-2 py-0.5 font-semibold">

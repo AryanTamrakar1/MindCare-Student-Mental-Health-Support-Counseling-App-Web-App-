@@ -39,22 +39,19 @@ const Navbar = () => {
 
   const pageTitle = pageTitles[location.pathname] || "MindCare";
 
-  function getProfilePhotoUrl() {
-    if (user.verificationPhoto) {
-      return (
-        "http://127.0.0.1:5050/uploads/verifications/" + user.verificationPhoto
-      );
+function getProfilePhotoUrl() {
+  if (user.verificationPhoto) {
+    if (user.verificationPhoto.startsWith("http")) {
+      return user.verificationPhoto;
     }
-    let name = "User";
-    if (user.name) {
-      name = user.name;
-    }
-    return (
-      "https://ui-avatars.com/api/?name=" +
-      name +
-      "&background=2563EB&color=fff&size=100"
-    );
+    return user.verificationPhoto;
   }
+  let name = "User";
+  if (user.name) {
+    name = user.name;
+  }
+  return "https://ui-avatars.com/api/?name=" + name + "&background=2563EB&color=fff&size=100";
+}
 
   function handleEditProfile() {
     setShowDropdown(false);
@@ -135,7 +132,7 @@ const Navbar = () => {
                     <p className="text-[13px] text-[#6B7280] leading-tight mt-0.5 break-all">
                       {user.email}
                     </p>
-                    <span className="inline-block mt-1.5 px-2.5 py-0.5 bg-[#EEF2FF] text-[#2563EB] text-[12px] font-semibold rounded-full capitalize">
+                    <span className="inline-block mt-1.5 px-2.5 py-0.5 bg-[#EEF2FF] text-[#2563EB] text-[12px] font-semibold capitalize">
                       {user.role}
                     </span>
                   </div>

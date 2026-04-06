@@ -23,13 +23,13 @@ const PendingRequestsInner = () => {
     >
       <Navbar />
       <CounselorSidebar user={user} />
-      <main className="flex-1 ml-[260px] pt-[72px]">
-        <div className="p-10">
-          <div className="bg-white border border-[#E5E9F2] overflow-hidden">
+      <main className="flex-1 ml-[260px] pt-[72px] min-w-0">
+        <div className="p-10 overflow-x-auto">
+          <div className="bg-white border border-[#E5E9F2] overflow-hidden min-w-[960px]">
             <div
               className="grid border-b border-[#E5E9F2] bg-[#F9FAFB]"
               style={{
-                gridTemplateColumns: "2.5fr 1px 1.5fr 1px 1.5fr 1px 1.6fr",
+                gridTemplateColumns: "minmax(200px, 2.5fr) 1px minmax(130px, 1.5fr) 1px minmax(150px, 1.5fr) 1px minmax(320px, 2fr)",
               }}
             >
               {[

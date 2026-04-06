@@ -29,13 +29,11 @@ function getExperience(selectedUser) {
 }
 
 function getVerificationPhotoSrc(selectedUser) {
-  return `${BACKEND_URL}/${selectedUser.verificationPhoto}`;
+  if (!selectedUser.verificationPhoto) return "";
+  return selectedUser.verificationPhoto;
 }
-
-function handleImgError(e, selectedUser) {
-  if (!selectedUser.verificationPhoto.includes("verifications")) {
-    e.target.src = `${BACKEND_URL}/uploads/verifications/${selectedUser.verificationPhoto}`;
-  }
+function handleImgError(e) {
+  e.target.src = "https://via.placeholder.com/300?text=No+Document";
 }
 
 const ApplicantModal = ({ selectedUser, onClose, onAction }) => {
@@ -126,7 +124,7 @@ const ApplicantModal = ({ selectedUser, onClose, onAction }) => {
                   src={getVerificationPhotoSrc(selectedUser)}
                   alt="Verification"
                   className="w-full h-auto max-h-[300px] object-contain"
-                  onError={(e) => handleImgError(e, selectedUser)}
+                  onError={handleImgError}
                 />
               )}
               {!selectedUser.verificationPhoto && (

@@ -18,35 +18,14 @@ import {
   AdminDashboardProvider,
   useAdminDashboardContext,
 } from "../context/adminDashboard/adminDashboardContext";
-import { useadminDashboard } from "../hooks/adminDashboard/useadminDashboard";
 
 const StatCard = ({ label, value, icon: Icon, accent }) => {
   const map = {
-    blue: {
-      bg: "bg-blue-50",
-      border: "border-blue-100",
-      iconColor: "text-blue-500",
-    },
-    emerald: {
-      bg: "bg-emerald-50",
-      border: "border-emerald-100",
-      iconColor: "text-emerald-500",
-    },
-    violet: {
-      bg: "bg-violet-50",
-      border: "border-violet-100",
-      iconColor: "text-violet-500",
-    },
-    amber: {
-      bg: "bg-amber-50",
-      border: "border-amber-100",
-      iconColor: "text-amber-500",
-    },
-    rose: {
-      bg: "bg-rose-50",
-      border: "border-rose-100",
-      iconColor: "text-rose-500",
-    },
+    blue: { bg: "bg-blue-50", border: "border-blue-100", iconColor: "text-blue-500" },
+    emerald: { bg: "bg-emerald-50", border: "border-emerald-100", iconColor: "text-emerald-500" },
+    violet: { bg: "bg-violet-50", border: "border-violet-100", iconColor: "text-violet-500" },
+    amber: { bg: "bg-amber-50", border: "border-amber-100", iconColor: "text-amber-500" },
+    rose: { bg: "bg-rose-50", border: "border-rose-100", iconColor: "text-rose-500" },
   };
   const c = map[accent];
   return (
@@ -54,15 +33,11 @@ const StatCard = ({ label, value, icon: Icon, accent }) => {
       className="bg-white border border-[#DBEAFE] px-6 py-5 flex items-center gap-5 hover:shadow-sm transition-all duration-200"
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
     >
-      <div
-        className={`w-12 h-12 ${c.bg} border ${c.border} flex items-center justify-center flex-shrink-0`}
-      >
+      <div className={`w-12 h-12 ${c.bg} border ${c.border} flex items-center justify-center flex-shrink-0`}>
         <Icon size={22} className={c.iconColor} strokeWidth={2} />
       </div>
       <div>
-        <p className="text-[28px] font-bold text-[#111827] leading-none">
-          {value}
-        </p>
+        <p className="text-[28px] font-bold text-[#111827] leading-none">{value}</p>
         <p className="text-[13px] font-medium text-[#6B7280] mt-1.5">{label}</p>
       </div>
     </div>
@@ -70,8 +45,7 @@ const StatCard = ({ label, value, icon: Icon, accent }) => {
 };
 
 function getProfilePhotoUrl(u) {
-  if (u.verificationPhoto)
-    return "http://127.0.0.1:5050/uploads/verifications/" + u.verificationPhoto;
+  if (u.verificationPhoto) return u.verificationPhoto;
   return (
     "https://ui-avatars.com/api/?name=" +
     encodeURIComponent(u.name || "User") +
@@ -98,7 +72,7 @@ function formatDate(dateString) {
   return `${day}${s} ${month}, ${year}`;
 }
 
-const columns = "44px 1px 2.2fr 1px 2fr 1px 1.2fr 1px 1.4fr 1px 1.6fr";
+const columns = "44px 1px minmax(150px, 2.2fr) 1px minmax(180px, 2fr) 1px minmax(100px, 1.2fr) 1px minmax(130px, 1.4fr) 1px minmax(160px, 1.6fr)";
 
 const RecentUsersCard = ({ users, onRemove }) => {
   if (!users || users.length === 0) {
@@ -111,111 +85,90 @@ const RecentUsersCard = ({ users, onRemove }) => {
   }
 
   return (
-    <div
-      className="border border-[#E5E9F2] overflow-hidden"
-      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-    >
+    <div className="overflow-x-auto">
       <div
-        className="grid bg-[#F9FAFB] border-b border-[#E5E9F2]"
-        style={{ gridTemplateColumns: columns }}
+        className="border border-[#E5E9F2] overflow-hidden min-w-[860px]"
+        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
       >
-        <div className="px-4 py-3 flex items-center">
-          <span className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest">
-            #
-          </span>
-        </div>
-        {["Name", "Email", "Role", "Joined", "Action"].map((label) => (
-          <React.Fragment key={label}>
-            <div className="bg-[#E5E9F2]" />
-            <div className="px-5 py-3">
-              <span className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest">
-                {label}
-              </span>
-            </div>
-          </React.Fragment>
-        ))}
-      </div>
-
-      {users.map((u, i) => {
-        const isStudent = u.role === "Student";
-        return (
-          <div
-            key={u._id || i}
-            className="grid border-b border-[#F1F1F1] last:border-b-0 hover:bg-[#FAFBFE] transition-colors"
-            style={{ gridTemplateColumns: columns }}
-          >
-            <div className="px-4 py-3.5 flex items-center">
-              <span className="text-[13px] font-medium text-[#9CA3AF]">
-                {i + 1}
-              </span>
-            </div>
-
-            <div className="self-stretch bg-[#E5E9F2]" />
-            <div className="px-5 py-3.5 flex items-center gap-2.5">
-              <img
-                src={getProfilePhotoUrl(u)}
-                alt={u.name}
-                className="border border-[#E5E7EB] flex-shrink-0"
-                style={{
-                  width: 34,
-                  height: 34,
-                  objectFit: "cover",
-                  borderRadius: "50%",
-                }}
-              />
-              <p className="text-[14px] font-semibold text-[#111827] truncate">
-                {u.name}
-              </p>
-            </div>
-
-            <div className="self-stretch bg-[#E5E9F2]" />
-            <div className="px-5 py-3.5 flex items-center">
-              <p className="text-[13px] font-medium text-[#374151]">
-                {u.email}
-              </p>
-            </div>
-
-            <div className="self-stretch bg-[#E5E9F2]" />
-            <div className="px-5 py-3.5 flex items-center">
-              <span
-                className="inline-flex items-center px-2.5 py-1 text-[11px] font-semibold border"
-                style={{
-                  ...(isStudent
-                    ? {
-                        background: "#EEF2FF",
-                        color: "#2563EB",
-                        borderColor: "#C7D2FE",
-                      }
-                    : {
-                        background: "#F5F3FF",
-                        color: "#7C3AED",
-                        borderColor: "#DDD6FE",
-                      }),
-                }}
-              >
-                {u.role}
-              </span>
-            </div>
-
-            <div className="self-stretch bg-[#E5E9F2]" />
-            <div className="px-5 py-3.5 flex items-center">
-              <p className="text-[13px] font-medium text-[#374151]">
-                {formatDate(u.createdAt) || u.joinedDate || "Recently"}
-              </p>
-            </div>
-
-            <div className="self-stretch bg-[#E5E9F2]" />
-            <div className="px-5 py-3.5 flex items-center">
-              <button
-                onClick={() => onRemove && onRemove(u._id)}
-                className="px-3.5 py-1.5 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] hover:bg-[#FECACA] transition-colors"
-              >
-                Remove Account
-              </button>
-            </div>
+        <div
+          className="grid bg-[#F9FAFB] border-b border-[#E5E9F2]"
+          style={{ gridTemplateColumns: columns }}
+        >
+          <div className="px-4 py-3 flex items-center">
+            <span className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest">#</span>
           </div>
-        );
-      })}
+          {["Name", "Email", "Role", "Joined", "Action"].map((label) => (
+            <React.Fragment key={label}>
+              <div className="bg-[#E5E9F2]" />
+              <div className="px-5 py-3">
+                <span className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest">{label}</span>
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
+
+        {users.map((u, i) => {
+          const isStudent = u.role === "Student";
+          return (
+            <div
+              key={u._id || i}
+              className="grid border-b border-[#F1F1F1] last:border-b-0 hover:bg-[#FAFBFE] transition-colors"
+              style={{ gridTemplateColumns: columns }}
+            >
+              <div className="px-4 py-3.5 flex items-center">
+                <span className="text-[13px] font-medium text-[#9CA3AF]">{i + 1}</span>
+              </div>
+
+              <div className="self-stretch bg-[#E5E9F2]" />
+              <div className="px-5 py-3.5 flex items-center gap-2.5 overflow-hidden">
+                <img
+                  src={getProfilePhotoUrl(u)}
+                  alt={u.name}
+                  className="border border-[#E5E7EB] flex-shrink-0"
+                  style={{ width: 34, height: 34, objectFit: "cover", borderRadius: "50%" }}
+                />
+                <p className="text-[14px] font-semibold text-[#111827] truncate">{u.name}</p>
+              </div>
+
+              <div className="self-stretch bg-[#E5E9F2]" />
+              <div className="px-5 py-3.5 flex items-center overflow-hidden">
+                <p className="text-[13px] font-medium text-[#374151] truncate">{u.email}</p>
+              </div>
+
+              <div className="self-stretch bg-[#E5E9F2]" />
+              <div className="px-5 py-3.5 flex items-center">
+                <span
+                  className="inline-flex items-center px-2.5 py-1 text-[11px] font-semibold border whitespace-nowrap"
+                  style={{
+                    ...(isStudent
+                      ? { background: "#EEF2FF", color: "#2563EB", borderColor: "#C7D2FE" }
+                      : { background: "#F5F3FF", color: "#7C3AED", borderColor: "#DDD6FE" }),
+                  }}
+                >
+                  {u.role}
+                </span>
+              </div>
+
+              <div className="self-stretch bg-[#E5E9F2]" />
+              <div className="px-5 py-3.5 flex items-center">
+                <p className="text-[13px] font-medium text-[#374151] whitespace-nowrap">
+                  {formatDate(u.createdAt) || u.joinedDate || "Recently"}
+                </p>
+              </div>
+
+              <div className="self-stretch bg-[#E5E9F2]" />
+              <div className="px-5 py-3.5 flex items-center">
+                <button
+                  onClick={() => onRemove && onRemove(u._id)}
+                  className="px-3.5 py-1.5 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] hover:bg-[#FECACA] transition-colors whitespace-nowrap"
+                >
+                  Remove Account
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -238,11 +191,7 @@ const PostRow = ({ post, onDelete, onView }) => {
   }
 
   const tag = post.category || post.tag || "General";
-  const ts = tagStyles[tag] || {
-    bg: "#F3F4F6",
-    color: "#6B7280",
-    border: "#E5E7EB",
-  };
+  const ts = tagStyles[tag] || { bg: "#F3F4F6", color: "#6B7280", border: "#E5E7EB" };
   const replies = post.replies?.length || post.replyCount || 0;
 
   return (
@@ -255,30 +204,20 @@ const PostRow = ({ post, onDelete, onView }) => {
         <div className="flex items-center gap-2 mb-2">
           <span
             className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 border"
-            style={{
-              background: ts.bg,
-              color: ts.color,
-              borderColor: ts.border,
-            }}
+            style={{ background: ts.bg, color: ts.color, borderColor: ts.border }}
           >
             {tag}
           </span>
-          <span className="text-[11px] font-semibold text-[#9CA3AF]">
-            Anonymous
-          </span>
+          <span className="text-[11px] font-semibold text-[#9CA3AF]">Anonymous</span>
         </div>
-        <p className="text-[13px] font-medium text-[#374151] leading-relaxed">
-          "{previewText}"
-        </p>
+        <p className="text-[13px] font-medium text-[#374151] leading-relaxed">"{previewText}"</p>
         <div className="flex items-center gap-3 mt-2">
           <span className="flex items-center gap-1 text-[11px] text-[#9CA3AF] font-medium">
             <MessageSquare size={11} />
             {replies} {replies === 1 ? "reply" : "replies"}
           </span>
           <span className="text-[#D1D5DB]">·</span>
-          <span className="text-[11px] text-[#9CA3AF] font-medium">
-            {post.timeAgo || "Recently"}
-          </span>
+          <span className="text-[11px] text-[#9CA3AF] font-medium">{post.timeAgo || "Recently"}</span>
         </div>
       </div>
       <button
@@ -309,43 +248,15 @@ const AdminDashboardInner = () => {
     handleDeletePost,
   } = useAdminDashboardContext();
 
-  if (!user) {
-    return null;
-  }
-
+  if (!user) return null;
   if (user.role !== "Admin") return null;
 
   const statCards = [
-    {
-      label: "Total Students",
-      value: stats.students,
-      icon: Users,
-      accent: "blue",
-    },
-    {
-      label: "Approved Counselors",
-      value: stats.counselors,
-      icon: UserCheck,
-      accent: "emerald",
-    },
-    {
-      label: "Sessions Completed",
-      value: stats.sessions,
-      icon: CalendarCheck,
-      accent: "violet",
-    },
-    {
-      label: "Avg. Counselor Rating",
-      value: parseFloat(stats.avgRating || 0).toFixed(1),
-      icon: Star,
-      accent: "amber",
-    },
-    {
-      label: "Forum Posts",
-      value: stats.forumPosts,
-      icon: MessageSquare,
-      accent: "rose",
-    },
+    { label: "Total Students", value: stats.students, icon: Users, accent: "blue" },
+    { label: "Approved Counselors", value: stats.counselors, icon: UserCheck, accent: "emerald" },
+    { label: "Sessions Completed", value: stats.sessions, icon: CalendarCheck, accent: "violet" },
+    { label: "Avg. Counselor Rating", value: parseFloat(stats.avgRating || 0).toFixed(1), icon: Star, accent: "amber" },
+    { label: "Forum Posts", value: stats.forumPosts, icon: MessageSquare, accent: "rose" },
   ];
 
   return (
@@ -357,7 +268,7 @@ const AdminDashboardInner = () => {
       <Navbar />
 
       <main
-        className="flex-1 ml-[260px] overflow-y-auto"
+        className="flex-1 ml-[260px] overflow-y-auto min-w-0"
         style={{
           paddingTop: "calc(72px + 2.5rem)",
           paddingBottom: "2.5rem",
@@ -365,7 +276,7 @@ const AdminDashboardInner = () => {
           paddingRight: "2.5rem",
         }}
       >
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
           {statCards.map((s) => (
             <StatCard key={s.label} {...s} />
           ))}
@@ -374,30 +285,20 @@ const AdminDashboardInner = () => {
         <div className="bg-white border border-[#DBEAFE] overflow-hidden mb-6">
           <div className="px-6 py-5 border-b border-[#DBEAFE] flex items-center justify-between gap-4">
             <div className="shrink-0">
-              <p className="text-[17px] font-bold text-[#0F172A]">
-                Platform Activity
-              </p>
-              <p className="text-[13px] text-[#6B7280] mt-0.5">
-                Sessions completed and student registrations
-              </p>
+              <p className="text-[17px] font-bold text-[#0F172A]">Platform Activity</p>
+              <p className="text-[13px] text-[#6B7280] mt-0.5">Sessions completed and student registrations</p>
             </div>
-
             <div className="flex items-center gap-4 flex-wrap justify-end">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 bg-[#1D4ED8] inline-block" />
-                  <span className="text-[12px] font-semibold text-[#9CA3AF]">
-                    Sessions
-                  </span>
+                  <span className="text-[12px] font-semibold text-[#9CA3AF]">Sessions</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 bg-[#93C5FD] inline-block" />
-                  <span className="text-[12px] font-semibold text-[#9CA3AF]">
-                    Students
-                  </span>
+                  <span className="text-[12px] font-semibold text-[#9CA3AF]">Students</span>
                 </div>
               </div>
-
               <div className="flex items-center gap-2">
                 <button
                   onClick={prevYear}
@@ -405,9 +306,7 @@ const AdminDashboardInner = () => {
                 >
                   <ChevronLeft size={14} strokeWidth={2.5} />
                 </button>
-                <span className="text-[13px] font-bold text-[#0F172A] min-w-[48px] text-center">
-                  {selectedYear}
-                </span>
+                <span className="text-[13px] font-bold text-[#0F172A] min-w-[48px] text-center">{selectedYear}</span>
                 <button
                   onClick={nextYear}
                   className="w-7 h-7 flex items-center justify-center border border-[#DBEAFE] bg-[#F8FAFF] hover:bg-[#EFF6FF] text-[#2563EB] transition-colors"
@@ -425,12 +324,8 @@ const AdminDashboardInner = () => {
         <div className="bg-white border border-[#DBEAFE] overflow-hidden mb-6">
           <div className="px-6 py-5 border-b border-[#DBEAFE] flex items-center justify-between">
             <div>
-              <p className="text-[17px] font-bold text-[#0F172A]">
-                Recent Users
-              </p>
-              <p className="text-[13px] text-[#6B7280] mt-0.5">
-                Latest registrations on the platform
-              </p>
+              <p className="text-[17px] font-bold text-[#0F172A]">Recent Users</p>
+              <p className="text-[13px] text-[#6B7280] mt-0.5">Latest registrations on the platform</p>
             </div>
             <button
               onClick={() => navigate("/user-management")}
@@ -447,12 +342,8 @@ const AdminDashboardInner = () => {
         <div className="bg-white border border-[#DBEAFE] overflow-hidden mb-6">
           <div className="px-6 py-5 border-b border-[#DBEAFE] flex items-center justify-between">
             <div>
-              <p className="text-[17px] font-bold text-[#0F172A]">
-                Post Management
-              </p>
-              <p className="text-[13px] text-[#6B7280] mt-0.5">
-                Click any post to open the forum. Anonymous community posts.
-              </p>
+              <p className="text-[17px] font-bold text-[#0F172A]">Post Management</p>
+              <p className="text-[13px] text-[#6B7280] mt-0.5">Click any post to open the forum. Anonymous community posts.</p>
             </div>
             <button
               onClick={() => navigate("/post-management")}
@@ -465,9 +356,7 @@ const AdminDashboardInner = () => {
             {posts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-20 gap-2">
                 <MessageSquare size={22} className="text-[#E5E7EB]" />
-                <p className="text-[13px] font-medium text-[#9CA3AF]">
-                  No community posts yet
-                </p>
+                <p className="text-[13px] font-medium text-[#9CA3AF]">No community posts yet</p>
               </div>
             ) : (
               posts.map((p) => (

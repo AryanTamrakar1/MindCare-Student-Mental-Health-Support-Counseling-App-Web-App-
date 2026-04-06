@@ -9,6 +9,7 @@ import PostCard from "../components/postManagement/PostCard";
 import CategoryFilter from "../components/postManagement/CategoryFilter";
 import PostSearchBar from "../components/postManagement/PostSearchBar";
 import StatsCards from "../components/postManagement/StatsCards";
+import Pagination from "../components/postManagement/Pagination";
 import { PostManagementProvider } from "../context/postManagement/PostManagementContext";
 import { usePostManagement } from "../hooks/postManagement/usePostManagement";
 
@@ -228,42 +229,11 @@ const PostManagementInner = () => {
           )}
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-2 pb-6 flex-shrink-0">
-              <p className="text-[13px] font-medium text-[#9CA3AF]">
-                Page {currentPage} of {totalPages}
-              </p>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  Prev
-                </button>
-                {pageNumbers.map((num) => (
-                  <button
-                    key={num}
-                    onClick={() => setCurrentPage(num)}
-                    className={`w-9 h-9 text-[13px] font-semibold border transition-colors ${
-                      currentPage === num
-                        ? "bg-[#2563EB] text-white border-[#2563EB]"
-                        : "bg-white text-[#374151] border-[#E5E9F2] hover:bg-[#F3F4F6]"
-                    }`}
-                  >
-                    {num}
-                  </button>
-                ))}
-                <button
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(p + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 text-[13px] font-semibold text-[#374151] bg-white border border-[#E5E9F2] hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           )}
         </div>
 

@@ -122,7 +122,7 @@ const StudentDashboardInner = () => {
           </div>
         </section>
 
-        <div className="flex gap-6 items-start">
+        <div className="flex flex-col xl:flex-row gap-6 items-start">
           <div className="flex-1 min-w-0 flex flex-col gap-6">
             <MoodTrendCard />
 
@@ -141,7 +141,7 @@ const StudentDashboardInner = () => {
             </section>
           </div>
 
-          <div className="shrink-0" style={{ width: 360 }}>
+          <div className="w-full xl:w-[360px] shrink-0">
             <MoodScoreCard />
           </div>
         </div>

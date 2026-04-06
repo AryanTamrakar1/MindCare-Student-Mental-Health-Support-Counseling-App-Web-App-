@@ -98,12 +98,12 @@ const MoodTrendCard = () => {
               <XAxis dataKey="label" tick={{ fontSize: 12, fontWeight: 600, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
               <YAxis type="number" domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 100]} tick={{ fontSize: 12, fill: "#94A3B8" }} axisLine={false} tickLine={false} tickFormatter={function (v) { return v + "%"; }} />
               <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="score" stroke="#2563EB" strokeWidth={2} dot={{ fill: "#2563EB", r: 4, strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6, fill: "#2563EB", stroke: "#fff", strokeWidth: 2 }} />
+              <Line type="monotone" dataKey="score" stroke="#2563EB" strokeWidth={2} dot={{ fill: "#2563EB", r: 4, strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6, fill: "#2563EB", stroke: "#fff", strokeWidth: 2 }} isAnimationActive={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div style={{ marginLeft: "-24px", marginRight: "-24px", marginBottom: "-24px", marginTop: "20px" }} className="grid grid-cols-1 border-t border-[#F1F5F9]">
+        <div style={{ marginLeft: "-24px", marginRight: "-24px", marginBottom: "-24px", marginTop: "20px" }} className="grid grid-cols-1 lg:grid-cols-3 border-t border-[#F1F5F9]">
           <div className="px-6 py-4">
             <p className="text-[12px] text-[#94A3B8] font-medium mb-1.5 uppercase tracking-wide">Latest</p>
             <div className="flex items-baseline gap-1.5">

@@ -38,7 +38,6 @@ const StudentSessionsInner = () => {
     <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="min-h-screen bg-[#EFF6FF] flex">
       <Navbar />
       <StudentSidebar user={user} />
-
       <main
         className="flex-1 ml-[260px] overflow-y-auto"
         style={{
@@ -48,7 +47,7 @@ const StudentSessionsInner = () => {
           paddingRight: "2.5rem",
         }}
       >
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {statCards.map((card) => (
             <div
               key={card.label}
@@ -73,12 +72,12 @@ const StudentSessionsInner = () => {
 
         <div className="mt-8">
           <div className="bg-white border border-[#DBEAFE] overflow-hidden mb-5">
-            <div className="px-8 pt-6 pb-5 flex items-center justify-between">
+            <div className="px-8 pt-6 pb-5 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-[19px] font-bold text-[#111827]">All Sessions</p>
                 <p className="text-[14px] text-[#6B7280] mt-1">View all your upcoming and past sessions.</p>
               </div>
-              <div className="flex bg-[#F8FAFC] border border-[#E2E8F0] p-1 gap-0.5">
+              <div className="flex flex-wrap bg-[#F8FAFC] border border-[#E2E8F0] p-1 gap-0.5">
                 {tabs.map((tab) => {
                   const isActive = activeTab === tab.label;
                   return (
@@ -104,7 +103,9 @@ const StudentSessionsInner = () => {
                 })}
               </div>
             </div>
+
             <div className="h-px w-full bg-[#F1F5F9]" />
+
             <div className="px-8 py-5 flex flex-col gap-3">
               {activeTab === "Summary" ? (
                 filtered.length > 0 ? (
@@ -126,7 +127,7 @@ const StudentSessionsInner = () => {
                     <SummaryCard key={s._id} session={s} />
                   ) : (
                     <SessionCard key={s._id} session={s} />
-                  ),
+                  )
                 )
               ) : (
                 <div className="border border-dashed border-[#DBEAFE] py-14 flex flex-col items-center text-center">

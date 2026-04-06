@@ -24,7 +24,7 @@ const CounselorProfileViewInner = () => {
     getQualifications,
   } = useCounselorProfileView();
 
-  if (!user) {
+  if (!user || !counselor) {
     return null;
   }
 
@@ -45,24 +45,35 @@ const CounselorProfileViewInner = () => {
           <button
             onClick={() => navigate(-1)}
             style={{
-              background: "none", border: "none",
-              fontSize: "14px", color: "#8b8fa8",
-              cursor: "pointer", padding: "0",
-              marginBottom: "20px", display: "flex",
-              alignItems: "center", gap: "6px",
+              background: "none",
+              border: "none",
+              fontSize: "14px",
+              color: "#8b8fa8",
+              cursor: "pointer",
+              padding: "0",
+              marginBottom: "20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "#2563EB"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "#8b8fa8"; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#2563EB";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#8b8fa8";
+            }}
           >
             ← Back to Directory
           </button>
 
-          <div style={{
-            background: "#fff",
-            border: "1px solid #ebebeb",
-            overflow: "hidden",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-          }}>
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #ebebeb",
+              overflow: "hidden",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+            }}
+          >
             <CounselorHeader
               counselor={counselor}
               liveStatus={liveStatus}

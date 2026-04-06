@@ -54,7 +54,7 @@ const GamificationPageInner = () => {
         </div>
 
         <div className="px-8 pb-8 pt-4">
-          <div className="grid grid-cols-1 gap-6 mb-6 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 mb-6 items-stretch">
             <div className="flex flex-col">
               <LevelBadge
                 level={data.level}
@@ -73,14 +73,14 @@ const GamificationPageInner = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 mb-6 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6 mb-6 items-stretch">
             <div className="flex flex-col">
               <PointsDisplay
                 points={data.points}
                 currentStreak={data.currentStreak}
               />
             </div>
-            <div className="col-span-2 flex flex-col">
+            <div className="flex flex-col">
               <BadgeCollection badges={data.badges} />
             </div>
           </div>

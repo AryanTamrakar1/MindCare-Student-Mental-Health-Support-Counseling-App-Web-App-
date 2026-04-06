@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import ResourceCard from "../components/resourceLibrary/ResourceCard";
 import ResourceFilter from "../components/resourceLibrary/ResourceFilter";
 import SmartResourceCard from "../components/recommendations/SmartResourceCard";
+import Pagination from "../components/resourceLibrary/Pagination";
 import { ResourceLibraryProvider } from "../context/resourceLibrary/ResourceLibraryContext";
 import { ResourceFilterProvider } from "../context/resourceLibrary/ResourceFilterContext";
 import { ResourceCardProvider } from "../context/resourceLibrary/ResourceCardContext";
@@ -159,11 +160,6 @@ const ResourceLibraryInner = () => {
     }
   }
 
-  const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
-
   if (!user) {
     return null;
   }
@@ -247,82 +243,11 @@ const ResourceLibraryInner = () => {
               </div>
 
               {totalPages > 1 && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "8px",
-                    paddingBottom: "16px",
-                  }}
-                >
-                  <button
-                    onClick={function () {
-                      setCurrentPage(currentPage - 1);
-                    }}
-                    disabled={currentPage === 1}
-                    style={{
-                      padding: "8px 16px",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      background: "#fff",
-                      border: "1px solid #E5E7EB",
-                      cursor: "pointer",
-                      opacity: currentPage === 1 ? 0.4 : 1,
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    }}
-                  >
-                    Prev
-                  </button>
-
-                  {pageNumbers.map(function (page) {
-                    return (
-                      <button
-                        key={page}
-                        onClick={function () {
-                          setCurrentPage(page);
-                        }}
-                        style={{
-                          width: "36px",
-                          height: "36px",
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          background: currentPage === page ? "#2563EB" : "#fff",
-                          color: currentPage === page ? "#fff" : "#374151",
-                          border:
-                            currentPage === page
-                              ? "1px solid #2563EB"
-                              : "1px solid #E5E7EB",
-                          cursor: "pointer",
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-
-                  <button
-                    onClick={function () {
-                      setCurrentPage(currentPage + 1);
-                    }}
-                    disabled={currentPage === totalPages}
-                    style={{
-                      padding: "8px 16px",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      background: "#fff",
-                      border: "1px solid #E5E7EB",
-                      cursor: "pointer",
-                      opacity: currentPage === totalPages ? 0.4 : 1,
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    }}
-                  >
-                    Next
-                  </button>
-                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               )}
             </>
           )}

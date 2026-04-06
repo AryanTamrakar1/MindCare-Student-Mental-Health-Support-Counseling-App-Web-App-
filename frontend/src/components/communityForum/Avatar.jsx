@@ -2,7 +2,7 @@ const Avatar = ({ role, photo, name }) => {
   if (role === "Counselor" && photo) {
     return (
       <img
-        src={`http://127.0.0.1:5050/uploads/verifications/${photo}`}
+        src={photo}
         alt={name}
         className="w-8 h-8 rounded-full border-2 border-[#C7D7FD] object-cover flex-shrink-0"
       />

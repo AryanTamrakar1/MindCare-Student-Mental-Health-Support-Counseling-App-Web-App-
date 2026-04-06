@@ -67,7 +67,7 @@ const SessionChart = ({ monthlyData, statusBreakdown }) => {
               width={36}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F8FAFC" }} />
-            <Bar dataKey="sessions" radius={0} maxBarSize={36} fill="#2563EB">
+            <Bar dataKey="sessions" radius={0} maxBarSize={36} fill="#2563EB" isAnimationActive={false}>
               {monthlyData.map((entry, index) => {
                 let cellColor = "#BFDBFE";
                 if (entry.sessions === maxSessions) {

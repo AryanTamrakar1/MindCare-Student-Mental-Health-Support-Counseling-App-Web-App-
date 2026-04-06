@@ -182,7 +182,7 @@ const PostCard = ({ post, currentUser, onNavigate, onDelete }) => {
 
             <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#9CA3AF]">
               <MessageCircle size={15} strokeWidth={2} />
-              {topLevelReplies.length}
+              {post.replies.length}
             </div>
 
             <ChevronRight size={15} className="text-[#C4C9D4] group-hover:text-[#2563EB] transition-colors" strokeWidth={2} />

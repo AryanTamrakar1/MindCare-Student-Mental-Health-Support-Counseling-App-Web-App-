@@ -1,7 +1,8 @@
 import React from "react";
 
 const ApplicantTable = ({ pendingUsers, onViewApplication }) => {
-  const columns = "50px 1px 2.5fr 1px 1.5fr 1px 1.2fr 1px 1.4fr";
+  const columns =
+    "50px 1px minmax(200px, 2.5fr) 1px minmax(140px, 1.5fr) 1px minmax(130px, 1.2fr) 1px minmax(185px, 1.4fr)";
 
   let tableContent;
   if (pendingUsers.length === 0) {
@@ -26,28 +27,39 @@ const ApplicantTable = ({ pendingUsers, onViewApplication }) => {
         </div>
 
         <div className="self-stretch bg-[#E5E9F2]" />
-        <div className="px-7 py-5 flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#EEF2FF] text-[#2563EB] flex items-center justify-center font-bold text-[15px] flex-shrink-0 rounded-full">
-            {u.name.charAt(0)}
+        <div className="px-7 py-5 flex items-center gap-3 overflow-hidden">
+          <div className="w-10 h-10 bg-[#EEF2FF] text-[#2563EB] flex items-center justify-center font-bold text-[15px] flex-shrink-0 rounded-full overflow-hidden">
+            {u.verificationPhoto ? (
+              <img
+                src={u.verificationPhoto}
+                alt={u.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
+            ) : (
+              u.name.charAt(0)
+            )}
           </div>
-          <div>
-            <p className="text-[15px] font-semibold text-[#111827]">
+          <div className="min-w-0">
+            <p className="text-[15px] font-semibold text-[#111827] truncate">
               {u.name}
             </p>
-            <p className="text-[13px] text-[#9CA3AF]">{u.email}</p>
+            <p className="text-[13px] text-[#9CA3AF] truncate">{u.email}</p>
           </div>
         </div>
 
         <div className="self-stretch bg-[#E5E9F2]" />
         <div className="px-7 py-5 flex items-center">
-          <span className="px-3 py-1 text-[11px] font-semibold bg-[#EEF2FF] text-[#2563EB] border border-[#C7D2FE]">
+          <span className="px-3 py-1 text-[11px] font-semibold bg-[#EEF2FF] text-[#2563EB] border border-[#C7D2FE] whitespace-nowrap">
             {u.specialization || "General"}
           </span>
         </div>
 
         <div className="self-stretch bg-[#E5E9F2]" />
         <div className="px-7 py-5 flex items-center">
-          <span className="px-3 py-1 text-[11px] font-semibold bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]">
+          <span className="px-3 py-1 text-[11px] font-semibold bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] whitespace-nowrap">
             Pending Review
           </span>
         </div>
@@ -56,7 +68,7 @@ const ApplicantTable = ({ pendingUsers, onViewApplication }) => {
         <div className="px-7 py-5 flex items-center">
           <button
             onClick={() => onViewApplication(u)}
-            className="px-4 py-2 text-[13px] font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors"
+            className="px-4 py-2 text-[13px] font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition-colors whitespace-nowrap"
           >
             View Application
           </button>
@@ -67,7 +79,7 @@ const ApplicantTable = ({ pendingUsers, onViewApplication }) => {
 
   return (
     <div
-      className="bg-white border border-[#E5E9F2] overflow-hidden"
+      className="bg-white border border-[#E5E9F2] overflow-hidden min-w-[860px]"
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
     >
       <div

@@ -51,10 +51,10 @@ const SessionCard = ({ session, onOpen, onWriteSummary }) => {
 
   return (
     <div
-      className="bg-white border border-[#DBEAFE] overflow-hidden hover:border-blue-300 transition-all"
+      className="bg-white border border-[#DBEAFE] hover:border-blue-300 transition-all overflow-x-auto"
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
     >
-      <div className="grid items-stretch" style={{ gridTemplateColumns: columns }}>
+      <div className="grid items-stretch" style={{ gridTemplateColumns: columns, minW: "760px" } }>
 
         <div className="flex items-center gap-3 px-5 py-4">
           <div className="w-11 h-11 bg-[#2563EB] text-white flex items-center justify-center font-bold text-[16px] flex-shrink-0">

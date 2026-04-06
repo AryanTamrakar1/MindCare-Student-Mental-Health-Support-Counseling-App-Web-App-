@@ -54,7 +54,7 @@ const CounselorSessionsInner = () => {
           paddingRight: "2.5rem",
         }}
       >
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
             {
               count: upcomingCount,
@@ -131,7 +131,7 @@ const CounselorSessionsInner = () => {
 
         <div className="mt-6">
           <div className="bg-white border border-[#DBEAFE] overflow-hidden">
-            <div className="px-8 pt-6 pb-5 flex items-center justify-between">
+            <div className="px-8 pt-6 pb-5 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-[19px] font-bold text-[#111827]">
                   All Sessions
@@ -140,7 +140,7 @@ const CounselorSessionsInner = () => {
                   View all your upcoming and past sessions.
                 </p>
               </div>
-              <div className="flex bg-[#F8FAFC] border border-[#E2E8F0] p-1 gap-0.5">
+              <div className="flex flex-wrap bg-[#F8FAFC] border border-[#E2E8F0] p-1 gap-0.5">
                 {tabs.map((tab) => {
                   const isActive = activeTab === tab.label;
                   return (

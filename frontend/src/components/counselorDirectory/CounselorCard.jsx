@@ -77,29 +77,29 @@ const CounselorCard = ({ cslr, stats, liveStatuses, expandedCards, onToggleCardT
   if (cslr.experience) experienceText = cslr.experience + " yrs";
 
   const renderAvatar = () => {
-    if (cslr.verificationPhoto) {
-      return (
-        <img
-          src={`http://127.0.0.1:5050/uploads/verifications/${cslr.verificationPhoto}`}
-          alt={cslr.name}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          onError={(e) => { e.target.style.display = "none"; }}
-        />
-      );
-    }
+  if (cslr.verificationPhoto) {
     return (
-      <div
-        style={{
-          width: "100%", height: "100%",
-          background: avatarColors[colorIndex],
-          display: "flex", alignItems: "center", justifyContent: "center",
-          color: "#fff", fontSize: "32px", fontWeight: "900", letterSpacing: "-0.5px",
-        }}
-      >
-        {initials}
-      </div>
+      <img
+        src={cslr.verificationPhoto}
+        alt={cslr.name}
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        onError={(e) => { e.target.style.display = "none"; }}
+      />
     );
-  };
+  }
+  return (
+    <div
+      style={{
+        width: "100%", height: "100%",
+        background: avatarColors[colorIndex],
+        display: "flex", alignItems: "center", justifyContent: "center",
+        color: "#fff", fontSize: "32px", fontWeight: "900", letterSpacing: "-0.5px",
+      }}
+    >
+      {initials}
+    </div>
+  );
+};
 
   const tagStyle = {
     padding: "5px 12px",

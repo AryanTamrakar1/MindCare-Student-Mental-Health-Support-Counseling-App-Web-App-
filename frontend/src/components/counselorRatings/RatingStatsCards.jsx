@@ -66,7 +66,7 @@ const RatingStatsCards = ({ overall, totalRatings, strongestLabel, strongestVal 
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-5 mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {cards.map((card) => {
         const Icon = card.icon;
         return (

@@ -30,7 +30,7 @@ const MoodChart = ({ moodBreakdown }) => {
   }
 
   return (
-    <div className="bg-white border border-blue-200 overflow-hidden flex flex-col h-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="bg-white border border-slate-100 overflow-hidden flex flex-col h-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
       <div className="px-8 pt-7 pb-5 flex items-start justify-between">
         <div>
@@ -57,6 +57,7 @@ const MoodChart = ({ moodBreakdown }) => {
                 paddingAngle={3}
                 dataKey="value"
                 strokeWidth={0}
+                isAnimationActive={false}
               >
                 {chartData.map((entry, index) => (
                   <Cell key={index} fill={entry.color} />
@@ -67,10 +68,10 @@ const MoodChart = ({ moodBreakdown }) => {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-blue-200" />
+        <div className="bg-slate-100" />
 
         <div className="flex flex-col overflow-hidden">
-          <div className="px-8 py-4 border-b border-blue-200">
+          <div className="px-8 py-4 border-b border-slate-100">
             <p className="text-sm font-bold text-gray-900 uppercase tracking-widest">
               Mood Distribution
             </p>

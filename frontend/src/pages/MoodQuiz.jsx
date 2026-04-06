@@ -254,7 +254,7 @@ const MoodQuizInner = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 mt-5 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5 items-stretch">
           <div className="bg-white border border-[#DBEAFE] overflow-hidden flex flex-col h-full">
             <div className="px-6 pt-6 pb-4 shrink-0">
               <p className="text-[17px] font-bold text-[#111827]">

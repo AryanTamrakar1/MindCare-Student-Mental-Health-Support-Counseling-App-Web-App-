@@ -64,11 +64,7 @@ export const StudentDashboardProvider = ({ children }) => {
 
   function getBadges() {
     if (gamification && gamification.badges.length > 0) {
-      const result = [];
-      for (let i = 0; i < gamification.badges.length && i < 3; i++) {
-        result.push(gamification.badges[i]);
-      }
-      return result;
+      return gamification.badges;
     }
     return [];
   }
@@ -94,7 +90,7 @@ export const useStudentDashboardContext = () => {
   const ctx = useContext(StudentDashboardContext);
   if (!ctx)
     throw new Error(
-      "useStudentDashboardContext must be used inside StudentDashboardProvider"
+      "useStudentDashboardContext must be used inside StudentDashboardProvider",
     );
   return ctx;
 };

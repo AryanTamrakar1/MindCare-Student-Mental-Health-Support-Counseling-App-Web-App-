@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import { TrendingUp } from "lucide-react";
 import API from "../../api/axios";
 
 const MONTHS = [
@@ -28,11 +27,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const PlatformChartCard = ({ selectedYear }) => {
   const [rawData, setRawData] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      setLoading(true);
       try {
         const token = sessionStorage.getItem("token");
         const res = await API.get("/analytics/sessions", {
@@ -44,7 +41,6 @@ const PlatformChartCard = ({ selectedYear }) => {
         console.error(err);
         setRawData([]);
       }
-      setLoading(false);
     };
     fetchAnalytics();
   }, [selectedYear]);
@@ -70,31 +66,6 @@ const PlatformChartCard = ({ selectedYear }) => {
       students: found ? (found.students || 0) : 0,
     };
   });
-
-  if (loading) {
-    return (
-      <div className="h-64 flex items-center justify-center">
-        <div className="flex gap-1.5">
-          {[0, 150, 300].map((d) => (
-            <span
-              key={d}
-              className="w-2 h-2 bg-blue-200 animate-bounce"
-              style={{ animationDelay: `${d}ms` }}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (rawData.length === 0) {
-    return (
-      <div className="h-64 flex flex-col items-center justify-center gap-2">
-        <TrendingUp size={28} className="text-blue-200" />
-        <p className="text-slate-400 text-sm">No session data for {selectedYear}</p>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full h-72 min-w-0">

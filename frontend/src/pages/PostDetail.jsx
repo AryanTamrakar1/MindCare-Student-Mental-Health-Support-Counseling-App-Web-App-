@@ -214,8 +214,8 @@ const PostDetailInner = () => {
                   }`}
                 >
                   <MessageCircle size={15} strokeWidth={2} />
-                  {replyTree.length}{" "}
-                  {replyTree.length === 1 ? "reply" : "replies"}
+                  {allReplies.length}{" "}
+                  {allReplies.length === 1 ? "reply" : "replies"}
                 </button>
 
                 {(user?.role === "Admin" || isMyPost) && (
@@ -245,7 +245,7 @@ const PostDetailInner = () => {
                     >
                       {user?.role === "Counselor" && user?.verificationPhoto ? (
                         <img
-                          src={`http://127.0.0.1:5050/uploads/verifications/${user.verificationPhoto}`}
+                          src={user.verificationPhoto}
                           alt={user.name}
                           className="w-9 h-9 object-cover flex-shrink-0 border-2 border-[#C7D2FE] self-start mt-[3px]"
                         />

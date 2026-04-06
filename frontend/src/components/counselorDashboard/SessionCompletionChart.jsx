@@ -100,7 +100,7 @@ const SessionCompletionChart = ({ selectedYear }) => {
           allowDecimals={false}
         />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "#EFF6FF" }} />
-        <Bar dataKey="Completed" radius={0}>
+        <Bar dataKey="Completed" radius={0} >
           {chartData.map((entry, index) => {
             let barFill = "#BFDBFE";
             if (entry.Completed === maxVal && maxVal > 0) {

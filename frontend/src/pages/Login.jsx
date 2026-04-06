@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import { LoginProvider } from "../context/login/LoginContext";
@@ -6,6 +7,7 @@ import { useLogin } from "../hooks/login/useLogin";
 
 const LoginInner = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const {
     email,
     setEmail,
@@ -59,14 +61,23 @@ const LoginInner = () => {
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">
                 Password
               </label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="w-full p-4 bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="w-full p-4 bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium pr-12"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={() => navigate("/forgot-password")}

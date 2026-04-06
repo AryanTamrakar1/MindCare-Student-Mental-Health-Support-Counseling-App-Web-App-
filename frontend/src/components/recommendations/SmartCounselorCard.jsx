@@ -94,7 +94,7 @@ function CounselorAvatar({ verificationPhoto, name }) {
     <div className="shrink-0">
       {hasPhoto && (
         <img
-          src={"http://127.0.0.1:5050/uploads/verifications/" + verificationPhoto}
+          src={verificationPhoto}
           alt={name}
           className="w-13 h-13 object-cover"
           style={{ width: 52, height: 52 }}
@@ -182,7 +182,7 @@ const SmartCounselorCard = () => {
   return (
     <div
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-      className="grid grid-cols-1 gap-4 items-start"
+      className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start"
     >
       {data.suggestions.map(function (counselor, index) {
         const isBestMatch = index === 0;

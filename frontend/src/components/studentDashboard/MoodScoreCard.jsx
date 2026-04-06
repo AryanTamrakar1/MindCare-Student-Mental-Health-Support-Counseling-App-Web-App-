@@ -154,6 +154,7 @@ const MoodScoreCard = () => {
                 dataKey="value"
                 strokeWidth={3}
                 stroke="#EFF6FF"
+                isAnimationActive={false}
                 onMouseEnter={function (_, index) {
                   setActive(index);
                 }}

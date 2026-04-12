@@ -54,7 +54,7 @@ const CounselorNextSessionCard = () => {
           <p className="text-[12px] font-semibold tracking-widest uppercase text-[#94A3B8]">
             Next Session
           </p>
-          <p className="text-[34px] font-bold tracking-tight leading-tight text-[#2563EB] truncate max-w-[160px]">
+          <p className="text-[34px] font-bold tracking-tight leading-tight text-[#2563EB] truncate">
             {displayValue}
           </p>
         </div>

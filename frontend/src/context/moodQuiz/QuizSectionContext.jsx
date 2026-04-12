@@ -8,7 +8,6 @@ export const QuizSectionProvider = ({ children, onQuizComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [selectedScore, setSelectedScore] = useState(null);
-  const [selectedFollowUp, setSelectedFollowUp] = useState(null);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState(null);
@@ -43,25 +42,17 @@ export const QuizSectionProvider = ({ children, onQuizComplete }) => {
     checkAndLoad();
   }, []);
 
-  function handleSelect(score, followUpAnswer) {
+  function handleSelect(score) {
     setSelectedScore(score);
-    if (followUpAnswer) setSelectedFollowUp(followUpAnswer);
   }
 
   function handleNext() {
     const currentQuestion = questions[currentIndex];
-    let followUpQuestion = null;
-    let followUpAnswer = null;
-    if (selectedScore <= 2 && currentQuestion.followUp)
-      followUpQuestion = currentQuestion.followUp.question;
-    if (selectedScore <= 2) followUpAnswer = selectedFollowUp;
 
     const answerEntry = {
       questionText: currentQuestion.text,
       category: currentQuestion.category,
       score: selectedScore,
-      followUpQuestion: followUpQuestion,
-      followUpAnswer: followUpAnswer,
     };
 
     const newAnswers = [];
@@ -70,7 +61,6 @@ export const QuizSectionProvider = ({ children, onQuizComplete }) => {
 
     setAnswers(newAnswers);
     setSelectedScore(null);
-    setSelectedFollowUp(null);
 
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex(currentIndex + 1);
@@ -109,7 +99,6 @@ export const QuizSectionProvider = ({ children, onQuizComplete }) => {
         currentIndex,
         answers,
         selectedScore,
-        selectedFollowUp,
         alreadySubmitted,
         submitted,
         result,

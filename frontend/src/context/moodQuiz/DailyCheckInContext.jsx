@@ -4,6 +4,16 @@ import { useMoodQuizContext } from "../../context/moodQuiz/MoodQuizContext";
 
 const DailyCheckInContext = createContext(null);
 
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function getTodayString() {
+  const d = new Date();
+  return d.getDate() + " " + monthNames[d.getMonth()] + " " + d.getFullYear();
+}
+
 export const DailyCheckInProvider = ({ children }) => {
   const { fetchCheckIns } = useMoodQuizContext();
   const [selected, setSelected] = useState(null);
@@ -15,11 +25,12 @@ export const DailyCheckInProvider = ({ children }) => {
     const checkToday = async () => {
       try {
         const token = sessionStorage.getItem("token");
-        const res = await API.get("/quiz/checkin/history", {
+        const today = getTodayString();
+        const res = await API.get("/quiz/checkin/today", {
           headers: { Authorization: `Bearer ${token}` },
+          params: { date: today },
         });
-        const today = new Date().toISOString().split("T")[0];
-        if (res.data.find((entry) => entry.date === today)) {
+        if (res.data.checkedIn) {
           setAlreadyDone(true);
           setSubmitted(true);
         }
@@ -35,10 +46,14 @@ export const DailyCheckInProvider = ({ children }) => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem("token");
-      await API.post("/quiz/checkin", { mood: selected }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const today = getTodayString();
+      await API.post(
+        "/quiz/checkin",
+        { mood: selected, date: today },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setSubmitted(true);
+      setAlreadyDone(true);
       await fetchCheckIns();
     } catch (error) {
       console.error("Check-in error", error);

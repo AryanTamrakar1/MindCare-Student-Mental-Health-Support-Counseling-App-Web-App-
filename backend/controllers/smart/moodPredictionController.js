@@ -172,8 +172,14 @@ const getMoodPrediction = async (req, res) => {
     if (predictedScore < 0) predictedScore = 0;
 
     let predictedTrend = "Stable";
-    if (rateOfChange > 0.3) predictedTrend = "Improving";
-    if (rateOfChange < -0.3) predictedTrend = "Declining";
+
+    if (overallScores.length < 2) {
+      if (adjustedBase < 40) predictedTrend = "Declining";
+      else if (adjustedBase > 70) predictedTrend = "Improving";
+    } else {
+      if (rateOfChange > 5) predictedTrend = "Improving";
+      if (rateOfChange < -5) predictedTrend = "Declining";
+    }
 
     const confidence = calculateConsistency(overallScores);
     const categoryAtRisk = predictCategoryAtRisk(quizzes);

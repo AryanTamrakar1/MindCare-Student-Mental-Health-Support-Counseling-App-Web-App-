@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-function weekToDate(weekLabel) {
-  const parts = weekLabel.split("-W");
-  const year = parseInt(parts[0]);
-  const week = parseInt(parts[1]);
-  const jan4 = new Date(year, 0, 4);
-  const day = jan4.getDay();
-  const diff = jan4.getDate() - day + (day === 0 ? -6 : 1);
-  const mondayWeek1 = new Date(year, 0, diff);
-  const monday = new Date(mondayWeek1);
-  monday.setDate(mondayWeek1.getDate() + (week - 1) * 7);
-  return monday.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function formatDisplayDate(weekLabel) {
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const shortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  for (let i = 0; i < monthNames.length; i++) {
+    if (weekLabel.includes(monthNames[i])) {
+      const day = weekLabel.replace(monthNames[i], "").replace("2026", "").replace("2025", "").trim();
+      return shortNames[i] + " " + day;
+    }
+  }
+  return weekLabel;
 }
 
 const MoodGraph = ({ history }) => {
@@ -31,6 +31,8 @@ const MoodGraph = ({ history }) => {
     );
   }
 
+  const sorted = history.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
   const w = 700;
   const h = 260;
   const pl = 44;
@@ -44,14 +46,14 @@ const MoodGraph = ({ history }) => {
 
   const getX = (i) =>
     pl +
-    (history.length === 1 ? chartW / 2 : (i / (history.length - 1)) * chartW);
+    (sorted.length === 1 ? chartW / 2 : (i / (sorted.length - 1)) * chartW);
   const getY = (score) => pt + chartH - (score / 100) * chartH;
 
-  const points = history.map((entry, i) => ({
+  const points = sorted.map((entry, i) => ({
     x: getX(i),
     y: getY(entry.moodScore),
     score: entry.moodScore,
-    date: weekToDate(entry.weekLabel),
+    date: formatDisplayDate(entry.weekLabel),
     week: entry.weekLabel,
   }));
 

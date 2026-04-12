@@ -6,6 +6,7 @@ const {
   getMoodHistory,
   submitCheckIn,
   getCheckInHistory,
+  checkTodayCheckIn
 } = require("../controllers/quizController");
 const { protect } = require("../controllers/authController");
 
@@ -15,5 +16,6 @@ router.get("/history", protect, getMoodHistory);
 
 router.post("/checkin", protect, submitCheckIn);
 router.get("/checkin/history", protect, getCheckInHistory);
+router.get("/checkin/today", protect, checkTodayCheckIn)
 
 module.exports = router;

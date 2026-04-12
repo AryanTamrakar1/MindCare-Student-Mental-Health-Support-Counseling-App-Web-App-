@@ -24,6 +24,16 @@ import { MoodPredictionProvider } from "../context/moodQuiz/MoodPredictionContex
 import { QuizSectionProvider } from "../context/moodQuiz/QuizSectionContext";
 import { useMoodQuiz } from "../hooks/moodQuiz/useMoodQuiz";
 
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+const shortNames = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
 function toLocalDateString(d) {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
@@ -31,13 +41,45 @@ function toLocalDateString(d) {
   return year + "-" + month + "-" + day;
 }
 
+function parseDateLabel(dateStr) {
+  const parts = dateStr.split(" ");
+  const day = parseInt(parts[0]);
+  const month = monthNames.indexOf(parts[1]);
+  const year = parseInt(parts[2]);
+  return new Date(year, month, day);
+}
+
 function getMoodLabel(score) {
   if (score >= 90) return "Feeling Great";
-  if (score >= 80) return "FeelingGood";
+  if (score >= 80) return "Feeling Good";
   if (score >= 70) return "Doing Well";
   if (score >= 60) return "Doing Okay";
   if (score >= 40) return "Not Doing Okay";
   return "Struggling";
+}
+
+function weekLabelToDateRange(weekLabel) {
+  for (let i = 0; i < monthNames.length; i++) {
+    if (weekLabel.includes(monthNames[i])) {
+      const dayStr = weekLabel.split(" ")[0];
+      const day = parseInt(dayStr);
+      const yearStr = weekLabel.split(" ")[2];
+      const year = parseInt(yearStr);
+
+      const monday = new Date(year, i, day);
+      const sunday = new Date(year, i, day + 6);
+
+      const mondayDay = monday.getDate();
+      const sundayDay = sunday.getDate();
+      const sundayMonth = sunday.getMonth();
+
+      const fmt1 = mondayDay + " " + shortNames[i] + " " + year;
+      const fmt2 = sundayDay + " " + shortNames[sundayMonth] + " " + year;
+
+      return fmt1 + " - " + fmt2;
+    }
+  }
+  return weekLabel;
 }
 
 const moodIconMap = {
@@ -128,24 +170,28 @@ const MoodQuizInner = () => {
   const navigate = useNavigate();
 
   function getBadgeColor(score) {
-    if (score >= 90)
-      return "bg-green-50 text-green-600 border border-green-200";
-    if (score >= 80)
-      return "bg-green-50 text-green-600 border border-green-200";
+    if (score >= 90) return "bg-green-50 text-green-600 border border-green-200";
+    if (score >= 80) return "bg-green-50 text-green-600 border border-green-200";
     if (score >= 70) return "bg-blue-50 text-[#2563EB] border border-blue-200";
     if (score >= 60) return "bg-blue-50 text-[#2563EB] border border-blue-200";
-    if (score >= 40)
-      return "bg-yellow-50 text-yellow-600 border border-yellow-200";
+    if (score >= 40) return "bg-yellow-50 text-yellow-600 border border-yellow-200";
     return "bg-red-50 text-red-500 border border-red-200";
   }
 
-  const reversedHistory = [];
-  for (let i = history.length - 1; i >= 0; i--)
-    reversedHistory.push(history[i]);
+  function getDateFromLabel(label) {
+    return parseDateLabel(label);
+  }
+
+  const sortedHistory = history.slice().sort((a, b) => {
+    return getDateFromLabel(a.weekLabel) - getDateFromLabel(b.weekLabel);
+  });
 
   const checkInMap = {};
-  for (let i = 0; i < checkIns.length; i++)
-    checkInMap[checkIns[i].date] = checkIns[i];
+  for (let i = 0; i < checkIns.length; i++) {
+    const parsed = parseDateLabel(checkIns[i].date);
+    const key = toLocalDateString(parsed);
+    checkInMap[key] = checkIns[i];
+  }
 
   const calMonthLabel = new Date(
     calendarDate.year,
@@ -407,34 +453,14 @@ const MoodQuizInner = () => {
               className="px-4 py-4 overflow-y-auto"
               style={{ height: "360px" }}
             >
-              {reversedHistory.length === 0 && (
+              {sortedHistory.length === 0 && (
                 <p className="text-[13px] text-[#94A3B8] text-center py-8">
                   No quiz results yet.
                 </p>
               )}
-              {reversedHistory.length > 0 && (
+              {sortedHistory.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  {reversedHistory.map((entry) => {
-                    function weekLabelToDateRange(weekLabel) {
-                      const parts = weekLabel.split("-W");
-                      const year = parseInt(parts[0]);
-                      const week = parseInt(parts[1]);
-                      const jan4 = new Date(year, 0, 4);
-                      const day = jan4.getDay();
-                      const diff = jan4.getDate() - day + (day === 0 ? -6 : 1);
-                      const mondayWeek1 = new Date(year, 0, diff);
-                      const monday = new Date(mondayWeek1);
-                      monday.setDate(mondayWeek1.getDate() + (week - 1) * 7);
-                      const sunday = new Date(monday);
-                      sunday.setDate(monday.getDate() + 6);
-                      const fmt = (d) =>
-                        d.toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        });
-                      return `${fmt(monday)} – ${fmt(sunday)}`;
-                    }
-
+                  {sortedHistory.map((entry) => {
                     return (
                       <div
                         key={entry._id}
@@ -480,27 +506,13 @@ const MoodQuizInner = () => {
               onClick={(e) => e.stopPropagation()}
             >
               {(() => {
-                function weekLabelToDateRange(weekLabel) {
-                  const parts = weekLabel.split("-W");
-                  const year = parseInt(parts[0]);
-                  const week = parseInt(parts[1]);
-                  const jan4 = new Date(year, 0, 4);
-                  const startOfWeek1 = new Date(jan4);
-                  startOfWeek1.setDate(jan4.getDate() - jan4.getDay() + 1);
-                  const start = new Date(startOfWeek1);
-                  start.setDate(start.getDate() + (week - 1) * 7);
-                  const end = new Date(start);
-                  end.setDate(end.getDate() + 6);
-                  const fmt = (d) =>
-                    d.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  return `${fmt(start)} – ${fmt(end)}`;
-                }
-
-                const entry = reversedHistory.find((e) => e._id === expandedId);
+                const entry = sortedHistory.find((e) => e._id === expandedId);
                 if (!entry) return null;
+
+                const mainAnswers = entry.answers.filter(
+                  (ans) => typeof ans.score === "number" && ans.questionText
+                );
+
                 return (
                   <>
                     <div className="flex justify-between items-center mb-5">
@@ -530,14 +542,19 @@ const MoodQuizInner = () => {
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                      {entry.answers.map((ans, i) => (
+                      {mainAnswers.map((ans, i) => (
                         <div
                           key={i}
                           className="flex justify-between items-start gap-4 bg-[#F8FAFC] border border-[#E2E8F0] px-4 py-3"
                         >
-                          <p className="text-[13px] text-[#374151] flex-1 leading-relaxed">
-                            {ans.questionText}
-                          </p>
+                          <div className="flex flex-col gap-1 flex-1">
+                            <span className="text-[10px] font-bold text-[#2563EB] bg-[#EFF6FF] border border-[#DBEAFE] px-2 py-0.5 w-fit tracking-widest uppercase">
+                              {ans.category}
+                            </span>
+                            <p className="text-[13px] text-[#374151] leading-relaxed">
+                              {ans.questionText}
+                            </p>
+                          </div>
                           <span className="text-[13px] font-bold text-[#2563EB] tabular-nums shrink-0">
                             {ans.score}/5
                           </span>

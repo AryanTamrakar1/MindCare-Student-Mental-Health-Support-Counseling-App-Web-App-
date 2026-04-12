@@ -56,25 +56,44 @@ async function autoMarkMissedSessions() {
 
   const currentNepalMinutes =
     nowNepal.getUTCHours() * 60 + nowNepal.getUTCMinutes();
-  const approvedSessions = await Appointment.find({ status: "Approved" });
 
+  const approvedSessions = await Appointment.find({ status: "Approved" });
   for (let i = 0; i < approvedSessions.length; i++) {
     const session = approvedSessions[i];
     const sessionDate = parseDateString(session.date);
     if (!sessionDate) continue;
-
     const sessionStartMinutes = parseTimeSlotStart(session.timeSlot);
     if (sessionStartMinutes === null) continue;
     const sessionEndWithGrace = sessionStartMinutes + 60 + 30;
-
     const isDateInPast = sessionDate < todayMidnightNepal;
     const isDateToday = sessionDate.getTime() === todayMidnightNepal.getTime();
-    const isTodayAndEnded =
-      isDateToday && currentNepalMinutes > sessionEndWithGrace;
-
+    const isTodayAndEnded = isDateToday && currentNepalMinutes > sessionEndWithGrace;
     if (isDateInPast || isTodayAndEnded) {
       session.status = "Missed";
       await session.save();
+    }
+  }
+
+  const pendingSessions = await Appointment.find({ status: "Pending" });
+  for (let i = 0; i < pendingSessions.length; i++) {
+    const session = pendingSessions[i];
+    const sessionDate = parseDateString(session.date);
+    if (!sessionDate) continue;
+
+    const isDateInPast = sessionDate < todayMidnightNepal;
+    const isDateToday = sessionDate.getTime() === todayMidnightNepal.getTime();
+
+    if (isDateInPast || isDateToday) {
+      session.status = "Declined";
+      await session.save();
+
+      await createNotification(
+        session.studentId,
+        "Session Request Declined",
+        "Your session request on " + session.date + " at " + session.timeSlot + " was not accepted.",
+        "booking_rejected",
+        "/counselors",
+      );
     }
   }
 }
@@ -324,7 +343,7 @@ exports.updateStatus = async (req, res) => {
       );
     }
 
-    if (status === "Rejected") {
+    if (status === "Declined"){
       await createNotification(
         appointment.studentId,
         "Session Request Declined",

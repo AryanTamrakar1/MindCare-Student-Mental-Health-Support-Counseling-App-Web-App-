@@ -5,20 +5,32 @@ const MoodTrendContext = createContext(null);
 
 function getDateFromWeekLabel(weekLabel) {
   if (!weekLabel) return weekLabel;
-  try {
-    const parts = weekLabel.split("-W");
-    const year = parseInt(parts[0]);
-    const week = parseInt(parts[1]);
-    const jan4 = new Date(year, 0, 4);
-    const day = jan4.getDay();
-    const diff = jan4.getDate() - day + (day === 0 ? -6 : 1); 
-    const mondayWeek1 = new Date(year, 0, diff);
-    const monday = new Date(mondayWeek1);
-    monday.setDate(mondayWeek1.getDate() + (week - 1) * 7);
-    return monday.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  } catch (error) {
-    return weekLabel;
+  
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const shortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  
+  for (let i = 0; i < monthNames.length; i++) {
+    if (weekLabel.includes(monthNames[i])) {
+      const day = weekLabel.split(" ")[0];
+      return shortNames[i] + " " + day;
+    }
   }
+  return weekLabel;
+}
+
+function getDateObject(weekLabel) {
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  for (let i = 0; i < monthNames.length; i++) {
+    if (weekLabel.includes(monthNames[i])) {
+      const dayStr = weekLabel.split(" ")[0];
+      const day = parseInt(dayStr);
+      const yearStr = weekLabel.split(" ")[2];
+      const year = parseInt(yearStr);
+      return new Date(year, i, day);
+    }
+  }
+  return new Date(0);
 }
 
 export const MoodTrendProvider = ({ children }) => {
@@ -48,7 +60,11 @@ export const MoodTrendProvider = ({ children }) => {
           (item, i, arr) => i === 0 || item.weekLabel !== arr[i - 1].weekLabel
         );
 
-        setTrendData(unique);
+        const sorted = unique.slice().sort((a, b) => {
+          return getDateObject(a.weekLabel) - getDateObject(b.weekLabel);
+        });
+
+        setTrendData(sorted);
       } catch (err) {}
       setLoading(false);
     };

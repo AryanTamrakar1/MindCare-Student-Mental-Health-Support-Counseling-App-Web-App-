@@ -5,17 +5,18 @@ const { awardPoints } = require("./gamificationController");
 function getWeekLabel(date) {
   const d = new Date(date);
   const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   const monday = new Date(d.setDate(diff));
-  
-  const year = monday.getFullYear();
-  const jan4 = new Date(year, 0, 4);
-  const msPerWeek = 604800000;
-  const weekNumber = Math.ceil(((monday - new Date(jan4.getFullYear(), 0, 4)) / msPerWeek) + 1);
-  
-  return year + "-W" + String(weekNumber).padStart(2, "0");
-}
 
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+
+  return (
+    monday.getDate() + " " + monthNames[monday.getMonth()] + " " + monday.getFullYear()
+  );
+}
 
 function calculateMood(answers) {
   let total = 0;
@@ -48,9 +49,7 @@ const submitQuiz = async (req, res) => {
 
     const existing = await MoodQuiz.findOne({ student: studentId, weekLabel });
     if (existing) {
-      return res
-        .status(400)
-        .json({ message: "You already submitted this week's quiz." });
+      return res.status(400).json({ message: "You already submitted this week's quiz." });
     }
 
     const { moodScore, moodLabel } = calculateMood(answers);
@@ -66,9 +65,7 @@ const submitQuiz = async (req, res) => {
     await quiz.save();
     await awardPoints(studentId, "quiz");
 
-    res
-      .status(201)
-      .json({ message: "Quiz submitted successfully!", moodScore, moodLabel });
+    res.status(201).json({ message: "Quiz submitted successfully!", moodScore, moodLabel });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -99,9 +96,7 @@ const getMoodHistory = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    const history = await MoodQuiz.find({ student: studentId }).sort({
-      createdAt: 1,
-    });
+    const history = await MoodQuiz.find({ student: studentId }).sort({ weekLabel: 1 });
 
     res.json(history);
   } catch (error) {
@@ -112,14 +107,9 @@ const getMoodHistory = async (req, res) => {
 const submitCheckIn = async (req, res) => {
   try {
     const studentId = req.user.id;
-    const { mood } = req.body;
+    const { mood, date } = req.body;
 
-    const today = new Date().toISOString().split("T")[0];
-
-    const existing = await DailyCheckIn.findOne({
-      student: studentId,
-      date: today,
-    });
+    const existing = await DailyCheckIn.findOne({ student: studentId, date });
     if (existing) {
       return res.status(400).json({ message: "You already checked in today." });
     }
@@ -128,16 +118,31 @@ const submitCheckIn = async (req, res) => {
 
     const checkIn = new DailyCheckIn({
       student: studentId,
-      date: today,
+      date,
       mood,
       moodEmoji: emojiMap[mood],
     });
 
     await checkIn.save();
 
-    res
-      .status(201)
-      .json({ message: "Check-in saved!", moodEmoji: emojiMap[mood] });
+    res.status(201).json({ message: "Check-in saved!", moodEmoji: emojiMap[mood] });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const checkTodayCheckIn = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const { date } = req.query;
+
+    const existing = await DailyCheckIn.findOne({ student: studentId, date });
+
+    if (existing) {
+      return res.json({ checkedIn: true, mood: existing.mood, moodEmoji: existing.moodEmoji });
+    }
+
+    res.json({ checkedIn: false });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -146,11 +151,9 @@ const submitCheckIn = async (req, res) => {
 const getCheckInHistory = async (req, res) => {
   try {
     const studentId = req.user.id;
-
     const history = await DailyCheckIn.find({ student: studentId })
-      .sort({ date: -1 })
+      .sort({ createdAt: -1 })
       .limit(7);
-
     res.json(history);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -162,5 +165,6 @@ module.exports = {
   checkQuiz,
   getMoodHistory,
   submitCheckIn,
+  checkTodayCheckIn,
   getCheckInHistory,
 };

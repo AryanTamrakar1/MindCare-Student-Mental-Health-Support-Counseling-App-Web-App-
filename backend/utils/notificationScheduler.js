@@ -31,7 +31,7 @@ function getTodayDateString() {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
   const day = nepalTime.getDate();
-  const dayStr = day < 10 ? "0" + day : "" + day;
+  const dayStr = "" + day;
   const month = monthNames[nepalTime.getMonth()];
   const year = nepalTime.getFullYear();
   return dayStr + " " + month + " " + year;
@@ -101,7 +101,7 @@ async function sendWeeklyQuizReminder() {
 
     if (dayOfWeek !== 1) return;
     if (hour !== 8) return;
-    if (minute !== 0) return;
+    if (minute > 1) return;
 
     const students = await User.find({ role: "Student", status: "Approved" });
 
@@ -158,7 +158,7 @@ async function sendDailyCheckInReminder() {
     const minute = nepalTime.getMinutes();
 
     if (hour !== 9) return;
-    if (minute !== 0) return;
+    if (minute > 1) return;
 
     const students = await User.find({ role: "Student", status: "Approved" });
 

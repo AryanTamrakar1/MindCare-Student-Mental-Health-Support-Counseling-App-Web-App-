@@ -37,7 +37,11 @@ const Navbar = () => {
     return null;
   }
 
-  const pageTitle = pageTitles[location.pathname] || "MindCare";
+  const pageTitle = location.pathname.startsWith("/post/")
+  ? user?.role === "Admin" ? "Post Management" : "Community Forum"
+  : location.pathname.startsWith("/counselor/")
+  ? "Find Counselor"
+  : pageTitles[location.pathname] || "MindCare";
 
 function getProfilePhotoUrl() {
   if (user.verificationPhoto) {

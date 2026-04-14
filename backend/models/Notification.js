@@ -2,15 +2,18 @@ const mongoose = require("mongoose");
 
 const notificationSchema = mongoose.Schema(
   {
+    // --- Link to the User ---
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
+    // --- Notification ---
     title: { type: String, required: true },
     message: { type: String, required: true },
 
+    // --- Type of Notification ---
     type: {
       type: String,
       enum: [
@@ -26,6 +29,7 @@ const notificationSchema = mongoose.Schema(
       required: true,
     },
 
+    // --- Status ---
     isRead: { type: Boolean, default: false },
 
     link: { type: String, default: "" },

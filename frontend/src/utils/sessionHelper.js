@@ -53,6 +53,7 @@ export const MONTH_IDX = {
   Dec: 11,
 };
 
+// It parses a date string and returns day, month, and year
 export function parseDbDate(str) {
   if (!str) return null;
   const p = str.split(" ");
@@ -60,6 +61,7 @@ export function parseDbDate(str) {
   return { d: parseInt(p[0]), m: MONTH_IDX[p[1]], y: parseInt(p[2]) };
 }
 
+// It returns the ordinal suffix for a given number
 export function ordinal(n) {
   const lastTwo = n % 100;
   if (lastTwo === 11 || lastTwo === 12 || lastTwo === 13) {
@@ -72,6 +74,7 @@ export function ordinal(n) {
   return "th";
 }
 
+// It formats a date string into short format like "5th Jan 2025"
 export function fmtShort(str) {
   const p = parseDbDate(str);
   if (!p) {
@@ -81,6 +84,7 @@ export function fmtShort(str) {
   return p.d + ordinal(p.d) + " " + MONTHS_SHORT[p.m] + " " + p.y;
 }
 
+// It formats a date string into long format like "5th January 2025"
 export function fmtLong(str) {
   const p = parseDbDate(str);
   if (!p) {
@@ -90,6 +94,7 @@ export function fmtLong(str) {
   return p.d + ordinal(p.d) + " " + MONTHS[p.m] + " " + p.y;
 }
 
+// It gets the list of topics from the reason 
 export function parseTopics(reason) {
   if (!reason) return [];
   if (!reason.includes("]")) return [];
@@ -113,6 +118,7 @@ export function parseTopics(reason) {
   return topics;
 }
 
+// It gets the reason text after the topics
 export function parseReason(reason) {
   if (!reason) return "";
   if (reason.includes("]")) {
@@ -122,7 +128,8 @@ export function parseReason(reason) {
 }
 
 // This is for session testing
-export function isSessionTime(date, timeSlot) {
+// It checks if the given date and time slot corresponds to the current time and date
+export function isSessionNow(date, timeSlot) {
   if (!date || !timeSlot) return false;
 
   const now = new Date();

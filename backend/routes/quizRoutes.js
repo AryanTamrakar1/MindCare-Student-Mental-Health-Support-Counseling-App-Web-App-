@@ -13,7 +13,6 @@ const { protect } = require("../controllers/authController");
 router.post("/submit", protect, submitQuiz);
 router.get("/check", protect, checkQuiz);
 router.get("/history", protect, getMoodHistory);
-
 router.post("/checkin", protect, submitCheckIn);
 router.get("/checkin/history", protect, getCheckInHistory);
 router.get("/checkin/today", protect, checkTodayCheckIn)

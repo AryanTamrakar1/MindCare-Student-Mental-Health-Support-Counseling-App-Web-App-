@@ -7,11 +7,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Store file in memory first, then upload to Cloudinary
+// It stores the file in memory before uploading to Cloudinary
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Helper to upload buffer to Cloudinary
+// It uploads a file buffer to Cloudinary and returns the result
 const uploadToCloudinary = (buffer, mimetype) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(

@@ -39,6 +39,7 @@ const ALL_BADGES = [
   },
 ];
 
+// Calculates and returns the level based on the student's total points
 function getLevelFromPoints(points) {
   let level = 1;
   for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
@@ -49,6 +50,7 @@ function getLevelFromPoints(points) {
   return level;
 }
 
+// Checks if a student already has a specific badge by name
 function hasBadge(badges, badgeName) {
   for (let i = 0; i < badges.length; i++) {
     if (badges[i].name === badgeName) {
@@ -58,6 +60,7 @@ function hasBadge(badges, badgeName) {
   return false;
 }
 
+// Resets the student's rest day count if a new month has started
 function checkAndResetRestDays(gamification) {
   const now = new Date();
   const lastReset = new Date(gamification.lastRestDayReset);
@@ -69,6 +72,7 @@ function checkAndResetRestDays(gamification) {
   }
 }
 
+// Generates a personalized milestone letter based on the badge earned and the student's current mood trend
 function generateMilestoneLetter(badgeName, moodTrend) {
   const LETTER_TEMPLATES = {
     "First Step":
@@ -118,6 +122,7 @@ function generateMilestoneLetter(badgeName, moodTrend) {
   return letter;
 }
 
+// Compares the last two quiz scores to determine if the student's mood is Improving, Declining, or Stable
 async function getMoodTrend(studentId) {
   const recentQuizzes = await MoodQuiz.find({ student: studentId })
     .sort({ createdAt: -1 })
@@ -139,6 +144,7 @@ async function getMoodTrend(studentId) {
   }
 }
 
+// It awards points to a student based on their activity type, updates their level and streak, and triggers badge checks
 const awardPoints = async (studentId, activityType) => {
   try {
     const POINT_VALUES = {
@@ -178,17 +184,14 @@ const awardPoints = async (studentId, activityType) => {
       gamification.lastActivityDate = todayStr;
     }
 
-    // Track forum interactions for "The Community Pillar" badge
     if (activityType === "post" || activityType === "reply") {
       gamification.forumInteractions = (gamification.forumInteractions || 0) + 1;
     }
 
-    // Track resource bookmarks for "The Resource Explorer" badge
     if (activityType === "resource") {
       gamification.resourcesBookmarked = (gamification.resourcesBookmarked || 0) + 1;
     }
 
-    // Track activities for "The MindCare Champion" badge
     if (activityType === "quiz") gamification.activitiesCompleted.quiz = true;
     if (activityType === "session") gamification.activitiesCompleted.session = true;
     if (activityType === "post") gamification.activitiesCompleted.post = true;
@@ -223,6 +226,7 @@ const awardPoints = async (studentId, activityType) => {
   }
 };
 
+// It checks all badge conditions after each activity and awards any newly earned badges along with a milestone letter
 const checkAndAwardBadges = async (studentId, activityType, gamification) => {
   try {
     const newBadgesToAward = [];
@@ -334,7 +338,6 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
       }
     }
 
-    // Award all new badges
     for (let i = 0; i < newBadgesToAward.length; i++) {
       const badgeName = newBadgesToAward[i];
 
@@ -375,6 +378,7 @@ const checkAndAwardBadges = async (studentId, activityType, gamification) => {
   }
 };
 
+// It returns the full gamification profile for a student including points, level, badges, streak, and mood trend
 const getGamificationData = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -436,6 +440,7 @@ const getGamificationData = async (req, res) => {
   }
 };
 
+// It returns all milestone letters earned by a student
 const getLetters = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -453,6 +458,7 @@ const getLetters = async (req, res) => {
   }
 };
 
+// It allows a student to use a rest day to protect their streak, with a limit of 2 per month
 const useRestDay = async (req, res) => {
   try {
     const studentId = req.user.id;

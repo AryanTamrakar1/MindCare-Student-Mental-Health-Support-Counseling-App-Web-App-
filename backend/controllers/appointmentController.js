@@ -2,7 +2,7 @@ const Appointment = require("../models/Appointment");
 const User = require("../models/User");
 const { createNotification } = require("./notificationController");
 
-// It handles all appointment-related operations, including requesting sessions, checking availability, and auto-marking missed sessions
+// Converts a date string like "12 Apr 2025" into a JavaScript Date object
 function parseDateString(dateStr) {
   const monthMap = {
     Jan: 0,
@@ -27,6 +27,7 @@ function parseDateString(dateStr) {
   return new Date(Date.UTC(year, month, day));
 }
 
+// Extracts the start time from a time slot string and converts it to total minutes
 function parseTimeSlotStart(timeSlot) {
   if (!timeSlot) return null;
   const startStr = timeSlot.split(" - ")[0].trim();
@@ -41,6 +42,7 @@ function parseTimeSlotStart(timeSlot) {
   return hour * 60 + minute;
 }
 
+// Automatically marks approved sessions as Missed and pending sessions as Declined if their date and time have passed
 async function autoMarkMissedSessions() {
   const nowUTC = new Date();
   const nepalOffsetMs = (5 * 60 + 45) * 60000;
@@ -469,7 +471,7 @@ exports.getLiveStatus = async (req, res) => {
   }
 };
 
-// It allows the counselor to start a session by providing the Zoom start link
+// It returns the total number of completed sessions for a specific counselor
 exports.getCompletedCount = async (req, res) => {
   try {
     const { counselorId } = req.params;

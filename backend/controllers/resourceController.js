@@ -1,6 +1,7 @@
 const Resource = require("../models/Resource");
 const { awardPoints } = require("./gamificationController");
 
+// It allows the admin to add a new resource to the library
 const addResource = async (req, res) => {
   try {
     const {
@@ -35,6 +36,7 @@ const addResource = async (req, res) => {
   }
 };
 
+// It allows the admin to edit an existing resource
 const editResource = async (req, res) => {
   try {
     const { id } = req.params;
@@ -68,6 +70,7 @@ const editResource = async (req, res) => {
   }
 };
 
+// It allows the admin to delete a resource from the library
 const deleteResource = async (req, res) => {
   try {
     const { id } = req.params;
@@ -86,6 +89,7 @@ const deleteResource = async (req, res) => {
   }
 };
 
+// It fetches all resources with their reaction and bookmark counts, with optional filtering by category or type
 const getAllResources = async (req, res) => {
   try {
     const { category, type } = req.query;
@@ -137,6 +141,7 @@ const getAllResources = async (req, res) => {
   }
 };
 
+// It allows a student to react to a resource as helpful or not helpful, and toggles the reaction if clicked again
 const reactToResource = async (req, res) => {
   try {
     const { id } = req.params;
@@ -184,6 +189,7 @@ const reactToResource = async (req, res) => {
   }
 };
 
+// It allows a student to bookmark or unbookmark a resource, and awards points on the first 5 bookmarks
 const toggleBookmark = async (req, res) => {
   try {
     const { id } = req.params;
@@ -243,6 +249,7 @@ const toggleBookmark = async (req, res) => {
   }
 };
 
+// It returns all resources that a student has bookmarked
 const getBookmarkedResources = async (req, res) => {
   try {
     const studentId = req.user._id;

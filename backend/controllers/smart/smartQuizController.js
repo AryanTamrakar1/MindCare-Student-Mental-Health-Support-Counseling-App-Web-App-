@@ -137,6 +137,7 @@ const questionBank = [
   },
 ];
 
+// It selects 10 questions from the question bank based on the week number
 function getDefaultQuestions(weekNumber) {
   const startIndex = ((weekNumber - 1) * 10) % questionBank.length;
   const selected = [];
@@ -146,6 +147,7 @@ function getDefaultQuestions(weekNumber) {
   return selected;
 }
 
+// It returns the current week number of the year
 function getWeekNumber() {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
@@ -154,6 +156,7 @@ function getWeekNumber() {
   );
 }
 
+// It calculates the average score per category from a list of quizzes
 function buildCategoryAverages(quizzes) {
   const categoryData = {};
 
@@ -182,6 +185,7 @@ function buildCategoryAverages(quizzes) {
   return averages;
 }
 
+// It finds the two weakest categories based on average scores
 function findTwoWeakestCategories(categoryAverages) {
   const names = Object.keys(categoryAverages);
 
@@ -212,6 +216,7 @@ function findTwoWeakestCategories(categoryAverages) {
   return result;
 }
 
+// It gets a set number of questions from a specific category
 function getQuestionsByCategory(category, count) {
   const pool = [];
   for (let i = 0; i < questionBank.length; i++) {
@@ -229,6 +234,7 @@ function getQuestionsByCategory(category, count) {
   return selected;
 }
 
+// It builds a set of 10 smart questions prioritizing the weakest categories
 function buildSmartQuestions(weakCategories, weekNumber) {
   const usedIds = {};
   const result = [];
@@ -269,6 +275,7 @@ function buildSmartQuestions(weakCategories, weekNumber) {
   return result;
 }
 
+// It returns personalized quiz questions based on the student's past quiz results
 const getSmartQuestions = async (req, res) => {
   try {
     const studentId = req.user.id;

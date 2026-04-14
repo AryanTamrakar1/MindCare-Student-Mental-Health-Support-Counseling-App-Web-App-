@@ -2,17 +2,20 @@ const mongoose = require("mongoose");
 
 const moodQuizSchema = new mongoose.Schema(
   {
+    // --- Link to the Student ---
     student: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
+    // --- Week Label ---
     weekLabel: {
       type: String,
       required: true,
     },
 
+    // --- Answers ---
     answers: [
       {
         questionText: { type: String },
@@ -21,10 +24,12 @@ const moodQuizSchema = new mongoose.Schema(
       },
     ],
 
+    // --- Mood Score ---
     moodScore: {
       type: Number,
     },
 
+    // --- Mood Label ---
     moodLabel: {
       type: String,
     },

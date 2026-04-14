@@ -1,6 +1,7 @@
 const MoodQuiz = require("../../models/MoodQuiz");
 const DailyCheckIn = require("../../models/DailyCheckIn");
 
+// It calculates a weighted average from a list of scores
 function calculateWeightedAverage(scores) {
   let weightedSum = 0;
   let totalWeight = 0;
@@ -14,6 +15,7 @@ function calculateWeightedAverage(scores) {
   return Math.round((weightedSum / totalWeight) * 10) / 10;
 }
 
+// It calculates the average rate of change between scores
 function calculateRateOfChange(scores) {
   if (scores.length < 2) return 0;
 
@@ -25,6 +27,7 @@ function calculateRateOfChange(scores) {
   return Math.round((totalChange / (scores.length - 1)) * 10) / 10;
 }
 
+// It calculates the consistency level of a list of scores
 function calculateConsistency(scores) {
   if (scores.length < 2) return "Low";
 
@@ -46,6 +49,7 @@ function calculateConsistency(scores) {
   return "Low";
 }
 
+// It returns an action message based on the predicted score and trend
 function getActionMessage(predictedScore, trend) {
   if (predictedScore < 40) {
     return "Your mood is predicted to drop significantly. Please book a counselor session urgently.";
@@ -59,6 +63,7 @@ function getActionMessage(predictedScore, trend) {
   return "Great progress! Your mood is predicted to improve next week. Keep going.";
 }
 
+// It finds the category with the highest declining rate across quizzes
 function predictCategoryAtRisk(quizzes) {
   const categoryScores = {};
 
@@ -95,6 +100,7 @@ function predictCategoryAtRisk(quizzes) {
   return highestRiskCategory;
 }
 
+// It calculates the average daily mood score from the last 7 check-ins
 async function getDailyMoodAverage(studentId) {
   const recentCheckIns = await DailyCheckIn.find({ student: studentId })
     .sort({ date: -1 })
@@ -111,6 +117,7 @@ async function getDailyMoodAverage(studentId) {
   return Math.round((avg / 5) * 100 * 10) / 10;
 }
 
+// It checks if the student had very low mood for the last 3 daily check-ins
 async function checkDailyCheckInCrisis(studentId) {
   const recentCheckIns = await DailyCheckIn.find({ student: studentId })
     .sort({ date: -1 })
@@ -129,6 +136,7 @@ async function checkDailyCheckInCrisis(studentId) {
   return allLow;
 }
 
+// It returns the student's predicted mood score and trend for the next week
 const getMoodPrediction = async (req, res) => {
   try {
     const studentId = req.user.id;

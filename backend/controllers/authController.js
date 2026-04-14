@@ -10,13 +10,14 @@ const MoodQuiz = require("../models/MoodQuiz");
 const Notification = require("../models/Notification");
 const { uploadToCloudinary } = require("../routes/uploadMiddleware");
 
-// --- Normalize Email  ---
+// It normalizes an email address to a standard format
 const normalizeEmail = (email) => {
   const [local, domain] = email.toLowerCase().trim().split("@");
   if (domain === "gmail.com") return local.replace(/\./g, "") + "@" + domain;
   return email.toLowerCase().trim();
 };
 
+// It gets the week label for a given date
 function getWeekLabel(date) {
   const d = new Date(date);
   const day = d.getDay();
@@ -31,6 +32,7 @@ function getWeekLabel(date) {
   return year + "-W" + String(weekNumber).padStart(2, "0");
 }
 
+// It sends a quiz notification if needed
 async function sendQuizNotificationIfNeeded(userId) {
   const weekLabel = getWeekLabel(new Date());
   const alreadySubmitted = await MoodQuiz.findOne({
@@ -61,7 +63,7 @@ async function sendQuizNotificationIfNeeded(userId) {
   );
 }
 
-// --- Register ---
+// It registers a new user
 const registerUser = async (req, res) => {
   const { name, password, role } = req.body;
   const email = normalizeEmail(req.body.email);
@@ -145,7 +147,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// --- Verify OTP ---
+// It verifies the OTP and logs the student in
 const verifyOTP = async (req, res) => {
   const { otp } = req.body;
   const email = normalizeEmail(req.body.email);
@@ -196,7 +198,7 @@ const verifyOTP = async (req, res) => {
   }
 };
 
-// --- Resend OTP ---
+// It resends the OTP to the user's email
 const resendOTP = async (req, res) => {
   const email = normalizeEmail(req.body.email);
   try {
@@ -218,7 +220,7 @@ const resendOTP = async (req, res) => {
   }
 };
 
-// --- Login ---
+// It logs a user in
 const loginUser = async (req, res) => {
   const { password } = req.body;
   const email = normalizeEmail(req.body.email);
@@ -274,7 +276,7 @@ const loginUser = async (req, res) => {
   }
 };
 
-// --- Google Login ---
+// It logs in a user with a Google account
 const googleLogin = async (req, res) => {
   const { token } = req.body;
   const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -336,7 +338,7 @@ const googleLogin = async (req, res) => {
   }
 };
 
-// --- Update Role ---
+// It updates a user's role
 const updateRole = async (req, res) => {
   const { role } = req.body;
   const email = normalizeEmail(req.body.email);
@@ -389,7 +391,7 @@ const updateRole = async (req, res) => {
   }
 };
 
-// --- Update Profile ---
+// It updates a user's profile
 const updateProfile = async (req, res) => {
   const {
     userId,
@@ -447,7 +449,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// --- Update Profile Photo ---
+// It updates a user's profile photo
 const updateProfilePhoto = async (req, res) => {
   const { userId } = req.body;
 
@@ -472,7 +474,7 @@ const updateProfilePhoto = async (req, res) => {
   }
 };
 
-// --- Admin Manage Status ---
+// It approves or rejects a counselor application and notifies the user
 const manageUserStatus = async (req, res) => {
   const { userId, status } = req.body;
   try {
@@ -518,7 +520,7 @@ const manageUserStatus = async (req, res) => {
   }
 };
 
-// --- Middleware to protect routes ---
+// It protects routes by verifying the JWT token
 const protect = async (req, res, next) => {
   let token;
   const authHeader = req.headers.authorization;
@@ -541,7 +543,7 @@ const protect = async (req, res, next) => {
   }
 };
 
-// --- Get the Counselors ---
+// It gets the counselors that are approved
 const getCounselors = async (req, res) => {
   try {
     const counselors = await User.find({
@@ -554,7 +556,7 @@ const getCounselors = async (req, res) => {
   }
 };
 
-// --- Search and Filter Counselors ---
+// It searches and filters counselors based on name and specialization
 const searchCounselors = async (req, res) => {
   try {
     const { name, specialization } = req.query;
@@ -598,7 +600,7 @@ const searchCounselors = async (req, res) => {
   }
 };
 
-// --- Edit Counselor Profile ---
+// It edits a counselor's profile
 const editCounselorProfile = async (req, res) => {
   try {
     const counselorId = req.user.id;
@@ -643,7 +645,7 @@ const editCounselorProfile = async (req, res) => {
   }
 };
 
-// --- Forgot Password ---
+// It sends a password reset link to the user's email
 const forgotPassword = async (req, res) => {
   if (!req.body.email) {
     return res.status(400).json({ message: "Email is required" });
@@ -674,7 +676,7 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-// --- Reset Password ---
+// It resets the user's password using a valid reset token
 const resetPassword = async (req, res) => {
   const { token, newPassword, confirmPassword } = req.body;
 
@@ -709,7 +711,7 @@ const resetPassword = async (req, res) => {
   }
 };
 
-// --- Verify Reset Token ---
+// It checks if a password reset token is valid and not expired
 const verifyResetToken = async (req, res) => {
   const { token } = req.params;
 

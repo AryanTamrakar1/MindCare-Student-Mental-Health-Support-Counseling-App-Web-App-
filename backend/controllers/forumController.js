@@ -3,7 +3,7 @@ const User = require("../models/User");
 const { createNotification } = require("./notificationController");
 const { awardPoints } = require("./gamificationController");
 
-// --- Get All Posts ---
+// It retrieves all posts sorted by newest first
 const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find().sort({ createdAt: -1 });
@@ -13,7 +13,7 @@ const getAllPosts = async (req, res) => {
   }
 };
 
-// --- Get Single Post ---
+// It retrieves a single post by its ID
 const getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -24,7 +24,7 @@ const getPostById = async (req, res) => {
   }
 };
 
-// --- Create Post ---
+// It allows a user to create a new post and awards points if the user is a student
 const createPost = async (req, res) => {
   try {
     const { title, content, category, moodTag } = req.body;
@@ -49,7 +49,7 @@ const createPost = async (req, res) => {
   }
 };
 
-// --- Add Reply ---
+// It allows a user to add a reply to a post or to another reply, sends notifications to the relevant users, and awards points if the replier is a student
 const addReply = async (req, res) => {
   try {
     const { content, parentReplyId } = req.body;
@@ -127,7 +127,7 @@ const addReply = async (req, res) => {
   }
 };
 
-// --- Edit Reply ---
+// It allows a user to edit their own reply within 10 minutes of posting it
 const editReply = async (req, res) => {
   try {
     const { postId, replyId } = req.params;
@@ -159,7 +159,7 @@ const editReply = async (req, res) => {
   }
 };
 
-// --- I Feel This ---
+// It allows a user to like a post
 const iFeelThis = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -198,7 +198,7 @@ const iFeelThis = async (req, res) => {
   }
 };
 
-// --- Like Reply ---
+// It allows a user to like a reply
 const likeReply = async (req, res) => {
   try {
     const { postId, replyId } = req.params;
@@ -242,7 +242,7 @@ const likeReply = async (req, res) => {
   }
 };
 
-// --- Delete Post ---
+// It allows a user to delete a post if they are the author or an admin
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -262,7 +262,7 @@ const deletePost = async (req, res) => {
   }
 };
 
-// --- Delete Reply ---
+// It allows a user to delete a reply if they are the author or an admin
 const deleteReply = async (req, res) => {
   try {
     const { postId, replyId } = req.params;

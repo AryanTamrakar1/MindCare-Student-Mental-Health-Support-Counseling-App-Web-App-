@@ -4,12 +4,14 @@ const Notification = require("../models/Notification");
 const MoodQuiz = require("../models/MoodQuiz");
 const { createNotification } = require("../controllers/notificationController");
 
+// It returns the current time in Nepal timezone
 function getNepalTime() {
   const nowUTC = new Date();
   const nepalOffsetMs = (5 * 60 + 45) * 60000;
   return new Date(nowUTC.getTime() + nepalOffsetMs);
 }
 
+// It parses the start time of a time slot and returns it in total minutes
 function parseTimeSlotStart(timeSlot) {
   if (!timeSlot) return null;
   const startStr = timeSlot.split(" - ")[0].trim();
@@ -24,6 +26,7 @@ function parseTimeSlotStart(timeSlot) {
   return hour * 60 + minute;
 }
 
+// It returns today's date as a formatted string in Nepal time
 function getTodayDateString() {
   const nepalTime = getNepalTime();
   const monthNames = [
@@ -37,6 +40,7 @@ function getTodayDateString() {
   return dayStr + " " + month + " " + year;
 }
 
+// It returns the week label for a given date
 function getWeekLabel(date) {
   const d = new Date(date);
   const day = d.getDay();
@@ -51,6 +55,7 @@ function getWeekLabel(date) {
   return year + "-W" + String(weekNumber).padStart(2, "0");
 }
 
+// It checks for upcoming sessions and sends notifications to students and counselors 30 minutes before the session starts
 async function checkUpcomingSessions() {
   try {
     const nepalTime = getNepalTime();
@@ -92,6 +97,7 @@ async function checkUpcomingSessions() {
   }
 }
 
+// It sends weekly mood quiz reminders to students who haven't submitted yet
 async function sendWeeklyQuizReminder() {
   try {
     const nepalTime = getNepalTime();
@@ -151,6 +157,7 @@ async function sendWeeklyQuizReminder() {
   }
 }
 
+// It sends a daily check-in reminder to all students at 9am
 async function sendDailyCheckInReminder() {
   try {
     const nepalTime = getNepalTime();
@@ -180,6 +187,7 @@ async function sendDailyCheckInReminder() {
   }
 }
 
+// It starts the scheduler that runs every minute
 function startNotificationScheduler() {
   setInterval(async function () {
     await checkUpcomingSessions();

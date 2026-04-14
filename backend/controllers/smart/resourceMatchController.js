@@ -1,6 +1,7 @@
 const Resource = require("../../models/Resource");
 const MoodQuiz = require("../../models/MoodQuiz");
 
+// It maps a quiz category to a resource category
 function mapQuizCategoryToResourceCategory(quizCategory) {
   const map = {
     Stress: "Exam & Academic Pressure",
@@ -24,6 +25,7 @@ function mapQuizCategoryToResourceCategory(quizCategory) {
   return "General Mental Health";
 }
 
+// It calculates the average score per category from a list of quizzes
 function buildCategoryScores(quizzes) {
   const categoryData = {};
 
@@ -55,6 +57,7 @@ function buildCategoryScores(quizzes) {
   return categoryAverages;
 }
 
+// It finds the weakest category based on average scores
 function findWeakestCategory(categoryAverages) {
   const names = Object.keys(categoryAverages);
   if (names.length === 0) return null;
@@ -68,6 +71,7 @@ function findWeakestCategory(categoryAverages) {
   return weakest;
 }
 
+// It scores a resource based on category match, priority, and collaborative data
 function scoreResource(resource, targetCategory, collaborativeIds) {
   let score = 0;
 
@@ -89,6 +93,7 @@ function scoreResource(resource, targetCategory, collaborativeIds) {
   return score;
 }
 
+// It gets resource IDs bookmarked by students with similar mood scores
 async function getCollaborativeResourceIds(studentId, latestScore) {
   const lowerBound = latestScore - 15;
   const upperBound = latestScore + 15;
@@ -119,6 +124,7 @@ async function getCollaborativeResourceIds(studentId, latestScore) {
   return ids;
 }
 
+// It returns the top 4 smart resource suggestions based on the student's quiz results
 const getSmartResourceSuggestions = async (req, res) => {
   try {
     const studentId = req.user.id;

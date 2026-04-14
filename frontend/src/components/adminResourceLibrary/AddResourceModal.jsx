@@ -11,7 +11,6 @@ function AddResourceModal({ onClose, onResourceAdded }) {
   const [description, setDescription] = useState("");
   const [isPriority, setIsPriority] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const textareaRef = useRef(null);
 
@@ -26,12 +25,12 @@ function AddResourceModal({ onClose, onResourceAdded }) {
     e.preventDefault();
 
     if (title.trim() === "") {
-      setError("Title cannot be empty.");
+      window.alert("Title cannot be empty.");
       return;
     }
 
     if (link.startsWith("http") === false) {
-      setError("Please enter a valid link starting with https://");
+      window.alert("Please enter a valid link starting with https://");
       return;
     }
 
@@ -51,7 +50,7 @@ function AddResourceModal({ onClose, onResourceAdded }) {
       onResourceAdded(response.data.resource);
       onClose();
     } catch (error) {
-      setError("Failed to add resource. Please try again.");
+      window.alert(error.response?.data?.message || "Failed to add resource. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -195,11 +194,6 @@ function AddResourceModal({ onClose, onResourceAdded }) {
               </div>
             </div>
 
-            {error !== "" && (
-              <div className="bg-red-50 border border-red-300 px-4 py-3">
-                <p className="text-sm font-semibold text-red-600">{error}</p>
-              </div>
-            )}
           </div>
 
           <div className="flex gap-3 px-7 py-5 border-t border-gray-200 flex-shrink-0 bg-gray-50">

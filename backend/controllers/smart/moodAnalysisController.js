@@ -1,6 +1,7 @@
 const MoodQuiz = require("../../models/MoodQuiz");
 const DailyCheckIn = require("../../models/DailyCheckIn");
 
+// It calculates a weighted average from a list of scores
 function calculateWeightedAverage(scores) {
   let weightedSum = 0;
   let totalWeight = 0;
@@ -15,6 +16,7 @@ function calculateWeightedAverage(scores) {
   return Math.round(result * 10) / 10;
 }
 
+// It calculates the average rate of change between scores
 function calculateRateOfChange(scores) {
   if (scores.length < 2) return 0;
 
@@ -27,12 +29,14 @@ function calculateRateOfChange(scores) {
   return Math.round(rate * 10) / 10;
 }
 
+// It returns a trend label based on the rate of change
 function getTrendLabel(rate) {
   if (rate > 0.3) return "Improving";
   if (rate < -0.3) return "Declining";
   return "Stable";
 }
 
+// It calculates the average score per category from a list of quizzes
 function buildCategoryScores(allQuizzes) {
   const categoryData = {};
 
@@ -62,6 +66,7 @@ function buildCategoryScores(allQuizzes) {
   return categoryAverages;
 }
 
+// It finds the weakest category based on average scores
 function findWeakestCategory(categoryAverages) {
   const names = Object.keys(categoryAverages);
   if (names.length === 0) return null;
@@ -79,6 +84,7 @@ function findWeakestCategory(categoryAverages) {
   return { category: weakestName, score: weakestScore };
 }
 
+// It checks if the student had very low mood for the last 3 daily check-ins
 async function checkDailyCheckInCrisis(studentId) {
   const recentCheckIns = await DailyCheckIn.find({ student: studentId })
     .sort({ date: -1 })
@@ -97,6 +103,7 @@ async function checkDailyCheckInCrisis(studentId) {
   return allLow;
 }
 
+// It returns the student's mood analysis based on their quiz results
 const getMoodAnalysis = async (req, res) => {
   try {
     const studentId = req.user.id;

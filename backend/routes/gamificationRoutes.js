@@ -8,9 +8,7 @@ const {
 } = require("../controllers/gamificationController");
 
 router.get("/me", protect, getGamificationData);
-
 router.get("/letters", protect, getLetters);
-
 router.put("/rest-day", protect, useRestDay);
 
 module.exports = router;

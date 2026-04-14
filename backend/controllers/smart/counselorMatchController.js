@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 const MoodQuiz = require("../../models/MoodQuiz");
 
+// It calculates a match score between a counselor and the student's weakest category
 function calculateMatchScore(counselor, weakestCategory) {
   let score = 0;
 
@@ -18,6 +19,7 @@ function calculateMatchScore(counselor, weakestCategory) {
   return score;
 }
 
+// It calculates the average score per category from a list of quizzes
 function buildCategoryScores(quizzes) {
   const categoryScores = {};
 
@@ -50,6 +52,7 @@ function buildCategoryScores(quizzes) {
   return categoryAverages;
 }
 
+// It finds the weakest category based on average scores
 function findWeakestCategory(categoryAverages) {
   const names = Object.keys(categoryAverages);
   if (names.length === 0) return null;
@@ -64,6 +67,7 @@ function findWeakestCategory(categoryAverages) {
   return weakest;
 }
 
+// It returns the top 3 counselor suggestions based on the student's weakest category
 const getSmartCounselorSuggestions = async (req, res) => {
   try {
     const studentId = req.user.id;

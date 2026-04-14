@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const sendEmail = require('../utils/sendEmail');
 
-// Get only counselors who are "Pending" 
+// It gets all counselors with a Pending status
 const getPendingUsers = async (req, res) => {
     try {
         const pendingUsers = await User.find({ 
@@ -14,7 +14,7 @@ const getPendingUsers = async (req, res) => {
     }
 };
 
-// Get ALL Users (Students and Counselors)
+// It gets all users excluding admins
 const getAllUsers = async (req, res) => {
     try {
         const users = await User.find({ role: { $ne: 'Admin' } }).sort({ createdAt: -1 });
@@ -24,7 +24,7 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-// Delete a User
+// It deletes a user by their ID
 const deleteUser = async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);

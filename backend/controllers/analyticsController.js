@@ -6,6 +6,7 @@ const MoodQuiz = require("../models/MoodQuiz");
 const PDFDocument = require("pdfkit");
 const ExcelJS = require("exceljs");
 
+// It gets a platform-wide summary of students, counselors, sessions, and ratings
 const getOverview = async (req, res) => {
   try {
     const totalStudents = await User.countDocuments({ role: "Student" });
@@ -59,6 +60,7 @@ const getOverview = async (req, res) => {
   }
 };
 
+// It gets session and student registration data grouped by month for a given year
 const getSessionAnalytics = async (req, res) => {
   try {
     const year = parseInt(req.query.year) || new Date().getFullYear();
@@ -114,6 +116,7 @@ const getSessionAnalytics = async (req, res) => {
   }
 };
 
+// It gets student mood breakdown and counselor rating stats
 const getUserAnalytics = async (req, res) => {
   try {
     const allQuizzes = await MoodQuiz.find();
@@ -182,6 +185,7 @@ const getUserAnalytics = async (req, res) => {
   }
 };
 
+// It gets forum stats including posts, replies, and count per category
 const getForumAnalytics = async (req, res) => {
   try {
     const allPosts = await Post.find();
@@ -226,6 +230,7 @@ const getForumAnalytics = async (req, res) => {
   }
 };
 
+// It generates and downloads a PDF report of all platform analytics
 const downloadReport = async (req, res) => {
   try {
     const format = req.query.format;

@@ -20,9 +20,13 @@ const replySchema = new mongoose.Schema(
 // -- Post Schema --
 const postSchema = new mongoose.Schema(
   {
+    // --- Basic Information ---
     title: { type: String, required: true },
+
+    // --- Content ---
     content: { type: String, required: true },
 
+    // --- Category ---
     category: {
       type: String,
       required: true,
@@ -36,14 +40,20 @@ const postSchema = new mongoose.Schema(
       ],
     },
 
+    // --- Mood Tag ---
     moodTag: {
       type: String,
       required: true,
       enum: ["Overwhelmed", "Struggling", "Confused", "Frustrated", "Hopeful"],
     },
 
+    // --- Author ---
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
+    // --- Likes ---
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
+    // --- Replies ---
     iFeelThis: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 
     replies: [replySchema],

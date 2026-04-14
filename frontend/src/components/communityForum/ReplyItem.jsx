@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Send, Trash2, Pencil, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Send,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import API from "../../api/axios";
 import Avatar from "./Avatar";
 
@@ -14,7 +24,14 @@ const timeAgo = (date) => {
   return `${Math.floor(seconds / 86400)}d ago`;
 };
 
-const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, onEditReply }) => {
+const ChildReplyItem = ({
+  reply,
+  postId,
+  currentUser,
+  onReplyAdded,
+  onDeleteReply,
+  onEditReply,
+}) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showChildren, setShowChildren] = useState(false);
@@ -30,15 +47,18 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
   }
 
   const [liked, setLiked] = useState(initialLiked);
-  const [likeCount, setLikeCount] = useState(reply.likes ? reply.likes.length : 0);
+  const [likeCount, setLikeCount] = useState(
+    reply.likes ? reply.likes.length : 0,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(reply.content);
   const [editSubmitting, setEditSubmitting] = useState(false);
 
-  const isMyReply = reply.authorId && currentUser && currentUser._id
-    ? reply.authorId.toString() === currentUser._id.toString()
-    : false;
+  const isMyReply =
+    reply.authorId && currentUser && currentUser._id
+      ? reply.authorId.toString() === currentUser._id.toString()
+      : false;
 
   const canEdit =
     isMyReply &&
@@ -100,7 +120,9 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
   };
 
   const handleDeleteClick = () => {
-    const confirmed = window.confirm("Delete this reply and all its nested replies?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this reply?",
+    );
     if (confirmed) {
       onDeleteReply(reply._id);
     }
@@ -116,30 +138,47 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
       <div className="bg-[#F8FAFF] p-4 border border-[#E9F0FB]">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Avatar role={reply.authorRole} photo={reply.authorPhoto} name={reply.authorName} />
+            <Avatar
+              role={reply.authorRole}
+              photo={reply.authorPhoto}
+              name={reply.authorName}
+            />
             <div>
               {reply.authorRole === "Counselor" ? (
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-[13px] font-semibold text-[#111827]">{reply.authorName}</p>
+                  <p className="text-[13px] font-semibold text-[#111827]">
+                    {reply.authorName}
+                  </p>
                   <span className="text-[11px] bg-[#EEF2FF] text-[#2563EB] font-bold px-2 py-0.5 border border-[#C7D7FD]">
                     Verified Counselor
                   </span>
                 </div>
               ) : (
-                <p className="text-[13px] font-semibold text-[#111827]">Anonymous Student</p>
+                <p className="text-[13px] font-semibold text-[#111827]">
+                  Anonymous Student
+                </p>
               )}
             </div>
           </div>
-          <p className="text-[11px] text-[#9CA3AF]">{timeAgo(reply.createdAt)}</p>
+          <p className="text-[11px] text-[#9CA3AF]">
+            {timeAgo(reply.createdAt)}
+          </p>
         </div>
 
         {isEditing ? (
           <div className="mb-3">
             <textarea
               value={editText}
-              onChange={(e) => { setEditText(e.target.value); handleAutoGrow(e); }}
+              onChange={(e) => {
+                setEditText(e.target.value);
+                handleAutoGrow(e);
+              }}
               className="w-full border border-[#2563EB] px-3 py-2 text-[13px] text-[#374151] outline-none resize-none overflow-hidden"
-              style={{ minHeight: "72px", height: "72px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              style={{
+                minHeight: "72px",
+                height: "72px",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
             />
             <div className="flex gap-2 mt-2">
               <button
@@ -151,7 +190,10 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
                 {editSubmitting ? "Saving..." : "Save"}
               </button>
               <button
-                onClick={() => { setIsEditing(false); setEditText(reply.content); }}
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditText(reply.content);
+                }}
                 className="flex items-center gap-1 bg-[#F3F4F6] text-[#374151] text-[12px] font-semibold px-3 py-1.5 hover:bg-[#E5E7EB] transition"
               >
                 <X size={12} /> Cancel
@@ -159,7 +201,10 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
             </div>
           </div>
         ) : (
-          <p className="text-[13px] text-[#374151] leading-relaxed mb-3 whitespace-pre-wrap" style={{ textAlign: "justify" }}>
+          <p
+            className="text-[13px] text-[#374151] leading-relaxed mb-3 whitespace-pre-wrap"
+            style={{ textAlign: "justify" }}
+          >
             {reply.content}
           </p>
         )}
@@ -172,7 +217,10 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
                 liked ? "text-[#2563EB]" : "text-[#9CA3AF] hover:text-[#2563EB]"
               }`}
             >
-              <Heart size={13} className={liked ? "fill-[#2563EB] text-[#2563EB]" : ""} />
+              <Heart
+                size={13}
+                className={liked ? "fill-[#2563EB] text-[#2563EB]" : ""}
+              />
               Like ({likeCount})
             </button>
           )}
@@ -202,10 +250,12 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
             </button>
           )}
 
-          {currentUser.role === "Admin" && (
+          {(currentUser.role === "Admin" || isMyReply) && (
             <button
               onClick={handleDeleteClick}
-              className="flex items-center gap-1.5 text-[12px] font-semibold text-red-400 hover:text-red-600 transition ml-auto"
+              disabled={currentUser.role !== "Admin" && reply.children && reply.children.length > 0}
+              title={currentUser.role !== "Admin" && reply.children?.length > 0 ? "Cannot delete a reply that has responses" : ""}
+              className="flex items-center gap-1.5 text-[12px] font-semibold text-red-400 hover:text-red-600 transition ml-auto disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Trash2 size={13} /> Delete
             </button>
@@ -216,10 +266,18 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
           <div className="flex gap-2 mt-3 items-center">
             <textarea
               value={replyText}
-              onChange={(e) => { setReplyText(e.target.value); handleAutoGrow(e); }}
+              onChange={(e) => {
+                setReplyText(e.target.value);
+                handleAutoGrow(e);
+              }}
               placeholder="Write a reply..."
               className="flex-1 border border-[#E9F0FB] px-3 py-2 text-[12px] outline-none focus:border-[#2563EB] text-[#374151] resize-none overflow-hidden transition"
-              style={{ minHeight: "38px", height: "38px", fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "justify" }}
+              style={{
+                minHeight: "38px",
+                height: "38px",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                textAlign: "justify",
+              }}
             />
             <button
               onClick={handleReplySubmit}
@@ -240,11 +298,13 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
           >
             {showChildren ? (
               <>
-                <ChevronUp size={14} /> Hide {reply.children.length} {reply.children.length === 1 ? "reply" : "replies"}
+                <ChevronUp size={14} /> Hide {reply.children.length}{" "}
+                {reply.children.length === 1 ? "reply" : "replies"}
               </>
             ) : (
               <>
-                <ChevronDown size={14} /> Show {reply.children.length} {reply.children.length === 1 ? "reply" : "replies"}
+                <ChevronDown size={14} /> Show {reply.children.length}{" "}
+                {reply.children.length === 1 ? "reply" : "replies"}
               </>
             )}
           </button>
@@ -254,9 +314,29 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
               {reply.children.map((child) => (
                 <div key={child._id} className="flex items-start gap-1">
                   <div className="flex-shrink-0 mt-3">
-                    <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M 3 0 L 3 9 Q 3 13 7 13 L 14 13" stroke="#C7D7FD" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M 11 10 L 15 13 L 11 16" stroke="#C7D7FD" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                    <svg
+                      width="20"
+                      height="16"
+                      viewBox="0 0 20 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M 3 0 L 3 9 Q 3 13 7 13 L 14 13"
+                        stroke="#C7D7FD"
+                        strokeWidth="1.8"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M 11 10 L 15 13 L 11 16"
+                        stroke="#C7D7FD"
+                        strokeWidth="1.8"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
                   <div className="flex-1">
@@ -279,7 +359,14 @@ const ChildReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteRepl
   );
 };
 
-const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, onEditReply }) => {
+const ReplyItem = ({
+  reply,
+  postId,
+  currentUser,
+  onReplyAdded,
+  onDeleteReply,
+  onEditReply,
+}) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showChildren, setShowChildren] = useState(false);
@@ -295,15 +382,18 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
   }
 
   const [liked, setLiked] = useState(initialLiked);
-  const [likeCount, setLikeCount] = useState(reply.likes ? reply.likes.length : 0);
+  const [likeCount, setLikeCount] = useState(
+    reply.likes ? reply.likes.length : 0,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(reply.content);
   const [editSubmitting, setEditSubmitting] = useState(false);
 
-  const isMyReply = reply.authorId && currentUser && currentUser._id
-    ? reply.authorId.toString() === currentUser._id.toString()
-    : false;
+  const isMyReply =
+    reply.authorId && currentUser && currentUser._id
+      ? reply.authorId.toString() === currentUser._id.toString()
+      : false;
 
   const canEdit =
     isMyReply &&
@@ -365,7 +455,9 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
   };
 
   const handleDeleteClick = () => {
-    const confirmed = window.confirm("Delete this reply and all its nested replies?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this reply?",
+    );
     if (confirmed) {
       onDeleteReply(reply._id);
     }
@@ -381,30 +473,47 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
       <div className="bg-[#F8FAFF] p-4 border border-[#E9F0FB]">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Avatar role={reply.authorRole} photo={reply.authorPhoto} name={reply.authorName} />
+            <Avatar
+              role={reply.authorRole}
+              photo={reply.authorPhoto}
+              name={reply.authorName}
+            />
             <div>
               {reply.authorRole === "Counselor" ? (
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-[13px] font-semibold text-[#111827]">{reply.authorName}</p>
+                  <p className="text-[13px] font-semibold text-[#111827]">
+                    {reply.authorName}
+                  </p>
                   <span className="text-[11px] bg-[#EEF2FF] text-[#2563EB] font-bold px-2 py-0.5 border border-[#C7D7FD]">
                     Verified Counselor
                   </span>
                 </div>
               ) : (
-                <p className="text-[13px] font-semibold text-[#111827]">Anonymous Student</p>
+                <p className="text-[13px] font-semibold text-[#111827]">
+                  Anonymous Student
+                </p>
               )}
             </div>
           </div>
-          <p className="text-[11px] text-[#9CA3AF]">{timeAgo(reply.createdAt)}</p>
+          <p className="text-[11px] text-[#9CA3AF]">
+            {timeAgo(reply.createdAt)}
+          </p>
         </div>
 
         {isEditing ? (
           <div className="mb-3">
             <textarea
               value={editText}
-              onChange={(e) => { setEditText(e.target.value); handleAutoGrow(e); }}
+              onChange={(e) => {
+                setEditText(e.target.value);
+                handleAutoGrow(e);
+              }}
               className="w-full border border-[#2563EB] px-3 py-2 text-[13px] text-[#374151] outline-none resize-none overflow-hidden"
-              style={{ minHeight: "72px", height: "72px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              style={{
+                minHeight: "72px",
+                height: "72px",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
             />
             <div className="flex gap-2 mt-2">
               <button
@@ -416,7 +525,10 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
                 {editSubmitting ? "Saving..." : "Save"}
               </button>
               <button
-                onClick={() => { setIsEditing(false); setEditText(reply.content); }}
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditText(reply.content);
+                }}
                 className="flex items-center gap-1 bg-[#F3F4F6] text-[#374151] text-[12px] font-semibold px-3 py-1.5 hover:bg-[#E5E7EB] transition"
               >
                 <X size={12} /> Cancel
@@ -424,7 +536,10 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
             </div>
           </div>
         ) : (
-          <p className="text-[13px] text-[#374151] leading-relaxed mb-3 whitespace-pre-wrap" style={{ textAlign: "justify" }}>
+          <p
+            className="text-[13px] text-[#374151] leading-relaxed mb-3 whitespace-pre-wrap"
+            style={{ textAlign: "justify" }}
+          >
             {reply.content}
           </p>
         )}
@@ -437,7 +552,10 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
                 liked ? "text-[#2563EB]" : "text-[#9CA3AF] hover:text-[#2563EB]"
               }`}
             >
-              <Heart size={13} className={liked ? "fill-[#2563EB] text-[#2563EB]" : ""} />
+              <Heart
+                size={13}
+                className={liked ? "fill-[#2563EB] text-[#2563EB]" : ""}
+              />
               Like ({likeCount})
             </button>
           )}
@@ -467,10 +585,12 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
             </button>
           )}
 
-          {currentUser.role === "Admin" && (
+          {(currentUser.role === "Admin" || isMyReply) && (
             <button
               onClick={handleDeleteClick}
-              className="flex items-center gap-1.5 text-[12px] font-semibold text-red-400 hover:text-red-600 transition ml-auto"
+              disabled={currentUser.role !== "Admin" && reply.children && reply.children.length > 0}
+              title={currentUser.role !== "Admin" && reply.children?.length > 0 ? "Cannot delete a reply that has responses" : ""}
+              className="flex items-center gap-1.5 text-[12px] font-semibold text-red-400 hover:text-red-600 transition ml-auto disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Trash2 size={13} /> Delete
             </button>
@@ -481,10 +601,18 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
           <div className="flex gap-2 mt-3 items-center">
             <textarea
               value={replyText}
-              onChange={(e) => { setReplyText(e.target.value); handleAutoGrow(e); }}
+              onChange={(e) => {
+                setReplyText(e.target.value);
+                handleAutoGrow(e);
+              }}
               placeholder="Write a reply..."
               className="flex-1 border border-[#E9F0FB] px-3 py-2 text-[12px] outline-none focus:border-[#2563EB] text-[#374151] resize-none overflow-hidden transition"
-              style={{ minHeight: "38px", height: "38px", fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "justify" }}
+              style={{
+                minHeight: "38px",
+                height: "38px",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                textAlign: "justify",
+              }}
             />
             <button
               onClick={handleReplySubmit}
@@ -505,11 +633,13 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
           >
             {showChildren ? (
               <>
-                <ChevronUp size={14} /> Hide {reply.children.length} {reply.children.length === 1 ? "reply" : "replies"}
+                <ChevronUp size={14} /> Hide {reply.children.length}{" "}
+                {reply.children.length === 1 ? "reply" : "replies"}
               </>
             ) : (
               <>
-                <ChevronDown size={14} /> Show {reply.children.length} {reply.children.length === 1 ? "reply" : "replies"}
+                <ChevronDown size={14} /> Show {reply.children.length}{" "}
+                {reply.children.length === 1 ? "reply" : "replies"}
               </>
             )}
           </button>
@@ -519,9 +649,29 @@ const ReplyItem = ({ reply, postId, currentUser, onReplyAdded, onDeleteReply, on
               {reply.children.map((child) => (
                 <div key={child._id} className="flex items-start gap-1">
                   <div className="flex-shrink-0 mt-3">
-                    <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M 3 0 L 3 9 Q 3 13 7 13 L 14 13" stroke="#C7D7FD" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M 11 10 L 15 13 L 11 16" stroke="#C7D7FD" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                    <svg
+                      width="20"
+                      height="16"
+                      viewBox="0 0 20 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M 3 0 L 3 9 Q 3 13 7 13 L 14 13"
+                        stroke="#C7D7FD"
+                        strokeWidth="1.8"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M 11 10 L 15 13 L 11 16"
+                        stroke="#C7D7FD"
+                        strokeWidth="1.8"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
                   <div className="flex-1">

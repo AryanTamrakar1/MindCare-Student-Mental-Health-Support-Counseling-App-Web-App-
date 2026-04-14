@@ -2,6 +2,7 @@ const MoodQuiz = require("../models/MoodQuiz");
 const DailyCheckIn = require("../models/DailyCheckIn");
 const { awardPoints } = require("./gamificationController");
 
+// It converts a date into a week label string starting from Monday of that week
 function getWeekLabel(date) {
   const d = new Date(date);
   const day = d.getDay();
@@ -18,6 +19,7 @@ function getWeekLabel(date) {
   );
 }
 
+// It calculates the mood score and label based on the student's quiz answers
 function calculateMood(answers) {
   let total = 0;
   for (let i = 0; i < answers.length; i++) {
@@ -40,6 +42,7 @@ function calculateMood(answers) {
   return { moodScore: percentage, moodLabel: label };
 }
 
+// It allows a student to submit their weekly mood quiz and awards points on completion
 const submitQuiz = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -71,6 +74,7 @@ const submitQuiz = async (req, res) => {
   }
 };
 
+// It checks if a student has already submitted their quiz for the current week
 const checkQuiz = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -92,6 +96,7 @@ const checkQuiz = async (req, res) => {
   }
 };
 
+// It returns all past mood quiz results for a student sorted by week
 const getMoodHistory = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -104,6 +109,7 @@ const getMoodHistory = async (req, res) => {
   }
 };
 
+// It allows a student to submit a daily mood check-in with an emoji
 const submitCheckIn = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -131,6 +137,7 @@ const submitCheckIn = async (req, res) => {
   }
 };
 
+// It checks if a student has already checked in for a given date
 const checkTodayCheckIn = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -148,6 +155,7 @@ const checkTodayCheckIn = async (req, res) => {
   }
 };
 
+// It returns the last 7 daily check-ins for a student
 const getCheckInHistory = async (req, res) => {
   try {
     const studentId = req.user.id;

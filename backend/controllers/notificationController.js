@@ -1,5 +1,6 @@
 const Notification = require("../models/Notification");
 
+// It fetches the latest 20 notifications for the logged-in user
 async function getNotifications(req, res) {
   try {
     const userId = req.user.id;
@@ -14,6 +15,7 @@ async function getNotifications(req, res) {
   }
 }
 
+// It returns the number of unread notifications for the logged-in user
 async function getUnreadCount(req, res) {
   try {
     const userId = req.user.id;
@@ -29,6 +31,7 @@ async function getUnreadCount(req, res) {
   }
 }
 
+// It marks a single notification as read
 async function markAsRead(req, res) {
   try {
     const notificationId = req.params.id;
@@ -39,6 +42,7 @@ async function markAsRead(req, res) {
   }
 }
 
+// It marks all unread notifications as read for the logged-in user
 async function markAllAsRead(req, res) {
   try {
     const userId = req.user.id;
@@ -54,6 +58,7 @@ async function markAllAsRead(req, res) {
   }
 }
 
+// It deletes a single notification by its ID
 async function deleteNotification(req, res) {
   try {
     const notificationId = req.params.id;
@@ -66,6 +71,7 @@ async function deleteNotification(req, res) {
   }
 }
 
+// It deletes all notifications for the logged-in user
 async function deleteAllNotifications(req, res) {
   try {
     const userId = req.user.id;
@@ -78,6 +84,7 @@ async function deleteAllNotifications(req, res) {
   }
 }
 
+// It creates and saves a new notification for a given user — used internally across controllers
 async function createNotification(userId, title, message, type, link = "") {
   try {
     const notification = new Notification({

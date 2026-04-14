@@ -129,7 +129,7 @@ export function parseReason(reason) {
 
 // This is for session testing
 // It checks if the given date and time slot corresponds to the current time and date
-export function isSessionNow(date, timeSlot) {
+export function isSessionTime(date, timeSlot) {
   if (!date || !timeSlot) return false;
 
   const now = new Date();

@@ -486,3 +486,5 @@ exports.getCompletedCount = async (req, res) => {
     res.status(500).json({ message: "Error counting completed appointments" });
   }
 };
+
+exports.autoMarkMissedSessions = autoMarkMissedSessions;

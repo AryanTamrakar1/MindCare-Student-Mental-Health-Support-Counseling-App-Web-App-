@@ -3,7 +3,10 @@ const User = require("../models/User");
 const Notification = require("../models/Notification");
 const MoodQuiz = require("../models/MoodQuiz");
 const { createNotification } = require("../controllers/notificationController");
-const { autoMarkMissedSessions } = require("../controllers/appointmentController");
+const {
+  autoMarkMissedSessions,
+} = require("../controllers/appointmentController");
+const DailyCheckIn = require("../models/DailyCheckIn");
 
 // It returns the current time in Nepal timezone
 function getNepalTime() {
@@ -57,13 +60,29 @@ function getWeekLabel(date) {
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   const monday = new Date(d.setDate(diff));
-  const year = monday.getFullYear();
-  const jan4 = new Date(year, 0, 4);
-  const msPerWeek = 604800000;
-  const weekNumber = Math.ceil(
-    (monday - new Date(jan4.getFullYear(), 0, 4)) / msPerWeek + 1,
+
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  return (
+    monday.getDate() +
+    " " +
+    monthNames[monday.getMonth()] +
+    " " +
+    monday.getFullYear()
   );
-  return year + "-W" + String(weekNumber).padStart(2, "0");
 }
 
 // It checks for upcoming sessions and sends notifications to students and counselors 30 minutes before the session starts
@@ -183,9 +202,18 @@ async function sendDailyCheckInReminder() {
     if (hour !== 9) return;
     if (minute > 1) return;
 
+    const todayStr = getTodayDateString();
     const students = await User.find({ role: "Student", status: "Approved" });
 
+    let sentCount = 0;
+
     for (let i = 0; i < students.length; i++) {
+      const alreadyCheckedIn = await DailyCheckIn.findOne({
+        student: students[i]._id,
+        date: todayStr,
+      });
+      if (alreadyCheckedIn) continue;
+
       await createNotification(
         students[i]._id,
         "Daily Check-In Available!",
@@ -193,10 +221,12 @@ async function sendDailyCheckInReminder() {
         "quiz_reminder",
         "/mood-quiz",
       );
+
+      sentCount++; 
     }
 
     console.log(
-      "Daily check-in reminders sent to " + students.length + " students",
+      "Daily check-in reminders sent to " + sentCount+ " students",
     );
   } catch (error) {
     console.log("Daily check-in reminder failed:", error.message);
@@ -209,7 +239,7 @@ function startNotificationScheduler() {
     await checkUpcomingSessions();
     await sendWeeklyQuizReminder();
     await sendDailyCheckInReminder();
-    await autoMarkMissedSessions(); 
+    await autoMarkMissedSessions();
   }, 60000);
 
   console.log("Notification scheduler started!");

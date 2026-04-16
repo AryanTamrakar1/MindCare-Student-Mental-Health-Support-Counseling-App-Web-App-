@@ -23,13 +23,13 @@ function getWeekLabel(date) {
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   const monday = new Date(d.setDate(diff));
-  const year = monday.getFullYear();
-  const jan4 = new Date(year, 0, 4);
-  const msPerWeek = 604800000;
-  const weekNumber = Math.ceil(
-    (monday - new Date(jan4.getFullYear(), 0, 4)) / msPerWeek + 1,
-  );
-  return year + "-W" + String(weekNumber).padStart(2, "0");
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+
+  return monday.getDate() + " " + monthNames[monday.getMonth()] + " " + monday.getFullYear();
 }
 
 // It sends a quiz notification if needed

@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Notification = require("../models/Notification");
 const MoodQuiz = require("../models/MoodQuiz");
 const { createNotification } = require("../controllers/notificationController");
+const { autoMarkMissedSessions } = require("../controllers/appointmentController");
 
 // It returns the current time in Nepal timezone
 function getNepalTime() {
@@ -30,13 +31,23 @@ function parseTimeSlotStart(timeSlot) {
 function getTodayDateString() {
   const nepalTime = getNepalTime();
   const monthNames = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
-  const day = nepalTime.getDate();
-  const dayStr = "" + day;
-  const month = monthNames[nepalTime.getMonth()];
-  const year = nepalTime.getFullYear();
+  const day = nepalTime.getUTCDate();
+  const dayStr = day < 10 ? "0" + day : "" + day;
+  const month = monthNames[nepalTime.getUTCMonth()];
+  const year = nepalTime.getUTCFullYear();
   return dayStr + " " + month + " " + year;
 }
 
@@ -59,7 +70,8 @@ function getWeekLabel(date) {
 async function checkUpcomingSessions() {
   try {
     const nepalTime = getNepalTime();
-    const currentMinutes = nepalTime.getHours() * 60 + nepalTime.getMinutes();
+    const currentMinutes =
+      nepalTime.getUTCHours() * 60 + nepalTime.getUTCMinutes();
     const todayStr = getTodayDateString();
 
     const todaySessions = await Appointment.find({
@@ -78,7 +90,9 @@ async function checkUpcomingSessions() {
         await createNotification(
           session.studentId,
           "Session Starting in 30 Minutes!",
-          "Your session is starting at " + session.timeSlot + ". Please be ready.",
+          "Your session is starting at " +
+            session.timeSlot +
+            ". Please be ready.",
           "session_reminder",
           "/my-sessions",
         );
@@ -86,7 +100,9 @@ async function checkUpcomingSessions() {
         await createNotification(
           session.counselorId,
           "Session Starting in 30 Minutes!",
-          "You have a session starting at " + session.timeSlot + ". Please be ready.",
+          "You have a session starting at " +
+            session.timeSlot +
+            ". Please be ready.",
           "session_reminder",
           "/counselor-sessions",
         );
@@ -101,9 +117,9 @@ async function checkUpcomingSessions() {
 async function sendWeeklyQuizReminder() {
   try {
     const nepalTime = getNepalTime();
-    const dayOfWeek = nepalTime.getDay();
-    const hour = nepalTime.getHours();
-    const minute = nepalTime.getMinutes();
+    const dayOfWeek = nepalTime.getUTCDay();
+    const hour = nepalTime.getUTCHours();
+    const minute = nepalTime.getUTCMinutes();
 
     if (dayOfWeek !== 1) return;
     if (hour !== 8) return;
@@ -161,8 +177,8 @@ async function sendWeeklyQuizReminder() {
 async function sendDailyCheckInReminder() {
   try {
     const nepalTime = getNepalTime();
-    const hour = nepalTime.getHours();
-    const minute = nepalTime.getMinutes();
+    const hour = nepalTime.getUTCHours();
+    const minute = nepalTime.getUTCMinutes();
 
     if (hour !== 9) return;
     if (minute > 1) return;
@@ -193,6 +209,7 @@ function startNotificationScheduler() {
     await checkUpcomingSessions();
     await sendWeeklyQuizReminder();
     await sendDailyCheckInReminder();
+    await autoMarkMissedSessions(); 
   }, 60000);
 
   console.log("Notification scheduler started!");

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, X, Trash2 } from "lucide-react";
-import axios from "axios";
+import API from "../../api/axios";
 
 const NotificationDropdown = () => {
   const navigate = useNavigate();
@@ -23,8 +23,8 @@ const NotificationDropdown = () => {
   async function fetchUnreadCount() {
     try {
       const token = sessionStorage.getItem("token");
-      const res = await axios.get(
-        "http://127.0.0.1:5050/api/notifications/unread-count",
+      const res = await API.get(
+        "/notifications/unread-count",
         { headers: { Authorization: "Bearer " + token } },
       );
       setUnreadCount(res.data.count);
@@ -36,7 +36,7 @@ const NotificationDropdown = () => {
   async function fetchNotifications() {
     try {
       const token = sessionStorage.getItem("token");
-      const res = await axios.get("http://127.0.0.1:5050/api/notifications", {
+      const res = await API.get("/notifications", {
         headers: { Authorization: "Bearer " + token },
       });
       setNotifications(res.data.notifications);
@@ -61,8 +61,8 @@ const NotificationDropdown = () => {
   async function handleNotificationClick(notif) {
     try {
       const token = sessionStorage.getItem("token");
-      await axios.put(
-        "http://127.0.0.1:5050/api/notifications/" + notif._id + "/read",
+      await API.put(
+        "/notifications/" + notif._id + "/read",
         {},
         { headers: { Authorization: "Bearer " + token } },
       );
@@ -96,8 +96,8 @@ const NotificationDropdown = () => {
   async function handleMarkAllRead() {
     try {
       const token = sessionStorage.getItem("token");
-      await axios.put(
-        "http://127.0.0.1:5050/api/notifications/mark-all-read",
+      await API.put(
+        "/notifications/mark-all-read",
         {},
         { headers: { Authorization: "Bearer " + token } },
       );
@@ -117,7 +117,7 @@ const NotificationDropdown = () => {
     e.stopPropagation();
     try {
       const token = sessionStorage.getItem("token");
-      await axios.delete("http://127.0.0.1:5050/api/notifications/" + notifId, {
+      await API.delete("/notifications/" + notifId, {
         headers: { Authorization: "Bearer " + token },
       });
 
@@ -143,7 +143,7 @@ const NotificationDropdown = () => {
   async function handleDeleteAll() {
     try {
       const token = sessionStorage.getItem("token");
-      await axios.delete("http://127.0.0.1:5050/api/notifications/delete-all", {
+      await API.delete("/notifications/delete-all", {
         headers: { Authorization: "Bearer " + token },
       });
       setNotifications([]);

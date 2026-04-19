@@ -18,6 +18,7 @@ const notificationSchema = mongoose.Schema(
       type: String,
       enum: [
         "quiz_reminder",
+        "checkin_reminder",
         "mood_decline",
         "session_reminder",
         "booking_request",

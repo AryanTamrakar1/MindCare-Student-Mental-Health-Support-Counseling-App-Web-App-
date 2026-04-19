@@ -2,6 +2,13 @@ const MoodQuiz = require("../models/MoodQuiz");
 const DailyCheckIn = require("../models/DailyCheckIn");
 const { awardPoints } = require("./gamificationController");
 
+// It returns the current time in Nepal timezone
+function getNepalTime() {
+  const nowUTC = new Date();
+  const nepalOffsetMs = (5 * 60 + 45) * 60000;
+  return new Date(nowUTC.getTime() + nepalOffsetMs);
+}
+
 // It converts a date into a week label string starting from Monday of that week
 function getWeekLabel(date) {
   const d = new Date(date);
@@ -48,7 +55,7 @@ const submitQuiz = async (req, res) => {
     const studentId = req.user.id;
     const { answers } = req.body;
 
-    const weekLabel = getWeekLabel(new Date());
+    const weekLabel = getWeekLabel(getNepalTime());
 
     const existing = await MoodQuiz.findOne({ student: studentId, weekLabel });
     if (existing) {
@@ -78,7 +85,7 @@ const submitQuiz = async (req, res) => {
 const checkQuiz = async (req, res) => {
   try {
     const studentId = req.user.id;
-    const weekLabel = getWeekLabel(new Date());
+    const weekLabel = getWeekLabel(getNepalTime());
 
     const existing = await MoodQuiz.findOne({ student: studentId, weekLabel });
 
@@ -101,7 +108,7 @@ const getMoodHistory = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    const history = await MoodQuiz.find({ student: studentId }).sort({ weekLabel: 1 });
+    const history = await MoodQuiz.find({ student: studentId }).sort({ createdAt: 1 });
 
     res.json(history);
   } catch (error) {

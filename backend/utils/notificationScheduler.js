@@ -135,25 +135,17 @@ async function checkUpcomingSessions() {
 // It sends weekly mood quiz reminders to students who haven't submitted yet
 async function sendWeeklyQuizReminder() {
   try {
-    const nepalTime = getNepalTime();
-    const dayOfWeek = nepalTime.getUTCDay();
-    const hour = nepalTime.getUTCHours();
-    const minute = nepalTime.getUTCMinutes();
-
-    if (dayOfWeek !== 1) return;
-    if (hour !== 8) return;
-    if (minute > 1) return;
-
     const students = await User.find({ role: "Student", status: "Approved" });
 
     // get start of this week (Monday at midnight)
-    const now = new Date();
-    const day = now.getDay();
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(now.setDate(diff));
-    monday.setHours(0, 0, 0, 0);
+    const nepalNow = getNepalTime();
+    const day2 = nepalNow.getUTCDay();
+    const diff2 = nepalNow.getUTCDate() - day2 + (day2 === 0 ? -6 : 1);
+    const monday = new Date(nepalNow);
+    monday.setUTCDate(diff2);
+    monday.setUTCHours(0, 0, 0, 0);
 
-    const weekLabel = getWeekLabel(new Date());
+    const weekLabel = getWeekLabel(nepalNow);
 
     let sentCount = 0;
 
@@ -167,12 +159,14 @@ async function sendWeeklyQuizReminder() {
       });
       if (alreadySubmitted) continue;
 
-      // It skips if already notified this week
+      // It skips if already notified in the last 24 hours
+      const last24hrs = new Date(nepalNow.getTime() - 24 * 60 * 60 * 1000);
       const alreadyNotified = await Notification.findOne({
         userId: student._id,
         type: "quiz_reminder",
-        createdAt: { $gte: monday },
+        createdAt: { $gte: last24hrs },
       });
+
       if (alreadyNotified) continue;
 
       await createNotification(
@@ -185,7 +179,6 @@ async function sendWeeklyQuizReminder() {
 
       sentCount++;
     }
-
     console.log("Weekly quiz reminders sent to " + sentCount + " students");
   } catch (error) {
     console.log("Weekly quiz reminder failed:", error.message);
@@ -207,6 +200,9 @@ async function sendDailyCheckInReminder() {
 
     let sentCount = 0;
 
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+
     for (let i = 0; i < students.length; i++) {
       const alreadyCheckedIn = await DailyCheckIn.findOne({
         student: students[i]._id,
@@ -214,20 +210,25 @@ async function sendDailyCheckInReminder() {
       });
       if (alreadyCheckedIn) continue;
 
+      const alreadyNotified = await Notification.findOne({
+        userId: students[i]._id,
+        type: "checkin_reminder",
+        createdAt: { $gte: todayStart },
+      });
+      if (alreadyNotified) continue;
+
       await createNotification(
         students[i]._id,
         "Daily Check-In Available!",
         "How are you feeling today? Take a moment to do your daily check-in.",
-        "quiz_reminder",
+        "checkin_reminder",
         "/mood-quiz",
       );
 
-      sentCount++; 
+      sentCount++;
     }
 
-    console.log(
-      "Daily check-in reminders sent to " + sentCount+ " students",
-    );
+    console.log("Daily check-in reminders sent to " + sentCount + " students");
   } catch (error) {
     console.log("Daily check-in reminder failed:", error.message);
   }

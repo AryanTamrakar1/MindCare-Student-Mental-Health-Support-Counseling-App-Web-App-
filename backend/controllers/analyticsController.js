@@ -302,7 +302,7 @@ const downloadReport = async (req, res) => {
       );
       doc.pipe(res);
 
-      doc.rect(0, 0, doc.page.width, 80).fill("#4f46e5");
+      doc.rect(0, 0, doc.page.width, 80).fill("#2563eb");
       doc
         .fillColor("white")
         .fontSize(24)
@@ -330,7 +330,7 @@ const downloadReport = async (req, res) => {
       doc
         .fontSize(13)
         .font("Helvetica-Bold")
-        .fillColor("#4f46e5")
+        .fillColor("#2563eb")
         .text("1. Platform Overview", 50, 150);
 
       doc.moveDown(0.5);
@@ -366,7 +366,7 @@ const downloadReport = async (req, res) => {
       doc
         .fontSize(13)
         .font("Helvetica-Bold")
-        .fillColor("#4f46e5")
+        .fillColor("#2563eb")
         .text("2. Community Forum", 50, y);
 
       y = y + 20;
@@ -400,7 +400,7 @@ const downloadReport = async (req, res) => {
       doc
         .fontSize(13)
         .font("Helvetica-Bold")
-        .fillColor("#4f46e5")
+        .fillColor("#2563eb")
         .text("3. Student Mood Summary", 50, y);
 
       y = y + 20;
@@ -436,12 +436,12 @@ const downloadReport = async (req, res) => {
       doc
         .fontSize(13)
         .font("Helvetica-Bold")
-        .fillColor("#4f46e5")
+        .fillColor("#2563eb")
         .text("4. Counselor Performance", 50, y);
 
       y = y + 20;
 
-      doc.rect(50, y, doc.page.width - 100, 22).fill("#4f46e5");
+      doc.rect(50, y, doc.page.width - 100, 22).fill("#2563eb");
       doc
         .fillColor("white")
         .fontSize(10)
@@ -451,7 +451,23 @@ const downloadReport = async (req, res) => {
         .text("Total Ratings", 430, y + 6);
       y = y + 22;
 
+      const bottomMargin = doc.page.height - 80;
+
       for (let i = 0; i < counselors.length; i++) {
+        if (y + 22 > bottomMargin) {
+          doc.addPage();
+          y = 50;
+          doc.rect(50, y, doc.page.width - 100, 22).fill("#2563eb");
+          doc
+            .fillColor("white")
+            .fontSize(10)
+            .font("Helvetica-Bold")
+            .text("Counselor Name", 60, y + 6)
+            .text("Avg Rating", 350, y + 6)
+            .text("Total Ratings", 430, y + 6);
+          y = y + 22;
+        }
+
         const counselorRatings = await Rating.find({
           counselorId: counselors[i]._id,
         });

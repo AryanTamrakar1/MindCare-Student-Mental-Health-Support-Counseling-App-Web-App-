@@ -14,10 +14,17 @@ function getProfilePhotoUrl(u) {
 }
 
 function getStatusBadge(u) {
-  if (u.role === "Student") {
+  if (u.role === "Student" && u.status === "Approved") {
     return (
       <span className="inline-flex items-center px-3 py-1 text-[11px] font-semibold bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]">
         Active
+      </span>
+    );
+  }
+  if (u.role === "Student" && u.status === "Pending") {
+    return (
+      <span className="inline-flex items-center px-3 py-1 text-[11px] font-semibold bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]">
+        Pending
       </span>
     );
   }
